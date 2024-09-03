@@ -44,6 +44,11 @@ public class FileComparator {
             return false;
         }
 
+        // если размер файлов равен нулю, то файлы равны (так как файлы равны, то достаточно одного)
+        if (size1 == 0) {
+            return true;
+        }
+
         // Если файлы маленькие, используем побайтное сравнение
         if (size1 <= SMALL_FILE_THRESHOLD) {
             return compareFilesByteByByte(file1, file2);

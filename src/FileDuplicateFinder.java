@@ -6,37 +6,96 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder {
     // Пул потоков для параллельного выполнения задач
-//    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
-//    // Основной метод для поиска дубликатов файлов
-//    public List<List<String>> findDuplicates(String[] paths) throws IOException {
-//        // ConcurrentHashMap для хранения файлов, сгруппированных по размеру
-//        Map<Long, List<Path>> filesBySize = new ConcurrentHashMap<>();
-//        // Список для хранения Future объектов
-//        // Future<?> — это интерфейс из пакета java.util.concurrent, который представляет собой результат асинхронной вычислительной задачи. Он используется для получения результата выполнения задачи, которая была отправлена на выполнение в пул потоков.
-//        List<Future<?>> futures = new ArrayList<>();
-//
-//        // Рекурсивный обход директорий с использованием параллельных потоков
-//        for (String path : paths) {
-//            // Добавляем новую задачу в пул потоков для асинхронного выполнения
-//            // executor.submit() принимает задачу в виде лямбда-выражения и возвращает объект Future
-//            // Лямбда-выражение () -> walkFileTree(path, filesBySize) представляет собой задачу, которая будет выполнена в отдельном потоке
-//            // В данном случае задача заключается в рекурсивном обходе файловой системы, начиная с указанного пути (path)
-//            // Метод (ниже в коде) walkFileTree(path, filesBySize) выполняет обход файловой системы и группирует файлы по их размеру в Map filesBySize
-//            // Объект Future, возвращаемый методом submit(), добавляется в список futures для последующего отслеживания завершения всех задач
-//            futures.add(executor.submit(() -> walkFileTree(path, filesBySize)));
-//        }
-//
-//        // Ожидание завершения всех задач
-//        waitForCompletion(futures);
-//
-//        // Параллельная обработка файлов одинакового размера
-//        List<List<String>> duplicates = processSameSizeFiles(filesBySize);
-//
-//        // Завершение работы пула потоков
-//        executor.shutdown();
-//        return duplicates;
-//    }
+    // Основной метод для поиска дубликатов файлов
+    public List<List<String>> findDuplicates(String[] paths) throws IOException {
+        // ConcurrentHashMap для хранения файлов, сгруппированных по размеру
+        Map<Long, List<Path>> filesBySize = new ConcurrentHashMap<>();
+        // Список для хранения Future объектов
+        // Future<?> — это интерфейс из пакета java.util.concurrent, который представляет собой результат асинхронной вычислительной задачи. Он используется для получения результата выполнения задачи, которая была отправлена на выполнение в пул потоков.
+        // Объекты `Future<?> используются для получения результата выполнения этих задач.
+        List<Future<?>> futures = new ArrayList<>();
+
+        // Рекурсивный обход директорий с использованием параллельных потоков
+        for (String path : paths) {
+            // Добавляем новую задачу в пул потоков для асинхронного выполнения
+            // executor.submit() принимает задачу в виде лямбда-выражения и возвращает объект Future
+            // Лямбда-выражение () -> walkFileTree(path, filesBySize) представляет собой задачу, которая будет выполнена в отдельном потоке
+            // В данном случае задача заключается в рекурсивном обходе файловой системы, начиная с указанного пути (path)
+            // Метод (ниже в коде) walkFileTree(path, filesBySize) выполняет обход файловой системы и группирует файлы по их размеру в Map filesBySize
+            // Объект Future, возвращаемый методом submit(), добавляется в список futures для последующего отслеживания завершения всех задач
+            futures.add(executor.submit(() -> walkFileTree(path, filesBySize)));
+        }
+
+        // Ожидание завершения всех задач (вспомогательный метод waitForCompletion ниже)
+        waitForCompletion(futures);
+
+        // Параллельная обработка файлов одинакового размера
+        List<List<String>> duplicates = processSameSizeFiles(filesBySize);
+
+        // Завершение работы пула потоков
+        executor.shutdown();
+        return duplicates;
+    }
+
+
+    // Метод для ожидания завершения всех задач
+    private void waitForCompletion(List<Future<?>> futures) {
+        for (Future<?> future : futures) {
+            try {
+                // блокирует выполнение текущего потока до тех пор, пока асинхронная задача, представленная объектом Future, не завершится и не вернет результат. Если задача уже завершена, метод get() немедленно возвращает результат. Если задача завершилась с исключением, get() выбросит ExecutionException.
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Метод для обработки файлов одинакового размера
+    private List<List<String>> processSameSizeFiles(Map<Long, List<Path>> filesBySize) {
+        // Результат - Список для хранения дубликатов файлов
+        List<List<String>> duplicates = new ArrayList<>();
+        FileComparator comparator = new FileComparator();
+
+        // преобразует коллекцию списков файлов (сгруппированных по размеру) в параллельный поток и обрабатывает каждый список (sameSizeFiles) одновременно.
+        filesBySize.values().parallelStream().forEach(sameSizeFiles -> {
+                // contentGroups используется для группировки файлов по их содержимому. Это ConcurrentHashMap, где ключом является строковое представление пути к файлу, а значением — список путей файлов, которые имеют идентичное содержимое с файлом-ключом. Это помогает идентифицировать и хранить дубликаты файлов на основе их содержимого.
+                Map<String, List<String>> contentGroups = new ConcurrentHashMap<>();
+                // сравнить каждый файл с каждым другим файлом в списке sameSizeFiles, чтобы найти дубликаты.
+            for (int i = 0; i < sameSizeFiles.size(); i++) {
+                for (int j = i + 1; j < sameSizeFiles.size(); j++) {
+                    try {
+                        // Сравнение файлов побайтно
+                        if (comparator.areFilesEqual(sameSizeFiles.get(i), sameSizeFiles.get(j))) {
+                            // Получаем строковое представление пути к файлу sameSizeFiles.get(i)
+                            String key = sameSizeFiles.get(i).toString();
+
+                            // Проверяем, существует ли ключ в contentGroups
+                            List<String> fileList = contentGroups.get(key);
+
+                            // Если ключ не существует, создаем новый синхронизированный список и добавляем его в contentGroups
+                            if (fileList == null) {
+                                fileList = Collections.synchronizedList(new ArrayList<>());
+                                contentGroups.put(key, fileList);
+                                // Добавляем строковое представление пути к файлу sameSizeFiles.get(i) в список
+                                fileList.add(sameSizeFiles.get(i).toString());
+                            }
+
+                            // Добавляем строковое представление пути к файлу sameSizeFiles.get(j) в список
+                            fileList.add(sameSizeFiles.get(j).toString());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+                duplicates.addAll(contentGroups.values());
+        });
+
+        return duplicates;
+    }
+
 
 
     // Методы для рекурсивного обхода директорий
@@ -90,43 +149,6 @@ public class FileDuplicateFinder {
    // -----------------------------------------------------------
 
 
-    // Метод для ожидания завершения всех задач
-//    private void waitForCompletion(List<Future<?>> futures) {
-//        for (Future<?> future : futures) {
-//            try {
-//                future.get();
-//            } catch (InterruptedException | ExecutionException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
-    // Метод для обработки файлов одинакового размера
-//    private List<List<String>> processSameSizeFiles(Map<Long, List<Path>> filesBySize) {
-//        List<List<String>> duplicates = new ArrayList<>();
-//        FileComparator comparator = new FileComparator();
-//
-//        filesBySize.values().parallelStream().forEach(sameSizeFiles -> {
-//            if (sameSizeFiles.size() > 1) {
-//                Map<String, List<String>> contentGroups = new ConcurrentHashMap<>();
-//                for (int i = 0; i < sameSizeFiles.size(); i++) {
-//                    for (int j = i + 1; j < sameSizeFiles.size(); j++) {
-//                        try {
-//                            // Сравнение файлов побайтно
-//                            if (comparator.areFilesEqual(sameSizeFiles.get(i), sameSizeFiles.get(j))) {
-//                                contentGroups.computeIfAbsent(sameSizeFiles.get(i).toString(), k -> Collections.synchronizedList(new ArrayList<>())).add(sameSizeFiles.get(j).toString());
-//                            }
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//                duplicates.addAll(contentGroups.values());
-//            }
-//        });
-//
-//        return duplicates;
-//    }
 
 
     public static void main(String[] args) throws IOException {
