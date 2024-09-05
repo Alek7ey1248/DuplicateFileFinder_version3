@@ -21,7 +21,7 @@ public class FileDuplicateFinder {
     }
 
 
-    // Метод для обработки файлов одинакового размера
+    // Метод для обработки файлов одинакового размера в HashMap filesBySize для поиска дубликатов и возврата списка групп дубликатов
     public List<List<String>> processSameSizeFiles(Map<Long, List<Path>> filesBySize) {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();

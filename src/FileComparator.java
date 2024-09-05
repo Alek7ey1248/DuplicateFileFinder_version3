@@ -117,6 +117,10 @@ public class FileComparator {
 
     // Метод для вычисления хеша файла
     public String computeHash(Path file) throws IOException {
+        if (Files.isDirectory(file)) {
+            throw new IOException("Это каталог: " + file);
+        }
+
         try (InputStream is = Files.newInputStream(file)) {
             java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[BLOCK_SIZE];

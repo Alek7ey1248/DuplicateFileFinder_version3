@@ -32,6 +32,8 @@ public class TesterUnit {
 	private Path file11;
 	private Path file12;
 	private Path file13;
+	private Path file14;
+	private Path file15;
 
 	// Для тестирования метода processSameSizeFiles класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 	Map<Long, List<Path>> filesBySize;
@@ -116,6 +118,10 @@ public class TesterUnit {
 		file11 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.sudo_as_admin_successful");
 		file12 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/aaaaaaaa");
 		file13 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/g1.txt");
+		// очень большие файлы - фильмы 10,8 Гб
+		// не в тестовой папке !!!
+		file14 = Paths.get("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/videoplayback.mp4");
+		file15 = Paths.get("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/filmCopy/videoplayback (копия).mp4");
 
 
 
@@ -217,6 +223,8 @@ public class TesterUnit {
 		// Проверка на равенство файлов нулевого размера
 		assertEquals(true, fileComparator.areFilesEqual(file11, file12));
 		assertEquals(true, fileComparator.areFilesEqual(file13, file11));
+		// Проверка на равенство очень больших файлов
+		assertEquals(true, fileComparator.areFilesEqual(file14, file15));
 	}
 
 
