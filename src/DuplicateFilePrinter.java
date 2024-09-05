@@ -54,12 +54,12 @@ public class DuplicateFilePrinter {
 
     public static void main(String[] args) throws IOException {
         // Пример использования
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder"};
-        String[] paths = {"/home/alek7ey"};
+        String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
+        //String path = "/home/alek7ey";
 
 
         FileDuplicateFinder finder = new FileDuplicateFinder();
-        List<List<String>> duplicates = finder.findDuplicates(paths);
+        List<List<String>> duplicates = finder.findDuplicates(path);
 
         DuplicateFilePrinter printer = new DuplicateFilePrinter();
         printer.printDuplicates(duplicates);

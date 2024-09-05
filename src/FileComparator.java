@@ -116,7 +116,7 @@ public class FileComparator {
     }
 
     // Метод для вычисления хеша файла
-    private String computeHash(Path file) throws IOException {
+    public String computeHash(Path file) throws IOException {
         try (InputStream is = Files.newInputStream(file)) {
             java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[BLOCK_SIZE];
@@ -132,6 +132,8 @@ public class FileComparator {
             throw new IOException("SHA-256 algorithm not found", e);
         }
     }
+
+
 
     public static void main(String[] args) {
         FileComparator fileComparator = new FileComparator();
