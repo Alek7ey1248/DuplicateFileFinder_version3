@@ -36,6 +36,13 @@ public class FileComparator {
 
     // Основной метод для сравнения файлов
     public boolean areFilesEqual(Path file1, Path file2) throws IOException {
+
+        // Проверяем, существуют ли файлы
+        if (!Files.exists(file1) || !Files.exists(file2)) {
+            System.err.println("Один из файлов " + file1 + " или " + file2 + " не существует.");
+            return false;
+        }
+
         // Получаем размеры файлов
         long size1 = Files.size(file1);
         long size2 = Files.size(file2);

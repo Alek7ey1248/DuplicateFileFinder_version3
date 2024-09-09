@@ -1,7 +1,9 @@
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileDuplicateFinder {
 
@@ -43,54 +45,6 @@ public class FileDuplicateFinder {
         return duplicates;
     }
 
-
-    // Вспомогательный метод для метода findDuplicateGroups
-    // Аргумент: List<Path> files = filesBySize.get(size); -
-    // список файлов одного размера, взятый из HashMap - filesBySize
-    // Возвращает: список групп дубликатов файлов (побайтно одинаковых файлов)
-//    public List<List<String>> findDuplicatesInSameSizeFiles(List<Path> files, FileComparator comparator) throws IOException {
-//        // Результат - Список для хранения групп дубликатов файлов
-//        List<List<String>> groups = new ArrayList<>();
-//        // Множество для хранения уже обработанных файлов
-//        Set<Path> processedFiles = new HashSet<>();
-//
-//        // Перебираем все файлы в списке files
-//        for (Path file : files) {
-//            // Если файл уже обработан, переходим к следующему файлу
-//            if (processedFiles.contains(file)) {
-//                continue;
-//            }
-//
-//            // Создаем новую группу дубликатов
-//            List<String> group = new ArrayList<>();
-//            // Добавляем текущий файл в группу
-//            group.add(file.toString());
-//
-//            // Перебираем оставшиеся файлы в списке files
-//            for (Path anotherFile : files) {
-//                // Если файл уже обработан или это тот же файл, переходим к следующему файлу
-//                if (processedFiles.contains(anotherFile) || file.equals(anotherFile)) {
-//                    continue;
-//                }
-//
-//                // Сравниваем текущий файл с другим файлом
-//                if (comparator.areFilesEqual(file, anotherFile)) {
-//                    // Если файлы равны, добавляем другой файл в группу
-//                    group.add(anotherFile.toString());
-//                    // Добавляем другой файл в множество обработанных файлов
-//                    processedFiles.add(anotherFile);
-//                }
-//            }
-//
-//            // Добавляем группу дубликатов в список групп
-//            groups.add(group);
-//            // Добавляем текущий файл в множество обработанных файлов
-//            processedFiles.add(file);
-//        }
-//
-//        // Возвращаем список групп дубликатов
-//        return groups;
-//    }
 
     /**
      * Находит дубликаты файлов в списке файлов одинакового размера.
@@ -144,50 +98,31 @@ public class FileDuplicateFinder {
     // метод processFile, который группирует файлы по их размеру в карту filesBySize.
     // Если возникает ошибка ввода-вывода, она обрабатывается и выводится в консоль.
     public void walkFileTree(String path, Map<Long, List<Path>> filesBySize) {
-        try {
-            Files.walkFileTree(Paths.get(path), createFileVisitor(filesBySize));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+        // Создаем объект File для указанного пути
+        File directory = new File(path);
 
-    // вспомогательный метод для создания экземпляра SimpleFileVisitor
-    // SimpleFileVisitor<Path> — это стандартный класс из пакета java.nio.file.
-    // Он используется для обхода файловой системы.
-    // Этот класс предоставляет простую реализацию интерфейса FileVisitor,
-    // который можно расширить для выполнения различных операций при обходе файловой системы.
-    private SimpleFileVisitor<Path> createFileVisitor(Map<Long, List<Path>> filesBySize) {
-        // Возвращает новый экземпляр анонимного класса, который расширяет SimpleFileVisitor<Path>
-        return new SimpleFileVisitor<Path>() {
-            // Переопределение метода visitFile для обработки каждого файла
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                // Вызов метода processFile для обработки файла и добавления его в карту filesBySize
-                processFile(file, filesBySize);
-                // Возвращает CONTINUE, чтобы продолжить обход файловой системы
-                return FileVisitResult.CONTINUE;
+        // Получаем список всех файлов и директорий в указанной директории
+        File[] files = directory.listFiles();
+
+        // Проверяем, что массив не пустой
+        if (files != null) {
+            // Перебираем каждый файл и директорию в текущей директории
+            for (File file : files) {
+                // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
+                if (file.isDirectory()) {
+                    walkFileTree(file.getAbsolutePath(), filesBySize);
+                } else {
+                    CheckValid checkValid = new CheckValid();
+                    // Проверка валидности файла
+                    if (checkValid.isValidFile(file)) {
+                        // Если текущий файл не является директорией, добавляем его в карту
+                        // Группируем файлы по их размеру
+                        filesBySize.computeIfAbsent(file.length(), k -> new ArrayList<>()).add(file.toPath());
+                    }
+                }
             }
-        };
-    }
-
-    // вспомогательный метод для обработки файла
-    private void processFile(Path file, Map<Long, List<Path>> filesBySize) throws IOException {
-        CheckValid checkValid = new CheckValid();
-        // Проверка валидности файла
-        if (checkValid.isValidFile(file.toFile())) {
-            // Получение размера файла
-            long size = Files.size(file);
-            // Группировка файлов по размеру(в данном случае файла в соответств список)
-            // Метод computeIfAbsent проверяет, существует ли в карте filesBySize ключ size.
-            // Если ключ size уже существует, метод возвращает соответствующее значение (список путей файлов).
-            // Если ключ size не существует, метод создает новый список (Collections.synchronizedList(new ArrayList<>())) и добавляет его в карту с ключом size.
-            // Возвращаемое значение метода computeIfAbsent — это список путей файлов для данного размера (size).
-            // Метод add(file) добавляет текущий файл (file) в список путей файлов для данного размера (size).
-            filesBySize.computeIfAbsent(size, k -> Collections.synchronizedList(new ArrayList<>())).add(file);
         }
     }
-   // -----------------------------------------------------------
-
 
 
 

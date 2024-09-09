@@ -34,6 +34,10 @@ public class CheckValid {
     // проверка файла
     public boolean isValidFile(File file) {
 
+        if (!file.exists()) {
+            System.err.println("method isValidFile.    File " + file.getAbsolutePath() + " не существует");
+            return false;
+        }
         if (!file.canRead()) {
             System.err.println("method isValidFile.     File " + file.getAbsolutePath() + " поврежден.");
             return false;
@@ -42,6 +46,7 @@ public class CheckValid {
             System.err.println("method isValidFile.    File " + file.getAbsolutePath() + " это не файл");
             return false;
         }
+
         return true;
     }
 
