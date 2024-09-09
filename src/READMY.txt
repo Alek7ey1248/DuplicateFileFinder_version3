@@ -1,0 +1,7 @@
+тестовые папки у меня на компьютере
+
+/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder - для теста результата работы всей программы
+
+/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/ListTestDuplicateFileFinder - для теста метода findDuplicatesInSameSizeFiles класса FileDuplicateFinder - в нем находятся файлы с одинаковым размером и
+
+/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder - тут 2 больших фильма - для теста метода areFilesEqual класса FileDuplicateFinder -
