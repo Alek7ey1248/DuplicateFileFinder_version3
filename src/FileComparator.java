@@ -1,16 +1,17 @@
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.nio.file.StandardOpenOption;
+import java.util.stream.IntStream;
 
 public class FileComparator {
 
     // Порог для маленьких файлов (10% от доступной памяти)
     private static final long SMALL_FILE_THRESHOLD = getSmallFileThreshold();
-    // Порог для больших файло�� (30% от доступной памяти)
+    // Порог для больших файлов (30% от доступной памяти)
     private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold();
     // Размер блока для поблочного чтения (8 KB * количество процессоров)
     private static final int BLOCK_SIZE = getBlockSize();
@@ -49,95 +50,42 @@ public class FileComparator {
             return true;
         }
 
-        // Если файлы маленькие, используем побайтное сравнение
-        if (size1 <= SMALL_FILE_THRESHOLD) {
-            return compareFilesByteByByte(file1, file2);
-        }
-        // Если файлы большие, используем поблочное чтение и сравнение
-        else if (size1 <= LARGE_FILE_THRESHOLD) {
-            return compareFilesByBlocks(file1, file2);
-        }
-        // Если файлы очень большие, используем хеширование
-        else {
-            return compareFilesUsingHash(file1, file2);
-        }
+        // Используем побайтное сравнение для всех файлов
+        return compareFilesByteByByte(file1, file2);
     }
 
     // Метод для побайтного сравнения содержимого двух файлов
     private boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
-        try (InputStream is1 = Files.newInputStream(file1);
-             InputStream is2 = Files.newInputStream(file2)) {
+        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
 
-            int byte1, byte2;
-            // Читаем и сравниваем байты до конца файла
-            while ((byte1 = is1.read()) != -1 && (byte2 = is2.read()) != -1) {
-                if (byte1 != byte2) {
+            long size = channel1.size();
+            if (size != channel2.size()) {
+                return false;
+            }
+
+            long blockSize = BLOCK_SIZE;
+            long numBlocks = (size + blockSize - 1) / blockSize;
+
+            return IntStream.range(0, (int) numBlocks).parallel().allMatch(i -> {
+                try {
+                    ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
+                    ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+
+                    channel1.read(buffer1, i * blockSize);
+                    channel2.read(buffer2, i * blockSize);
+
+                    buffer1.flip();
+                    buffer2.flip();
+
+                    return buffer1.equals(buffer2);
+                } catch (IOException e) {
+                    e.printStackTrace();
                     return false;
                 }
-            }
-            return true;
+            });
         }
     }
-
-    // Метод для поблочного чтения и сравнения содержимого двух файлов
-    private boolean compareFilesByBlocks(Path file1, Path file2) throws IOException {
-        try (InputStream is1 = Files.newInputStream(file1);
-             InputStream is2 = Files.newInputStream(file2)) {
-
-            byte[] buffer1 = new byte[BLOCK_SIZE];
-            byte[] buffer2 = new byte[BLOCK_SIZE];
-
-            int bytesRead1, bytesRead2;
-            // Читаем и сравниваем блоки до конца файла
-            while ((bytesRead1 = is1.read(buffer1)) != -1 && (bytesRead2 = is2.read(buffer2)) != -1) {
-                if (bytesRead1 != bytesRead2 || !java.util.Arrays.equals(buffer1, buffer2)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
-    // Метод для сравнения файлов с использованием хеширования
-    private boolean compareFilesUsingHash(Path file1, Path file2) throws IOException {
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-        try {
-            // Вычисляем хеши файлов в параллельных потоках
-            Future<String> hash1 = executor.submit(() -> computeHash(file1));
-            Future<String> hash2 = executor.submit(() -> computeHash(file2));
-
-            // Сравниваем хеши
-            return hash1.get().equals(hash2.get());
-        } catch (Exception e) {
-            throw new IOException("Error computing file hashes", e);
-        } finally {
-            executor.shutdown();
-        }
-    }
-
-    // Метод для вычисления хеша файла
-    public String computeHash(Path file) throws IOException {
-        if (Files.isDirectory(file)) {
-            throw new IOException("Это каталог: " + file);
-        }
-
-        try (InputStream is = Files.newInputStream(file)) {
-            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] buffer = new byte[BLOCK_SIZE];
-            int bytesRead;
-            // Читаем файл и обновляем хеш
-            while ((bytesRead = is.read(buffer)) != -1) {
-                digest.update(buffer, 0, bytesRead);
-            }
-            byte[] hash = digest.digest();
-            // Возвраща��м хеш в виде строки Base64
-            return java.util.Base64.getEncoder().encodeToString(hash);
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new IOException("SHA-256 algorithm not found", e);
-        }
-    }
-
-
 
     public static void main(String[] args) {
         FileComparator fileComparator = new FileComparator();

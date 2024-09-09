@@ -1,8 +1,6 @@
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +58,8 @@ public class TesterTime {
     }
 
 
-    // Тайминги метода processSameSizeFiles - из HashMap filesBySize выборка файлов одинакового размера и сравнение их для создания списка групп дубликатов
-    public void timeProcessSameSizeFiles(String path) throws IOException {
+    // Тайминги метода findDuplicateGroups - из HashMap filesBySize выборка файлов одинакового размера и сравнение их для создания списка групп дубликатов
+    public void timeFindDuplicateGroups(String path) throws IOException {
 
         System.out.println(" Путь: " + path + " ---");
 
@@ -70,14 +68,14 @@ public class TesterTime {
         Map<Long, List<Path>> filesBySize = new HashMap<>();
         finder.walkFileTree(path, filesBySize);
 
-        // Засекаем время выполнения метода processSameSizeFiles
+        // Засекаем время выполнения метода findDuplicateGroups
         long startTime = System.currentTimeMillis();
 
-        finder.processSameSizeFiles(filesBySize);
+        finder.findDuplicateGroups(filesBySize);
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);
-        System.out.println("Время выполнения processSameSizeFiles " + duration + " секунд       " + (long) duration * 1000.0 + " милисекунд");
+        System.out.println("Время выполнения findDuplicateGroups " + duration + " секунд       " + (long) duration * 1000.0 + " милисекунд");
     }
 
 
@@ -124,28 +122,28 @@ public class TesterTime {
 
 
 //-----------------------------------------------------------------
-    // тайминги метода processSameSizeFiles - из HashMap filesBySize выборка файлов одинакового размера и сравнение их для создания списка групп дубликатов
+    // тайминги метода findDuplicateGroups - из HashMap filesBySize выборка файлов одинакового размера и сравнение их для создания списка групп дубликатов
     System.out.println();
         System.out.println("******************************************");
         System.out.println("*******************************************");
-        System.out.println(" Тайминги метода processSameSizeFiles - из HashMap filesBySize выборка файлов одинакового размера и сравнение их для создания списка групп дубликатов");
+        System.out.println(" Тайминги метода findDuplicateGroups - из HashMap filesBySize выборка файлов одинакового размера и сравнение их для создания списка групп дубликатов");
         System.out.println();
 
         System.out.println("-------------------------------------------------");
         System.out.println(" Размер - 37 объектов, всего 6,7 ГБ ");
-        tester.timeProcessSameSizeFiles("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+        tester.timeFindDuplicateGroups("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
 
         System.out.println("-------------------------------------------------");
         System.out.println(" 1188 объектов, всего 32,0 ГБ ");
-        tester.timeProcessSameSizeFiles("/home/alek7ey/Рабочий стол");
+        tester.timeFindDuplicateGroups("/home/alek7ey/Рабочий стол");
 
         System.out.println("-------------------------------------------------");
         System.out.println(" Размер - 5933 объекта, всего 289,7 МБ. Тут нет больших файлов (фильмов) ");
-        tester.timeProcessSameSizeFiles("/home/alek7ey/IdeaProjects");
+        tester.timeFindDuplicateGroups("/home/alek7ey/IdeaProjects");
 
         System.out.println("-------------------------------------------------");
         System.out.println(" 163350 объектов, всего 134,8 ГБ ");
-        tester.timeProcessSameSizeFiles("/home/alek7ey");
+        tester.timeFindDuplicateGroups("/home/alek7ey");
 
     }
 }

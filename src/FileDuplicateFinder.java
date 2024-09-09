@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.*;
 
 public class FileDuplicateFinder {
 
@@ -15,45 +14,127 @@ public class FileDuplicateFinder {
         walkFileTree(path, filesBySize);
 
         // Параллельная обработка файлов одинакового размера для поиска дубликатов
-        List<List<String>> duplicates = processSameSizeFiles(filesBySize);
+        List<List<String>> duplicates = findDuplicateGroups(filesBySize);
 
         return duplicates;
     }
 
 
-    // Метод для обработки файлов одинакового размера в HashMap filesBySize для поиска дубликатов и возврата списка групп дубликатов
-    public List<List<String>> processSameSizeFiles(Map<Long, List<Path>> filesBySize) {
+    //*  * Находитгруппы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.
+    // *
+    // * @param filesBySize — карта, где ключом является размер файла, а значением — список путей к файлам этого размера.
+    // * @return список групп повторяющихся файлов
+    // * @throws IOException при возникновении ошибки ввода-вывода*/
+    public List<List<String>> findDuplicateGroups(Map<Long, List<Path>> filesBySize) throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
         FileComparator comparator = new FileComparator();
-        // contentGroups используется для группировки файлов по их хэшированному содержимому.
-        Map<String, List<String>> contentGroups = new ConcurrentHashMap<>();
 
-        // Преобразует коллекцию списков файлов (сгруппированных по размеру) в параллельный поток
-        // и обрабатывает каждый список (sameSizeFiles) одновременно.
-        filesBySize.values().parallelStream().forEach(sameSizeFiles -> {
-            // Обрабатываем каждый файл в списке sameSizeFiles
-            sameSizeFiles.parallelStream().forEach(file -> {
-                try {
-                    // Получаем хэш содержимого файла
-                    String fileHash = comparator.computeHash(file);
-                    // Добавляем файл в соответствующую группу по хэшу содержимого
-                    contentGroups.computeIfAbsent(fileHash, k -> Collections.synchronizedList(new ArrayList<>())).add(file.toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
-
-        // Добавляем все группы, содержащие более одного файла, в список дубликатов
-        contentGroups.values().forEach(group -> {
-            if (group.size() > 1) {
-                duplicates.add(group);
-            }
-        });
+        // перебираю ключи (размеры файлов)
+        for (Long size : filesBySize.keySet()) {
+            // Получаю список файлов для текущего размера
+            List<Path> files = filesBySize.get(size);
+            // метод findDuplicatesInSameSizeFiles из списка files делает список групп дубликатов файлов (метод рекурсивный)
+            findDuplicatesInSameSizeFiles(files, duplicates, comparator);
+            //duplicates.addAll(groups);
+        }
 
         // Возвращаем список групп дубликатов
         return duplicates;
+    }
+
+
+    // Вспомогательный метод для метода findDuplicateGroups
+    // Аргумент: List<Path> files = filesBySize.get(size); -
+    // список файлов одного размера, взятый из HashMap - filesBySize
+    // Возвращает: список групп дубликатов файлов (побайтно одинаковых файлов)
+//    public List<List<String>> findDuplicatesInSameSizeFiles(List<Path> files, FileComparator comparator) throws IOException {
+//        // Результат - Список для хранения групп дубликатов файлов
+//        List<List<String>> groups = new ArrayList<>();
+//        // Множество для хранения уже обработанных файлов
+//        Set<Path> processedFiles = new HashSet<>();
+//
+//        // Перебираем все файлы в списке files
+//        for (Path file : files) {
+//            // Если файл уже обработан, переходим к следующему файлу
+//            if (processedFiles.contains(file)) {
+//                continue;
+//            }
+//
+//            // Создаем новую группу дубликатов
+//            List<String> group = new ArrayList<>();
+//            // Добавляем текущий файл в группу
+//            group.add(file.toString());
+//
+//            // Перебираем оставшиеся файлы в списке files
+//            for (Path anotherFile : files) {
+//                // Если файл уже обработан или это тот же файл, переходим к следующему файлу
+//                if (processedFiles.contains(anotherFile) || file.equals(anotherFile)) {
+//                    continue;
+//                }
+//
+//                // Сравниваем текущий файл с другим файлом
+//                if (comparator.areFilesEqual(file, anotherFile)) {
+//                    // Если файлы равны, добавляем другой файл в группу
+//                    group.add(anotherFile.toString());
+//                    // Добавляем другой файл в множество обработанных файлов
+//                    processedFiles.add(anotherFile);
+//                }
+//            }
+//
+//            // Добавляем группу дубликатов в список групп
+//            groups.add(group);
+//            // Добавляем текущий файл в множество обработанных файлов
+//            processedFiles.add(file);
+//        }
+//
+//        // Возвращаем список групп дубликатов
+//        return groups;
+//    }
+
+    /**
+     * Находит дубликаты файлов в списке файлов одинакового размера.
+     *      *
+     *      * @param files — список путей к файлам одинакового размера.
+     *      * @param дублирует список для хранения групп повторяющихся файлов.
+     *      * @param comparator — компаратор для сравнения файлов
+     *      * @throws IOException при возникновении ошибки ввода-вывода
+     */
+    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
+        if (files.isEmpty()) {
+            return;
+        }
+
+        // Преобразуем спис��к файлов в очередь
+        Queue<Path> fileQueue = new ArrayDeque<>(files);
+
+        while (!fileQueue.isEmpty()) {
+            // Извлекаем первый файл из очереди
+            Path file = fileQueue.poll();
+            List<String> group = new ArrayList<>();
+            group.add(file.toString());
+
+            // Временный список для хранения дубликатов
+            List<Path> toRemove = new ArrayList<>();
+
+            for (Path anotherFile : fileQueue) {
+                if (file.equals(anotherFile)) {
+                    continue;
+                }
+
+                if (comparator.areFilesEqual(file, anotherFile)) {
+                    group.add(anotherFile.toString());
+                    toRemove.add(anotherFile);
+                }
+            }
+
+            // Удаляем найденные дубликаты из очереди
+            fileQueue.removeAll(toRemove);
+            // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
+            if (group.size() > 1) {
+                duplicates.add(group);
+            }
+        }
     }
 
     // Методы для рекурсивного обхода директорий
@@ -91,8 +172,9 @@ public class FileDuplicateFinder {
 
     // вспомогательный метод для обработки файла
     private void processFile(Path file, Map<Long, List<Path>> filesBySize) throws IOException {
-        // Проверка, доступен ли файл для чтения
-        if (Files.isReadable(file)) {
+        CheckValid checkValid = new CheckValid();
+        // Проверка валидности файла
+        if (checkValid.isValidFile(file.toFile())) {
             // Получение размера файла
             long size = Files.size(file);
             // Группировка файлов по размеру(в данном случае файла в соответств список)

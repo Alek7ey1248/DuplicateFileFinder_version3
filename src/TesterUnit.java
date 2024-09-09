@@ -35,7 +35,7 @@ public class TesterUnit {
 	private Path file14;
 	private Path file15;
 
-	// Для тестирования метода processSameSizeFiles класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
+	// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 	Map<Long, List<Path>> filesBySize;
 	List<List<String>> expectedProcessSameSizeFiles;
 
@@ -125,7 +125,7 @@ public class TesterUnit {
 
 
 
-		// Для тестирования метода processSameSizeFiles класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
+		// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 		// Создаем тестовые данные
 		filesBySize = new HashMap<>();
 		filesBySize.put(3359325264L, Arrays.asList(
@@ -179,7 +179,7 @@ public class TesterUnit {
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
 		));
 
-		// Ожидаемый результат метода processSameSizeFiles
+		// Ожидаемый результат метода findDuplicateGroups
 		expectedProcessSameSizeFiles = Arrays.asList(
 				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"),
 				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"),
@@ -228,13 +228,13 @@ public class TesterUnit {
 	}
 
 
-	/** Тестирование метода processSameSizeFiles класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
+	/** Тестирование метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 	 * Этот код сначала проверяет, что все ожидаемые группы присутствуют в фактическом результате, а затем проверяет, что в фактическом результате нет лишних групп. Если лишняя группа найдена, тест выводит сообщение с информацией о ней.*/
 	@Test
-	public void testProcessSameSizeFiles() {
+	public void testFindDuplicateGroups() throws IOException {
 		Map<Long, List<Path>> filesBySize = new HashMap<>();
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder", filesBySize);
-		List<List<String>> actual = finder.processSameSizeFiles(filesBySize);
+		List<List<String>> actual = finder.findDuplicateGroups(filesBySize);
 
 		for (List<String> expectedGroup : expectedProcessSameSizeFiles) {
 			boolean found = false;
@@ -262,6 +262,86 @@ public class TesterUnit {
 				System.out.println("Найдена лишняя группа: " + actualGroup);
 				fail("Найдена лишняя группа: " + actualGroup);
 			}
+		}
+	}
+
+	//* Тестирование метода findDuplicatesInSameSizeFiles класса FileDuplicateFinder -
+	// из списка файлов одинакового размера находит дубликаты.
+	// Это вспомогательный метод, который используется в методе findDuplicateGroups.
+	@Test
+	public void testFindDuplicatesInSameSizeFiles() throws IOException {
+		FileDuplicateFinder finder = new FileDuplicateFinder();
+		FileComparator comparator = new FileComparator();
+
+		// Создаем список файлов одинакового размера
+		List<Path> files = new ArrayList<>();
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test01.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test02.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test03.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test04.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11 (копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (другая копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (3-я копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (другая копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test1одинтакой.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test2одинтакой.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test3одинтакой.txt"));
+
+		// Ожидаемый результат
+		List<List<String>> expected = new ArrayList<>();
+		expected.add(List.of(
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test01.txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test02.txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test03.txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test04.txt"
+		));
+		expected.add(List.of(
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11.txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11 (копия).txt"
+		));
+		expected.add(List.of(
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21.txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (другая копия).txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (копия).txt"
+		));
+		expected.add(List.of(
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31.txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (3-я копия).txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (другая копия).txt",
+				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (копия).txt"
+		));
+
+		// Результат работы метода
+		List<List<String>> actual = new ArrayList<>();
+		finder.findDuplicatesInSameSizeFiles(files, actual, comparator);
+
+//		System.out.println("Результат: ");
+//		for (List<String> s : actual) {
+//			System.out.println("Группа: ---------- ");
+//			for (String s1 : s) {
+//				System.out.println(s1);
+//			}
+//		}
+
+		// Проверка результата
+		assertEquals(expected.size(), actual.size());
+		for (List<String> expectedGroup : expected) {
+			boolean found = false;
+			Set<String> expectedSet = new HashSet<>(expectedGroup);
+			for (List<String> actualGroup : actual) {
+				Set<String> actualSet = new HashSet<>(actualGroup);
+				if (actualSet.equals(expectedSet)) {
+					found = true;
+					break;
+				}
+			}
+			assertEquals(true, found);
+
 		}
 	}
 	
