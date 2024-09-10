@@ -4,6 +4,10 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class FileDuplicateFinder {
 
@@ -22,11 +26,11 @@ public class FileDuplicateFinder {
     }
 
 
-    //*  * Находитгруппы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.
-    // *
-    // * @param filesBySize — карта, где ключом является размер файла, а значением — список путей к файлам этого размера.
-    // * @return список групп повторяющихся файлов
-    // * @throws IOException при возникновении ошибки ввода-вывода*/
+    /*  Находитгруппы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.*/
+    /**
+    * @param filesBySize — карта, где ключом является размер файла, а значением — список путей к файлам этого размера.
+    * @return список групп повторяющихся файлов
+    * @throws IOException при возникновении ошибки ввода-вывода*/
     public List<List<String>> findDuplicateGroups(Map<Long, List<Path>> filesBySize) throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
@@ -48,19 +52,23 @@ public class FileDuplicateFinder {
 
     /**
      * Находит дубликаты файлов в списке файлов одинакового размера.
-     *      *
-     *      * @param files — список путей к файлам одинакового размера.
-     *      * @param дублирует список для хранения групп повторяющихся файлов.
-     *      * @param comparator — компаратор для сравнения файлов
-     *      * @throws IOException при возникновении ошибки ввода-вывода
+     *
+     * @param files — список путей к файлам одинакового размера. Из HashMap filesBySize.
+     * @param duplicates -  список для хранения групп побайтно одинаковых файлов.
+     * @param comparator — компаратор для сравнения файлов
+     * @throws IOException при возникновении ошибки ввода-вывода
      */
     public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
         if (files.isEmpty()) {
             return;
         }
 
-        // Преобразуем спис��к файлов в очередь
+        // Преобразуем список файлов в очередь
         Queue<Path> fileQueue = new ArrayDeque<>(files);
+
+        // Создаем ExecutorService с фиксированным пулом потоков
+        int numThreads = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
         while (!fileQueue.isEmpty()) {
             // Извлекаем первый файл из очереди
@@ -71,14 +79,35 @@ public class FileDuplicateFinder {
             // Временный список для хранения дубликатов
             List<Path> toRemove = new ArrayList<>();
 
+            // Список задач для параллельного выполнения
+            List<Future<Boolean>> futures = new ArrayList<>();
+
             for (Path anotherFile : fileQueue) {
                 if (file.equals(anotherFile)) {
                     continue;
                 }
 
-                if (comparator.areFilesEqual(file, anotherFile)) {
-                    group.add(anotherFile.toString());
-                    toRemove.add(anotherFile);
+                // Отправляем задачу на сравнение файлов в пул потоков
+                futures.add(executor.submit(() -> {
+                    if (comparator.areFilesEqual(file, anotherFile)) {
+                        synchronized (group) {
+                            group.add(anotherFile.toString());
+                        }
+                        synchronized (toRemove) {
+                            toRemove.add(anotherFile);
+                        }
+                        return true;
+                    }
+                    return false;
+                }));
+            }
+
+            // Ожидаем завершения всех задач
+            for (Future<Boolean> future : futures) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -89,17 +118,19 @@ public class FileDuplicateFinder {
                 duplicates.add(group);
             }
         }
+
+        // Завершаем работу ExecutorService
+        executor.shutdown();
     }
 
-    // Методы для рекурсивного обхода директорий
-    // -----------------------------------------------------------
-    // Основной Метод walkFileTree выполняет рекурсивный обход файловой системы,
-    // начиная с указанного пути (path). Для каждого найденного файла вызывается
-    // метод processFile, который группирует файлы по их размеру в карту filesBySize.
-    // Если возникает ошибка ввода-вывода, она обрабатывается и выводится в консоль.
+    // Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
+    // начиная с указанного пути (path). Все файлы, найденные в процессе обхода,
+    // группируются по их размеру в HasyMap filesBySize.
     public void walkFileTree(String path, Map<Long, List<Path>> filesBySize) {
         // Создаем объект File для указанного пути
         File directory = new File(path);
+        // для проверки валидности файла
+        CheckValid checkValid = new CheckValid();
 
         // Получаем список всех файлов и директорий в указанной директории
         File[] files = directory.listFiles();
@@ -112,7 +143,6 @@ public class FileDuplicateFinder {
                 if (file.isDirectory()) {
                     walkFileTree(file.getAbsolutePath(), filesBySize);
                 } else {
-                    CheckValid checkValid = new CheckValid();
                     // Проверка валидности файла
                     if (checkValid.isValidFile(file)) {
                         // Если текущий файл не является директорией, добавляем его в карту
