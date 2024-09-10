@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 public class TesterTime {
 
@@ -42,7 +43,7 @@ public class TesterTime {
 
 
     // Тайминги метода areFilesEqual - сравнение файлов
-    public void timeAreFilesEqual(Path file1, Path file2) throws IOException {
+    public void timeAreFilesEqual(Path file1, Path file2) throws IOException, ExecutionException, InterruptedException {
         // Засекаем время выполнения метода areFilesEqual
         long startTime = System.currentTimeMillis();
 
@@ -79,7 +80,7 @@ public class TesterTime {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
 
         //-----------------------------------------------------------------
         // тайминги метода walkFileTree - обход файловой системы и группировка файлов по размеру в HashMap

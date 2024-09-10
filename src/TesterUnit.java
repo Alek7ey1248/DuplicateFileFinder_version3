@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.*;
 
@@ -211,7 +212,7 @@ public class TesterUnit {
 
 	/** Тестирование метода areFilesEqual - побайтное сравнение содержимого двух файлов */
 	@Test
-	public void testAreFilesEqual() throws IOException {
+	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
 		// Проверка на равенство файлов с одинаковым содержимым
 		assertEquals(true, fileComparator.areFilesEqual(file1, file2));
 		assertEquals(true, fileComparator.areFilesEqual(file5, file6));
