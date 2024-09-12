@@ -36,14 +36,36 @@ public class FileDuplicateFinder {
         List<List<String>> duplicates = new ArrayList<>();
         FileComparator comparator = new FileComparator();
 
+        // Создаем ExecutorService с фиксированным пулом потоков
+        int numThreads = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+        // Список задач для параллельного выполнения
+        List<Future<Void>> futures = new ArrayList<>();
+
         // перебираю ключи (размеры файлов)
         for (Long size : filesBySize.keySet()) {
             // Получаю список файлов для текущего размера
             List<Path> files = filesBySize.get(size);
-            // метод findDuplicatesInSameSizeFiles из списка files делает список групп дубликатов файлов (метод рекурсивный)
-            findDuplicatesInSameSizeFiles(files, duplicates, comparator);
-            //duplicates.addAll(groups);
+
+            // Отправляем задачу на обработку файлов в пул потоков
+            futures.add(executor.submit(() -> {
+                findDuplicatesInSameSizeFiles(files, duplicates, comparator);
+                return null;
+            }));
         }
+
+        // Ожидаем завершения всех задач
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Завершаем работу ExecutorService
+        executor.shutdown();
 
         // Возвращаем список групп дубликатов
         return duplicates;

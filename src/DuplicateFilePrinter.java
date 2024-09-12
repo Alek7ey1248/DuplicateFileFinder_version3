@@ -53,9 +53,12 @@ public class DuplicateFilePrinter {
     }
 
     public static void main(String[] args) throws IOException {
+
+        long startTime = System.currentTimeMillis();
+
         // Пример использования
-        String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
-        //String path = "/home/alek7ey";
+        //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
+        String path = "/home/alek7ey";
 
 
         FileDuplicateFinder finder = new FileDuplicateFinder();
@@ -63,6 +66,10 @@ public class DuplicateFilePrinter {
 
         DuplicateFilePrinter printer = new DuplicateFilePrinter();
         printer.printDuplicates(duplicates);
+
+        long endTime = System.currentTimeMillis();
+        long duration = (long) ((endTime - startTime) / 1000.0);
+        System.out.println("Время выполнения поиска дубликатов файлов в директории " + path + " --- " + duration + " секунд       ");
 
     }
 }
