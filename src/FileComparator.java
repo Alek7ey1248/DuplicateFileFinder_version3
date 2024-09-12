@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -59,11 +60,23 @@ public class FileComparator {
 
         // Используем ускоренный метод для больших файлов
         if (size1 > LARGE_FILE_THRESHOLD) {
+            try {
             return compareLargeFiles(file1, file2);
+            } catch (FileSystemException e) {
+                // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
+                System.err.println("Не удалось открыть файл: " + e.getFile());
+                return false;
+            }
         }
 
         // Используем побайтное сравнение для всех файлов
-        return compareFilesByteByByte(file1, file2);
+        try {
+            return compareFilesByteByByte(file1, file2);
+        } catch (FileSystemException e) {
+            // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
+            System.err.println("Не удалось открыть файл: " + e.getFile());
+            return false;
+        }
     }
 
     // Метод для побайтного сравнения содержимого двух файлов
