@@ -1,3 +1,5 @@
+package v1;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,7 +60,7 @@ public class DuplicateFilePrinter {
 
         // Пример использования
         //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
-        String path = "/home/alek7ey";
+        String path = "/home/alek7ey/.cache";
 
 
         FileDuplicateFinder finder = new FileDuplicateFinder();

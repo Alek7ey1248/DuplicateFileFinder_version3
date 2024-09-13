@@ -1,3 +1,5 @@
+package v1;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -64,7 +66,7 @@ public class FileComparator {
             return compareLargeFiles(file1, file2);
             } catch (FileSystemException e) {
                 // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
-                System.err.println("Не удалось открыть файл: " + e.getFile());
+                System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
                 return false;
             }
         }
@@ -74,7 +76,7 @@ public class FileComparator {
             return compareFilesByteByByte(file1, file2);
         } catch (FileSystemException e) {
             // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
-            System.err.println("Не удалось открыть файл: " + e.getFile());
+            System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
             return false;
         }
     }
