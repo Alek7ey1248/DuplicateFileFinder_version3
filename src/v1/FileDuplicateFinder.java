@@ -1,5 +1,7 @@
 package v1;
 
+import v2.CheckValid2;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -97,6 +99,7 @@ public class FileDuplicateFinder {
         while (!fileQueue.isEmpty()) {
             // Извлекаем первый файл из очереди
             Path file = fileQueue.poll();
+            System.out.println("Проверка файла: " + file);
             List<String> group = new ArrayList<>();
             group.add(file.toString());
 
@@ -151,10 +154,15 @@ public class FileDuplicateFinder {
     // начиная с указанного пути (path). Все файлы, найденные в процессе обхода,
     // группируются по их размеру в HasyMap filesBySize.
     public void walkFileTree(String path, Map<Long, List<Path>> filesBySize) {
-        // Создаем объект File для указанного пути
+        // Для проверки валидности папки или файла
+        CheckValid2 checkValid = new CheckValid2();
+
+        // Создаем объект File(директорий) для указанного пути
         File directory = new File(path);
-        // для проверки валидности файла
-        CheckValid checkValid = new CheckValid();
+        // Проверка валидности директории
+        if (!checkValid.isValidDirectoryPath(directory.getAbsolutePath())) {
+            return;
+        }
 
         // Получаем список всех файлов и директорий в указанной директории
         File[] files = directory.listFiles();

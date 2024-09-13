@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 
 public class TesterTime2 {
@@ -19,7 +20,7 @@ public class TesterTime2 {
         long startTime = System.currentTimeMillis();
 
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
-        Map<Long, List<Path>> filesBySize = new HashMap<>();
+        Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
         String directory = path; //  берем только первый путь так как в методе walkFileTree только один путь
         finder.walkFileTree(directory, filesBySize);
 
@@ -34,7 +35,7 @@ public class TesterTime2 {
 
         // Подсчет количества файлов
         int countFiles = 0;
-        for (Map.Entry<Long, List<Path>> entry : filesBySize.entrySet()) {
+        for (Map.Entry<Long, ConcurrentLinkedQueue<Path>> entry : filesBySize.entrySet()) {
             for (Path p : entry.getValue()) {
                 countFiles++;
             }
@@ -68,7 +69,7 @@ public class TesterTime2 {
 
         // Создание экземпляра класса FileDuplicateFinder и вызов метода walkFileTree для обхода файловой системы и группировки файлов по размеру в HashMap filesBySize
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
-        Map<Long, List<Path>> filesBySize = new HashMap<>();
+        Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
         finder.walkFileTree(path, filesBySize);
 
         // Засекаем время выполнения метода findDuplicateGroups

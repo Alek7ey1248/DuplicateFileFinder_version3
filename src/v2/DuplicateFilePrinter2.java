@@ -72,6 +72,5 @@ public class DuplicateFilePrinter2 {
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);
         System.out.println("Время выполнения поиска дубликатов файлов в директории " + path + " --- " + duration + " секунд       ");
-
     }
 }

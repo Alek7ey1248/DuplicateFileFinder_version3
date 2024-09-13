@@ -21,13 +21,17 @@ public class CheckValid2 {
 
 
     public boolean isValidDirectoryPath(String path) {
-        File file = new File(path);
-        if (!file.exists()) {
-            System.err.println("path " + path + " path не существует");
+        File directory = new File(path);
+        if (!directory.exists()) {
+            System.err.println("Directory " + directory.getAbsolutePath() + " не существует");
             return false;
         }
-        if (!file.isDirectory()) {
-            System.err.println("path " + path + " это не каталог");
+        if (!directory.isDirectory()) {
+            System.err.println("Directory " + directory.getAbsolutePath() + " это не каталог");
+            return false;
+        }
+        if (directory.listFiles() == null) {
+            System.err.println("Directory " + directory.getAbsolutePath() + " недоступна для чтения");
             return false;
         }
         return true;
@@ -41,12 +45,14 @@ public class CheckValid2 {
             System.err.println("method isValidFile.    File " + file.getAbsolutePath() + " не существует");
             return false;
         }
-        if (!file.canRead()) {
-            System.err.println("method isValidFile.     File " + file.getAbsolutePath() + " поврежден.");
-            return false;
-        }
+
         if (!file.isFile()) {
             System.err.println("method isValidFile.    File " + file.getAbsolutePath() + " это не файл");
+            return false;
+        }
+
+        if (!file.canRead()) {
+            System.err.println("method isValidFile.     File " + file.getAbsolutePath() + " поврежден или нет прав на чтение");
             return false;
         }
 

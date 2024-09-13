@@ -11,7 +11,7 @@ public class FileDuplicateFinder2 {
     // Основной метод для поиска дубликатов файлов
     public List<List<String>> findDuplicates(String path) throws IOException {
         // HashMap для хранения файлов, сгруппированных по размеру
-        Map<Long, List<Path>> filesBySize = new HashMap<>();
+        Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
 
         // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
         walkFileTree(path, filesBySize);
@@ -28,7 +28,7 @@ public class FileDuplicateFinder2 {
     * @param filesBySize — карта, где ключом является размер файла, а значением — список путей к файлам этого размера.
     * @return список групп повторяющихся файлов
     * @throws IOException при возникновении ошибки ввода-вывода*/
-    public List<List<String>> findDuplicateGroups(Map<Long, List<Path>> filesBySize) throws IOException {
+    public List<List<String>> findDuplicateGroups(Map<Long, ConcurrentLinkedQueue<Path>> filesBySize) throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
         FileComparator2 comparator = new FileComparator2();
@@ -43,7 +43,7 @@ public class FileDuplicateFinder2 {
         // перебираю ключи (размеры файлов)
         for (Long size : filesBySize.keySet()) {
             // Получаю список файлов для текущего размера
-            List<Path> files = filesBySize.get(size);
+            ConcurrentLinkedQueue<Path> files = filesBySize.get(size);
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
@@ -72,19 +72,19 @@ public class FileDuplicateFinder2 {
     /**
      * Находит дубликаты файлов в списке файлов одинакового размера.
      *
-     * @param files — список путей к файлам одинакового размера. Из HashMap filesBySize.
+     * @param fileQueue — список(очередь) путей к файлам одинакового размера. Из HashMap filesBySize.
      * @param duplicates -  список для хранения групп побайтно одинаковых файлов.
      * @param comparator — компаратор для сравнения файлов
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator2 comparator) throws IOException {
+    public void findDuplicatesInSameSizeFiles(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates, FileComparator2 comparator) throws IOException {
         // Если файлов меньше двух, выходим из метода. Нет смысла сравнивать один файл сам с собой.
-        if (files.size() < 2) {
+        if (fileQueue.size() < 2) {
             return;
         }
 
         // Преобразуем список файлов в потокобезопасную очередь
-        Queue<Path> fileQueue = new ConcurrentLinkedQueue<>(files);
+        //Queue<Path> fileQueue = new ConcurrentLinkedQueue<>(files);
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
@@ -93,6 +93,7 @@ public class FileDuplicateFinder2 {
         while (!fileQueue.isEmpty()) {
             // Извлекаем первый файл из очереди , если очередь не пуста после удаления файла, то продолжаем
             Path file = fileQueue.remove();
+            System.out.println("Проверка файла: " + file);
             if (fileQueue.isEmpty()) { continue;}
 
             List<String> group = new ArrayList<>();
@@ -140,11 +141,17 @@ public class FileDuplicateFinder2 {
     // Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
     // начиная с указанного пути (path). Все файлы, найденные в процессе обхода,
     // группируются по их размеру в HasyMap filesBySize.
-    public void walkFileTree(String path, Map<Long, List<Path>> filesBySize) {
-        // Создаем объект File для указанного пути
-        File directory = new File(path);
-        // для проверки валидности файла
+    public void walkFileTree(String path, Map<Long, ConcurrentLinkedQueue<Path>> filesBySize) {
+
+        // для проверки валидности файла или папки
         CheckValid2 checkValid = new CheckValid2();
+
+        // Создаем объект File(директорий) для указанного пути
+        File directory = new File(path);
+        // Проверка валидности директории
+        if (!checkValid.isValidDirectoryPath(directory.getAbsolutePath())) {
+            return;
+        }
 
         // Получаем список всех файлов и директорий в указанной директории
         File[] files = directory.listFiles();
@@ -161,7 +168,7 @@ public class FileDuplicateFinder2 {
                     if (checkValid.isValidFile(file)) {
                         // Если текущий файл не является директорией, добавляем его в карту
                         // Группируем файлы по их размеру
-                        filesBySize.computeIfAbsent(file.length(), k -> new ArrayList<>()).add(file.toPath());
+                        filesBySize.computeIfAbsent(file.length(), k -> new ConcurrentLinkedQueue<>()).add(file.toPath());
                     }
                 }
             }
@@ -177,7 +184,7 @@ public class FileDuplicateFinder2 {
         // Создание экземпляра класса FileDuplicateFinder
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
 
-        Map<Long, List<Path>> filesBySize = new HashMap<>();
+        Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
 
         finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder", filesBySize);
         //finder.walkFileTree("/home/alek7ey/Рабочий стол", filesBySize);
@@ -189,7 +196,7 @@ public class FileDuplicateFinder2 {
         long duration = (endTime - startTime);
 
         int countFiles = 0;
-        for (Map.Entry<Long, List<Path>> entry : filesBySize.entrySet()) {
+        for (Map.Entry<Long, ConcurrentLinkedQueue<Path>> entry : filesBySize.entrySet()) {
             System.out.println("");
             System.out.println("размер: " + entry.getKey() + " ------------------");
             for (Path path : entry.getValue()) {
