@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class DuplicateFilePrinter {
+public class DuplicateFilePrinter2 {
 
     // Метод для вывода групп дубликатов файлов в консоль
     public void printDuplicates(List<List<String>> duplicates) {
@@ -16,7 +16,7 @@ public class DuplicateFilePrinter {
         for (List<String> group : duplicates) {
             if (!group.isEmpty()) {
                 try {
-                    long size = Files.size(Path.of(group.get(0)));
+                    long size = Files.size(Path.of(group.getFirst()));
                     filesBySize.computeIfAbsent(size, k -> new ArrayList<>()).add(group);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -60,14 +60,14 @@ public class DuplicateFilePrinter {
 
         // Пример использования
         //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
-        String path = "/home/alek7ey/.cache";
+        String path = "/home/alek7ey";
 
 
-        FileDuplicateFinder finder = new FileDuplicateFinder();
+        FileDuplicateFinder2 finder = new FileDuplicateFinder2();
         List<List<String>> duplicates = finder.findDuplicates(path);
 
-        DuplicateFilePrinter printer = new DuplicateFilePrinter();
-        printer.printDuplicates(duplicates);
+//        DuplicateFilePrinter2 printer = new DuplicateFilePrinter2();
+//        printer.printDuplicates(duplicates);
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);

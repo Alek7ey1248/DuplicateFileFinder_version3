@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckValid {
+public class CheckValid2 {
 
     public List<String> getValidDirectoryPaths(String[] paths) {
         List<String> validPaths = new ArrayList<>();

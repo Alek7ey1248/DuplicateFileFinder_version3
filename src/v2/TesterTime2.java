@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class TesterTime {
+public class TesterTime2 {
 
 
     // Время выполнения метода walkFileTree класса FileDuplicateFinder
@@ -18,7 +18,7 @@ public class TesterTime {
         // Засекаем время выполнения метода walkFileTree
         long startTime = System.currentTimeMillis();
 
-        FileDuplicateFinder finder = new FileDuplicateFinder();
+        FileDuplicateFinder2 finder = new FileDuplicateFinder2();
         Map<Long, List<Path>> filesBySize = new HashMap<>();
         String directory = path; //  берем только первый путь так как в методе walkFileTree только один путь
         finder.walkFileTree(directory, filesBySize);
@@ -51,7 +51,7 @@ public class TesterTime {
 
         System.out.println("-------------------------------------------------");
 
-        FileComparator fileComparator = new FileComparator();
+        FileComparator2 fileComparator = new FileComparator2();
 
         fileComparator.areFilesEqual(file1, file2);
 
@@ -67,7 +67,7 @@ public class TesterTime {
         System.out.println(" Путь: " + path + " ---");
 
         // Создание экземпляра класса FileDuplicateFinder и вызов метода walkFileTree для обхода файловой системы и группировки файлов по размеру в HashMap filesBySize
-        FileDuplicateFinder finder = new FileDuplicateFinder();
+        FileDuplicateFinder2 finder = new FileDuplicateFinder2();
         Map<Long, List<Path>> filesBySize = new HashMap<>();
         finder.walkFileTree(path, filesBySize);
 
@@ -88,7 +88,7 @@ public class TesterTime {
         // тайминги метода walkFileTree - обход файловой системы и группировка файлов по размеру в HashMap
         System.out.println();
         System.out.println("Тайминги метода walkFileTree для разных папок");
-        TesterTime tester = new TesterTime();
+        TesterTime2 tester = new TesterTime2();
 
         System.out.println();
         System.out.println("------------------------------------------");

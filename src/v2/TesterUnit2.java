@@ -15,14 +15,14 @@ import static org.junit.Assert.*;
  * тесты
  *
  */
-public class TesterUnit {
+public class TesterUnit2 {
 
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру
-	private FileDuplicateFinder finder;
+	private FileDuplicateFinder2 finder;
 	private Map<Long, List<Path>> expectedFilesBySize;
 
 	// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
-	private FileComparator fileComparator;
+	private FileComparator2 fileComparator;
 	private Path file1;
 	private Path file2;
 	private Path file3;
@@ -49,7 +49,7 @@ public class TesterUnit {
 		// Для тестирования метода walkFileTree класса FileDuplicateFinder
 		// Обходит файловую систему, начиная с указанного пути и группирует файлы по их размеру в HashMap filesBySize
 		// expectedFilesBySize - ожидаемый результат
-		finder = new FileDuplicateFinder();
+		finder = new FileDuplicateFinder2();
 		expectedFilesBySize = new HashMap<>();
 
 		expectedFilesBySize.put(32L, Arrays.asList(
@@ -105,7 +105,7 @@ public class TesterUnit {
 
 
 		// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
-		fileComparator = new FileComparator();
+		fileComparator = new FileComparator2();
 		file1 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/a1.txt");
 		file2 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2.txt");
 		file3 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c1.txt");
@@ -274,8 +274,8 @@ public class TesterUnit {
 	// Это вспомогательный метод, который используется в методе findDuplicateGroups.
 	@Test
 	public void testFindDuplicatesInSameSizeFiles() throws IOException {
-		FileDuplicateFinder finder = new FileDuplicateFinder();
-		FileComparator comparator = new FileComparator();
+		FileDuplicateFinder2 finder = new FileDuplicateFinder2();
+		FileComparator2 comparator = new FileComparator2();
 
 		// Создаем список файлов одинакового размера
 		List<Path> files = new ArrayList<>();

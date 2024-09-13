@@ -7,7 +7,7 @@ import java.io.IOException;
 // Получить список начальных путей из аргументов командной строки.
 //Создать экземпляр FileDuplicateFinder и передать ему список путей.
 //Запустить метод поиска дубликатов и вывести результаты.
-public class Main {
+public class Main2 {
     public static void main(String[] args) throws IOException {
 
         // Проверка наличия аргументов командной строки
@@ -17,7 +17,7 @@ public class Main {
         }
 
         // Создание экземпляра класса FileDuplicateFinder
-        FileDuplicateFinder finder = new FileDuplicateFinder();
+        FileDuplicateFinder2 finder = new FileDuplicateFinder2();
 
     }
 }

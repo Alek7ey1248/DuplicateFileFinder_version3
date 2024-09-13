@@ -4,12 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
-public class FileDuplicateFinder {
+public class FileDuplicateFinder2 {
 
     // Основной метод для поиска дубликатов файлов
     public List<List<String>> findDuplicates(String path) throws IOException {
@@ -34,7 +31,7 @@ public class FileDuplicateFinder {
     public List<List<String>> findDuplicateGroups(Map<Long, List<Path>> filesBySize) throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
-        FileComparator comparator = new FileComparator();
+        FileComparator2 comparator = new FileComparator2();
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
@@ -80,43 +77,40 @@ public class FileDuplicateFinder {
      * @param comparator — компаратор для сравнения файлов
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
-        if (files.isEmpty()) {
+    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator2 comparator) throws IOException {
+        // Если файлов меньше двух, выходим из метода. Нет смысла сравнивать один файл сам с собой.
+        if (files.size() < 2) {
             return;
         }
 
-        // Преобразуем список файлов в очередь
-        Queue<Path> fileQueue = new ArrayDeque<>(files);
+        // Преобразуем список файлов в потокобезопасную очередь
+        Queue<Path> fileQueue = new ConcurrentLinkedQueue<>(files);
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
         while (!fileQueue.isEmpty()) {
-            // Извлекаем первый файл из очереди
-            Path file = fileQueue.poll();
+            // Извлекаем первый файл из очереди , если очередь не пуста после удаления файла, то продолжаем
+            Path file = fileQueue.remove();
+            if (fileQueue.isEmpty()) { continue;}
+
             List<String> group = new ArrayList<>();
             group.add(file.toString());
-
-            // Временный список для хранения дубликатов
-            List<Path> toRemove = new ArrayList<>();
 
             // Список задач для параллельного выполнения
             List<Future<Boolean>> futures = new ArrayList<>();
 
             for (Path anotherFile : fileQueue) {
-                if (file.equals(anotherFile)) {
-                    continue;
-                }
-
                 // Отправляем задачу на сравнение файлов в пул потоков
                 futures.add(executor.submit(() -> {
                     if (comparator.areFilesEqual(file, anotherFile)) {
                         synchronized (group) {
                             group.add(anotherFile.toString());
                         }
-                        synchronized (toRemove) {
-                            toRemove.add(anotherFile);
+                        // Синхронизируем доступ к fileQueue и удаляем anotherFile из очереди
+                        synchronized (fileQueue) {
+                            fileQueue.remove(anotherFile);
                         }
                         return true;
                     }
@@ -133,8 +127,6 @@ public class FileDuplicateFinder {
                 }
             }
 
-            // Удаляем найденные дубликаты из очереди
-            fileQueue.removeAll(toRemove);
             // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
             if (group.size() > 1) {
                 duplicates.add(group);
@@ -152,7 +144,7 @@ public class FileDuplicateFinder {
         // Создаем объект File для указанного пути
         File directory = new File(path);
         // для проверки валидности файла
-        CheckValid checkValid = new CheckValid();
+        CheckValid2 checkValid = new CheckValid2();
 
         // Получаем список всех файлов и директорий в указанной директории
         File[] files = directory.listFiles();
@@ -183,7 +175,7 @@ public class FileDuplicateFinder {
         long startTime = System.currentTimeMillis();
 
         // Создание экземпляра класса FileDuplicateFinder
-        FileDuplicateFinder finder = new FileDuplicateFinder();
+        FileDuplicateFinder2 finder = new FileDuplicateFinder2();
 
         Map<Long, List<Path>> filesBySize = new HashMap<>();
 

@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
-public class FileComparator {
+public class FileComparator2 {
 
     // Порог для маленьких файлов (10% от доступной памяти)
     private static final long SMALL_FILE_THRESHOLD = getSmallFileThreshold();
@@ -203,7 +203,7 @@ public class FileComparator {
         }
     }
     public static void main(String[] args) {
-        FileComparator fileComparator = new FileComparator();
+        FileComparator2 fileComparator = new FileComparator2();
 
         Path file1 = Path.of("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/filmCopy/videoplayback (копия).mp4");;
         Path file2 = Path.of("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/videoplayback.mp4");
