@@ -1,6 +1,7 @@
 package v1;
 
 import v2.CheckValid2;
+import v2.FileComparator2;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,21 +85,18 @@ public class FileDuplicateFinder {
      * @param comparator — компаратор для сравнения файлов
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
-        if (files.isEmpty()) {
+        public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
+        if (files.size() < 2) {
             return;
         }
-
-        // Преобразуем список файлов в очередь
-        Queue<Path> fileQueue = new ArrayDeque<>(files);
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 
-        while (!fileQueue.isEmpty()) {
-            // Извлекаем первый файл из очереди
-            Path file = fileQueue.poll();
+        while (files.size() > 1) {
+            // Извлекаем первый файл
+            Path file = files.removeFirst();
             System.out.println("Проверка файла: " + file);
             List<String> group = new ArrayList<>();
             group.add(file.toString());
@@ -109,7 +107,7 @@ public class FileDuplicateFinder {
             // Список задач для параллельного выполнения
             List<Future<Boolean>> futures = new ArrayList<>();
 
-            for (Path anotherFile : fileQueue) {
+            for (Path anotherFile : files) {
                 if (file.equals(anotherFile)) {
                     continue;
                 }
@@ -139,7 +137,7 @@ public class FileDuplicateFinder {
             }
 
             // Удаляем найденные дубликаты из очереди
-            fileQueue.removeAll(toRemove);
+            files.removeAll(toRemove);
             // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
             if (group.size() > 1) {
                 duplicates.add(group);
@@ -149,6 +147,76 @@ public class FileDuplicateFinder {
         // Завершаем работу ExecutorService
         executor.shutdown();
     }
+
+
+
+
+
+//    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
+//        if (files.isEmpty()) {
+//            return;
+//        }
+//
+//        // Преобразуем список файлов в очередь
+//        Queue<Path> fileQueue = new ArrayDeque<>(files);
+//
+//        // Создаем ExecutorService с фиксированным пулом потоков
+//        int numThreads = Runtime.getRuntime().availableProcessors();
+//        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+//
+//        while (!fileQueue.isEmpty()) {
+//            // Извлекаем первый файл из очереди
+//            Path file = fileQueue.poll();
+//            System.out.println("Проверка файла: " + file);
+//            List<String> group = new ArrayList<>();
+//            group.add(file.toString());
+//
+//            // Временный список для хранения дубликатов
+//            List<Path> toRemove = new ArrayList<>();
+//
+//            // Список задач для параллельного выполнения
+//            List<Future<Boolean>> futures = new ArrayList<>();
+//
+//            for (Path anotherFile : fileQueue) {
+//                if (file.equals(anotherFile)) {
+//                    continue;
+//                }
+//
+//                // Отправляем задачу на сравнение файлов в пул потоков
+//                futures.add(executor.submit(() -> {
+//                    if (comparator.areFilesEqual(file, anotherFile)) {
+//                        synchronized (group) {
+//                            group.add(anotherFile.toString());
+//                        }
+//                        synchronized (toRemove) {
+//                            toRemove.add(anotherFile);
+//                        }
+//                        return true;
+//                    }
+//                    return false;
+//                }));
+//            }
+//
+//            // Ожидаем завершения всех задач
+//            for (Future<Boolean> future : futures) {
+//                try {
+//                    future.get();
+//                } catch (InterruptedException | ExecutionException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            // Удаляем найденные дубликаты из очереди
+//            fileQueue.removeAll(toRemove);
+//            // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
+//            if (group.size() > 1) {
+//                duplicates.add(group);
+//            }
+//        }
+//
+//        // Завершаем работу ExecutorService
+//        executor.shutdown();
+//    }
 
     // Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
     // начиная с указанного пути (path). Все файлы, найденные в процессе обхода,

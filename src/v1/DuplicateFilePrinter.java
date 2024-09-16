@@ -60,14 +60,14 @@ public class DuplicateFilePrinter {
 
         // Пример использования
         //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
-        String path = "/home/alek7ey";
+        String path = "/home/alek7ey/.cache";
 
 
         FileDuplicateFinder finder = new FileDuplicateFinder();
         List<List<String>> duplicates = finder.findDuplicates(path);
 
-        DuplicateFilePrinter printer = new DuplicateFilePrinter();
-        printer.printDuplicates(duplicates);
+//        DuplicateFilePrinter printer = new DuplicateFilePrinter();
+//        printer.printDuplicates(duplicates);
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);

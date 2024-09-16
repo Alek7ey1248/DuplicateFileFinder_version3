@@ -13,6 +13,11 @@ import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 public class FileComparator2 {
+    CheckValid2 checkValid;
+
+    public FileComparator2() {
+        checkValid = new CheckValid2();
+    }
 
     // Порог для маленьких файлов (10% от доступной памяти)
     private static final long SMALL_FILE_THRESHOLD = getSmallFileThreshold();
@@ -43,10 +48,16 @@ public class FileComparator2 {
     public boolean areFilesEqual(Path file1, Path file2) throws IOException {
 
         // Проверяем, существуют ли файлы
-        if (!Files.exists(file1) || !Files.exists(file2)) {
-            System.err.println("Один из файлов " + file1 + " или " + file2 + " не существует.");
-            return false;
-        }
+//        if (!Files.exists(file1) || !Files.exists(file2)) {
+//            System.err.println("Один из файлов " + file1 + " или " + file2 + " не существует.");
+//            return false;
+//        }
+
+        // Проверяем еще раз, являются ли файлы валидными
+//        if (!checkValid.isValidFile(file1.toFile()) || !checkValid.isValidFile(file2.toFile())) {
+//            System.err.println("Один из файлов " + file1 + " или " + file2 + " не является файлом.");
+//            return false;
+//        }
 
         // Получаем размеры файлов
         long size1 = Files.size(file1);
@@ -130,6 +141,7 @@ public class FileComparator2 {
 
     // Ускоренный метод для сравнения больших файлов с конца до начала
     private boolean compareLargeFiles(Path file1, Path file2) throws IOException {
+
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
@@ -202,6 +214,37 @@ public class FileComparator2 {
             return true;
         }
     }
+
+    // - не используется !!!
+    // Метод для сравнения первых и последних байтов файлов
+    private boolean compareFirstAndLastBytes(Path file1, Path file2) throws IOException {
+        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
+
+            ByteBuffer buffer1 = ByteBuffer.allocate(1024);
+            ByteBuffer buffer2 = ByteBuffer.allocate(1024);
+
+            channel1.read(buffer1);
+            channel2.read(buffer2);
+
+            if (!buffer1.equals(buffer2)) {
+                return false;
+            }
+
+            buffer1.clear();
+            buffer2.clear();
+
+            channel1.position(channel1.size() - 1024);
+            channel2.position(channel2.size() - 1024);
+
+            channel1.read(buffer1);
+            channel2.read(buffer2);
+
+            return buffer1.equals(buffer2);
+        }
+    }
+
+
     public static void main(String[] args) {
         FileComparator2 fileComparator = new FileComparator2();
 

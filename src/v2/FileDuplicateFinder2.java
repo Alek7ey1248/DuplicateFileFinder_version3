@@ -8,6 +8,14 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder2 {
 
+     int allFiles ;
+     int countFiles;
+
+     public FileDuplicateFinder2() {
+        allFiles = 0;
+        countFiles = 0;
+    }
+
     // Основной метод для поиска дубликатов файлов
     public List<List<String>> findDuplicates(String path) throws IOException {
         // HashMap для хранения файлов, сгруппированных по размеру
@@ -44,6 +52,8 @@ public class FileDuplicateFinder2 {
         for (Long size : filesBySize.keySet()) {
             // Получаю список файлов для текущего размера
             ConcurrentLinkedQueue<Path> files = filesBySize.get(size);
+            countFiles = countFiles + files.size();
+            System.out.println("---------------------------- обработано - " + countFiles + " файлов из " + allFiles);
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
@@ -93,6 +103,7 @@ public class FileDuplicateFinder2 {
         while (!fileQueue.isEmpty()) {
             // Извлекаем первый файл из очереди , если очередь не пуста после удаления файла, то продолжаем
             Path file = fileQueue.remove();
+
             System.out.println("Проверка файла: " + file);
             if (fileQueue.isEmpty()) { continue;}
 
@@ -164,6 +175,7 @@ public class FileDuplicateFinder2 {
                 if (file.isDirectory()) {
                     walkFileTree(file.getAbsolutePath(), filesBySize);
                 } else {
+                    allFiles++;
                     // Проверка валидности файла
                     if (checkValid.isValidFile(file)) {
                         // Если текущий файл не является директорией, добавляем его в карту
