@@ -2,6 +2,7 @@ package v2;
 
 import org.junit.Before;
 import org.junit.Test;
+import v1.FileComparator;
 
 import java.io.IOException;
 import java.nio.file.Path;

@@ -60,7 +60,7 @@ public class DuplicateFilePrinter2 {
 
         // Пример использования
         //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
-        String path = "/home/alek7ey/.cache";
+        String path = "/home/alek7ey/Android";
 
 
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();

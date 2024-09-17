@@ -13,11 +13,12 @@ import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 public class FileComparator2 {
-    CheckValid2 checkValid;
 
-    public FileComparator2() {
-        checkValid = new CheckValid2();
-    }
+//    CheckValid2 checkValid;
+//
+//    public FileComparator2() {
+//        checkValid = new CheckValid2();
+//    }
 
     // Порог для маленьких файлов (10% от доступной памяти)
     private static final long SMALL_FILE_THRESHOLD = getSmallFileThreshold();
@@ -61,16 +62,30 @@ public class FileComparator2 {
 
         // Получаем размеры файлов
         long size1 = Files.size(file1);
-        long size2 = Files.size(file2);
-
-        // Если размеры файлов различаются, файлы не равны
-        if (size1 != size2) {
-            return false;
-        }
+//        long size2 = Files.size(file2);
+//
+//        // Если размеры файлов различаются, файлы не равны
+//        if (size1 != size2) {
+//            return false;
+//        }
 
         // если размер файлов равен нулю, то файлы равны (так как файлы равны, то достаточно одного)
         if (size1 == 0) {
             return true;
+        }
+
+        // Проверяем сначала средние байты файлов - предварительная проверка
+        // Если размер файла меньше 1024 байт, то не делаем предварительную проверку
+        if (size1 > 1024) {
+            try {
+                if (!compareMiddleBytes(file1, file2)) {
+                    return false;
+                }
+            } catch (FileSystemException e) {
+                // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
+                System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
+                return false;
+            }
         }
 
         // Используем ускоренный метод для больших файлов
@@ -243,6 +258,45 @@ public class FileComparator2 {
             return buffer1.equals(buffer2);
         }
     }
+
+
+    // Вспомогательный метод для предваительной проверки файлов на равенство. Сравнивает блок в середине файла
+    private boolean compareMiddleBytes(Path file1, Path file2) throws IOException {
+        // Открываем каналы для чтения файлов
+        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
+
+            // Создаем буферы для чтения первых 1024 байт из каждого файла
+            ByteBuffer buffer1 = ByteBuffer.allocate(1024);
+            ByteBuffer buffer2 = ByteBuffer.allocate(1024);
+
+            // Читаем первые 1024 байта из каждого файла в буферы
+            channel1.read(buffer1);
+            channel2.read(buffer2);
+
+            // Сравниваем содержимое буферов
+            if (!buffer1.equals(buffer2)) {
+                return false; // Если первые 1024 байта не равны, файлы не идентичны
+            }
+
+            // Очищаем буферы для повторного использования
+            buffer1.clear();
+            buffer2.clear();
+
+            // Устанавливаем позицию каналов на последние 1024 байта файлов
+            channel1.position(channel1.size() - 1024);
+            channel2.position(channel2.size() - 1024);
+
+            // Читаем последние 1024 байта из каждого файла в буферы
+            channel1.read(buffer1);
+            channel2.read(buffer2);
+
+            // Сравниваем содержимое буферов
+            return buffer1.equals(buffer2); // Возвращаем результат сравнения последних 1024 байт
+        }
+    }
+
+
 
 
     public static void main(String[] args) {

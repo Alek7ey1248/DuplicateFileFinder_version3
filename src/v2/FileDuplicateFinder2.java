@@ -1,5 +1,7 @@
 package v2;
 
+import v1.FileComparator;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;

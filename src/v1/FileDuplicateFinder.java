@@ -101,7 +101,7 @@ public class FileDuplicateFinder {
             List<String> group = new ArrayList<>();
             group.add(file.toString());
 
-            // Временный список для хранения дубликатов
+            // Временный список для хранения найденных дубликатов, что бы потом удалить их из списка files
             List<Path> toRemove = new ArrayList<>();
 
             // Список задач для параллельного выполнения
