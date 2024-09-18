@@ -12,18 +12,10 @@ import java.util.stream.IntStream;
 
 public class FileComparator {
 
-    // Порог для маленьких файлов (10% от доступной памяти)
-    private static final long SMALL_FILE_THRESHOLD = getSmallFileThreshold();
     // Порог для больших файлов (30% от доступной памяти)
     private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold();
     // Размер блока для поблочного чтения (8 KB * количество процессоров)
     private static final int BLOCK_SIZE = getBlockSize();
-
-    // Метод для получения порога для маленьких файлов
-    private static long getSmallFileThreshold() {
-        long availableMemory = Runtime.getRuntime().maxMemory();
-        return availableMemory / 10; // 10% от доступной памяти
-    }
 
     // Метод для получения порога для больших файлов
     private static long getLargeFileThreshold() {
@@ -40,20 +32,8 @@ public class FileComparator {
     // Основной метод для сравнения файлов
     public boolean areFilesEqual(Path file1, Path file2) throws IOException {
 
-        // Проверяем, существуют ли файлы
-//        if (!Files.exists(file1) || !Files.exists(file2)) {
-//            System.err.println("Один из файлов " + file1 + " или " + file2 + " не существует.");
-//            return false;
-//        }
-
         // Получаем размеры файлов
         long size1 = Files.size(file1);
-        long size2 = Files.size(file2);
-
-        // Если размеры файлов различаются, файлы не равны
-        if (size1 != size2) {
-            return false;
-        }
 
         // если размер файлов равен нулю, то файлы равны (так как файлы равны, то достаточно одного)
         if (size1 == 0) {

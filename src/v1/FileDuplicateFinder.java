@@ -85,7 +85,7 @@ public class FileDuplicateFinder {
      * @param comparator — компаратор для сравнения файлов
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-        public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
+    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
         if (files.size() < 2) {
             return;
         }
@@ -147,8 +147,6 @@ public class FileDuplicateFinder {
         // Завершаем работу ExecutorService
         executor.shutdown();
     }
-
-
 
 
 
