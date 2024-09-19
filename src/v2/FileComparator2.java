@@ -49,28 +49,13 @@ public class FileComparator2 {
             return true;
         }
 
-        // Проверяем сначала средние байты файлов - предварительная проверка
-        // Если размер файла меньше 1024 байт, то не делаем предварительную проверку
-//        if (size1 > 1024) {
-//            try {
-//                if (!compareMiddleBytes(file1, file2)) {
-//                    return false;
-//                }
-//            } catch (FileSystemException e) {
-//                // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
-//                System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
-//                return false;
-//            }
-//        }
-
-        // Используем ускоренный метод для больших файлов
+        // Используем метод для больших файлов
         if (size1 > LARGE_FILE_THRESHOLD) {
             return compareLargeFiles(file1, file2);
         }
 
-        // Используем побайтное сравнение для всех файлов
-
-            return compareFilesByteByByte(file1, file2);
+        // Используем побайтное сравнение для небольших файлов
+        return compareFilesByteByByte(file1, file2);
     }
 
     // Метод для побайтного сравнения содержимого двух файлов с конца до начала

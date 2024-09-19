@@ -59,7 +59,9 @@ public class FileDuplicateFinder2 {
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
-                findDuplicatesInSameSizeFiles(files, duplicates, comparator);
+                //findDuplicatesInSameSizeFiles(files, duplicates, comparator);
+                findDuplicatesInSameSizeFilesRekurs(files, duplicates, comparator);
+
                 return null;
             }));
         }
@@ -94,9 +96,6 @@ public class FileDuplicateFinder2 {
         if (fileQueue.size() < 2) {
             return;
         }
-
-        // Преобразуем список файлов в потокобезопасную очередь
-        //Queue<Path> fileQueue = new ConcurrentLinkedQueue<>(files);
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
@@ -151,7 +150,72 @@ public class FileDuplicateFinder2 {
         executor.shutdown();
     }
 
-    // Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
+    // Рекурсивный метод для поиска дубликатов файлов в списке файлов одинакового размера.
+    // Использует хвостовую рекурсию для обработки оставшихся файлов в очереди.
+    public void findDuplicatesInSameSizeFilesRekurs(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates, FileComparator2 comparator) throws IOException {
+        findDuplicatesInSameSizeFilesRekursHelper(fileQueue, duplicates, comparator, Runtime.getRuntime().availableProcessors());
+    }
+
+    // Вспомогательный рекурсивный метод для поиска дубликатов файлов в списке файлов одинакового размера.
+    private void findDuplicatesInSameSizeFilesRekursHelper(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates, FileComparator2 comparator, int numThreads) throws IOException {
+        // Если файлов меньше двух, выходим из метода. Нет смысла сравнивать один файл сам с собой.
+        if (fileQueue.size() < 2) {
+            return;
+        }
+
+        // Создаем ExecutorService с фиксированным пулом потоков
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+
+        // Извлекаем первый файл из очереди, удалив его
+        Path file = fileQueue.remove();
+
+        System.out.println("Проверка файла: " + file);
+
+        // Создаем группу для хранения дубликатов
+        List<String> group = new ArrayList<>();
+        group.add(file.toString());
+
+        // Список задач для параллельного выполнения
+        List<Future<Boolean>> futures = new ArrayList<>();
+
+        for (Path anotherFile : fileQueue) {
+            futures.add(executor.submit(() -> {
+                if (comparator.areFilesEqual(file, anotherFile)) {
+                    synchronized (group) {
+                        group.add(anotherFile.toString());
+                    }
+                    synchronized (fileQueue) {
+                        fileQueue.remove(anotherFile);
+                    }
+                    return true;
+                }
+                return false;
+            }));
+        }
+
+        // Ожидаем завершения всех задач
+        for (Future<Boolean> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
+        if (group.size() > 1) {
+            duplicates.add(group);
+        }
+
+        executor.shutdown();
+
+        // Хвостовая рекурсия для обработки оставшихся файлов в очереди
+        findDuplicatesInSameSizeFilesRekursHelper(fileQueue, duplicates, comparator, numThreads);
+    }
+
+
+
+        // Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
     // начиная с указанного пути (path). Все файлы, найденные в процессе обхода,
     // группируются по их размеру в HasyMap filesBySize.
     public void walkFileTree(String path, Map<Long, ConcurrentLinkedQueue<Path>> filesBySize) {
