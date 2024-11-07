@@ -4,23 +4,26 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 public class FileComparator2 {
 
     // Порог для больших файлов (30% от доступной памяти)
-//    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold();
+    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold();
 
     // Размер блока для поблочного чтения (8 KB * количество процессоров)
     private static final int BLOCK_SIZE = getBlockSize();
 
 
     // Метод для получения порога для больших файлов
-//    private static long getLargeFileThreshold() {
-//        //  Получаем максимальное количество памяти, доступное для JVM
-//        long availableMemory = Runtime.getRuntime().maxMemory();
-//        return availableMemory / 3; // возвращаем 30% от доступной памяти
-//    }
+    private static long getLargeFileThreshold() {
+        //  Получаем максимальное количество памяти, доступное для JVM
+        long availableMemory = Runtime.getRuntime().maxMemory();
+        return availableMemory / 3; // возвращаем 30% от доступной памяти
+    }
 
     // Метод для получения размера блока для поблочного чтения
     private static int getBlockSize() {
@@ -32,6 +35,13 @@ public class FileComparator2 {
     // Основной метод для сравнения файлов
     // Метод для побайтного сравнения содержимого двух  файлов
     public static boolean areFilesEqual(Path file1, Path file2) throws IOException {
+
+        // ----------------------------------------------------
+        // для больших файлов используем ускоренный метод
+        if(Files.size(file1) > LARGE_FILE_THRESHOLD) {
+            return areLargeFilesEqual(file1, file2);
+        }
+        // ----------------------------------------------------
 
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
@@ -79,6 +89,79 @@ public class FileComparator2 {
             return true;
         }
     }
+
+
+
+    // Ускоренный метод для сравнения больших файлов
+    private static boolean areLargeFilesEqual(Path file1, Path file2) throws IOException {
+        // Открываем каналы для чтения файлов
+        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
+
+            // Получаем размер файла
+            long size = channel1.size();
+
+            // Увеличиваем размер блока для больших файлов
+            long blockSize = BLOCK_SIZE * 2L;
+            // Вычисляем количество блоков, необходимых для чтения всего файла
+            long numBlocks = (size + blockSize - 1) / blockSize;
+
+            // Создаем пул потоков с количеством потоков, равным количеству доступных процессоров
+            ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+            // Массив для хранения результатов выполнения задач
+            Future<Boolean>[] futures = new Future[(int) numBlocks];
+
+            // Для каждого блока создаем задачу для сравнения блоков файлов
+            for (int i = 0; i < numBlocks; i++) {
+                final int blockIndex = i;
+                futures[i] = executor.submit(() -> {
+                    try {
+                        // Создаем буферы для чтения блоков из обоих файлов
+                        ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
+                        ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+
+                        // Читаем блоки из файлов в буферы
+                        channel1.read(buffer1, blockIndex * blockSize);
+                        channel2.read(buffer2, blockIndex * blockSize);
+
+                        // Переводим буферы в режим чтения
+                        buffer1.flip();
+                        buffer2.flip();
+
+                        // Сравниваем содержимое буферов
+                        return buffer1.equals(buffer2);
+                    } catch (IOException e) {
+                        // В случае ошибки выводим стек ошибки и возвращаем false
+                        e.printStackTrace();
+                        return false;
+                    }
+                });
+            }
+
+            // Проверяем результаты выполнения всех задач
+            for (Future<Boolean> future : futures) {
+                try {
+                    // Если хотя бы одна задача вернула false, файлы не равны
+                    if (!future.get()) {
+                        executor.shutdown();
+                        return false;
+                    }
+                } catch (Exception e) {
+                    // В случае ошибки выводим стек ошибки и возвращаем false
+                    e.printStackTrace();
+                    executor.shutdown();
+                    return false;
+                }
+            }
+
+            // Завершаем работу пула потоков
+            executor.shutdown();
+            // Если все задачи вернули true, файлы равны
+            return true;
+        }
+    }
+
 
 
     public static void main(String[] args) {

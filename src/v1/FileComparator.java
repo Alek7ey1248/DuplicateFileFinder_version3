@@ -62,6 +62,47 @@ public class FileComparator {
     }
 
     // Метод для побайтного сравнения содержимого двух файлов
+//    private boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
+//        // Открываем каналы для чтения файлов
+//        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+//             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
+//
+//            // Получаем размер файлов
+//            long size = channel1.size();
+//
+//            // Определяем размер блока для чтения
+//            long blockSize = BLOCK_SIZE;
+//            // Вычисляем количество блоков, необходимых для чтения всего файла
+//            long numBlocks = (size + blockSize - 1) / blockSize;
+//
+//            // Параллельно проверяем каждый блок
+//            return IntStream.range(0, (int) numBlocks).parallel().allMatch(i -> {
+//                try {
+//                    // Создаем буферы для чтения блоков из обоих файлов
+//                    ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
+//                    ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+//
+//                    // Читаем блоки из файлов в буферы
+//                    channel1.read(buffer1, i * blockSize);
+//                    channel2.read(buffer2, i * blockSize);
+//
+//                    // Переводим буферы в режим чтения
+//                    buffer1.flip();
+//                    buffer2.flip();
+//
+//                    // Сравниваем содержимое буферов
+//                    return buffer1.equals(buffer2);
+//                } catch (IOException e) {
+//                    // В случае ошибки выводим стек ошибки и возвращаем false
+//                    e.printStackTrace();
+//                    return false;
+//                }
+//            });
+//        }
+//    }
+
+    // Метод для побайтного сравнения содержимого двух файлов
+    // лучше чем предыдущий метод по скорости
     private boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
@@ -72,34 +113,39 @@ public class FileComparator {
 
             // Определяем размер блока для чтения
             long blockSize = BLOCK_SIZE;
-            // Вычисляем количество блоков, необходимых для чтения всего файла
-            long numBlocks = (size + blockSize - 1) / blockSize;
 
-            // Параллельно проверяем каждый блок
-            return IntStream.range(0, (int) numBlocks).parallel().allMatch(i -> {
-                try {
-                    // Создаем буферы для чтения блоков из обоих файлов
-                    ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
-                    ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+            // Сравниваем файлы блок за блоком
+            for (long position = 0; position < size; position += blockSize) {
+                long remaining = size - position;
+                long bytesToRead = Math.min(blockSize, remaining);
 
-                    // Читаем блоки из файлов в буферы
-                    channel1.read(buffer1, i * blockSize);
-                    channel2.read(buffer2, i * blockSize);
+                // Создаем буферы для чтения блоков из обоих файлов
+                ByteBuffer buffer1 = ByteBuffer.allocate((int) bytesToRead);
+                ByteBuffer buffer2 = ByteBuffer.allocate((int) bytesToRead);
 
-                    // Переводим буферы в режим чтения
-                    buffer1.flip();
-                    buffer2.flip();
+                // Читаем блоки из файлов в буферы
+                channel1.read(buffer1, position);
+                channel2.read(buffer2, position);
 
-                    // Сравниваем содержимое буферов
-                    return buffer1.equals(buffer2);
-                } catch (IOException e) {
-                    // В случае ошибки выводим стек ошибки и возвращаем false
-                    e.printStackTrace();
-                    return false;
+                // Переводим буферы в режим чтения
+                buffer1.flip();
+                buffer2.flip();
+
+                // Сравниваем содержимое буферов
+                for (int i = 0; i < bytesToRead; i++) {
+                    if (buffer1.get() != buffer2.get()) {
+                        return false; // Возвращаем false при несовпадении
+                    }
                 }
-            });
+            }
+
+            // Файлы идентичны
+            return true;
         }
     }
+
+
+
     // Ускоренный метод для сравнения больших файлов
     private boolean compareLargeFiles(Path file1, Path file2) throws IOException {
         // Открываем каналы для чтения файлов
