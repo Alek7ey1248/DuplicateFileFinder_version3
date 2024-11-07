@@ -1,7 +1,5 @@
 package v2;
 
-import v1.FileComparator;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -10,24 +8,26 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder2 {
 
-     int allFiles ;
-     int countFiles;
+    // HashMap для хранения файлов, сгруппированных по размеру
+    Map<Long, ConcurrentLinkedQueue<Path>> filesBySize;
 
-     public FileDuplicateFinder2() {
-        allFiles = 0;
-        countFiles = 0;
+    // для проверки валидности файла или папки
+    CheckValid2 checkValid;
+
+
+    public FileDuplicateFinder2() {
+        filesBySize = new HashMap<>();
+        checkValid = new CheckValid2();
     }
 
     // Основной метод для поиска дубликатов файлов
     public List<List<String>> findDuplicates(String path) throws IOException {
-        // HashMap для хранения файлов, сгруппированных по размеру
-        Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
 
-        // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
-        walkFileTree(path, filesBySize);
+        // Обход директорий для группировки файлов по их размеру в карту filesBySize
+        walkFileTree(path);
 
         // Параллельная обработка файлов одинакового размера для поиска дубликатов
-        List<List<String>> duplicates = findDuplicateGroups(filesBySize);
+        List<List<String>> duplicates = findDuplicateGroups();
 
         return duplicates;
     }
@@ -35,10 +35,9 @@ public class FileDuplicateFinder2 {
 
     /*  Находитгруппы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.*/
     /**
-    * @param filesBySize — карта, где ключом является размер файла, а значением — список путей к файлам этого размера.
     * @return список групп повторяющихся файлов
     * @throws IOException при возникновении ошибки ввода-вывода*/
-    public List<List<String>> findDuplicateGroups(Map<Long, ConcurrentLinkedQueue<Path>> filesBySize) throws IOException {
+    public List<List<String>> findDuplicateGroups() throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
         FileComparator2 comparator = new FileComparator2();
@@ -54,13 +53,10 @@ public class FileDuplicateFinder2 {
         for (Long size : filesBySize.keySet()) {
             // Получаю список файлов для текущего размера
             ConcurrentLinkedQueue<Path> files = filesBySize.get(size);
-            countFiles = countFiles + files.size();
-            System.out.println("---------------------------- обработано - " + countFiles + " файлов из " + allFiles);
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
-                //findDuplicatesInSameSizeFiles(files, duplicates, comparator);
-                findDuplicatesInSameSizeFilesRekurs(files, duplicates, comparator);
+                findDuplicatesInSameSizeFiles(files, duplicates, comparator);
 
                 return null;
             }));
@@ -104,7 +100,6 @@ public class FileDuplicateFinder2 {
         while (!fileQueue.isEmpty()) {
             // Извлекаем первый файл из очереди , если очередь не пуста после удаления файла, то продолжаем
             Path file = fileQueue.remove();
-
             System.out.println("Проверка файла: " + file);
             if (fileQueue.isEmpty()) { continue;}
 
@@ -150,78 +145,11 @@ public class FileDuplicateFinder2 {
         executor.shutdown();
     }
 
-    // Рекурсивный метод для поиска дубликатов файлов в списке файлов одинакового размера.
-    // Использует хвостовую рекурсию для обработки оставшихся файлов в очереди.
-    public void findDuplicatesInSameSizeFilesRekurs(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates, FileComparator2 comparator) throws IOException {
-        findDuplicatesInSameSizeFilesRekursHelper(fileQueue, duplicates, comparator, Runtime.getRuntime().availableProcessors());
-    }
-
-    // Вспомогательный рекурсивный метод для поиска дубликатов файлов в списке файлов одинакового размера.
-    private void findDuplicatesInSameSizeFilesRekursHelper(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates, FileComparator2 comparator, int numThreads) throws IOException {
-        // Если файлов меньше двух, выходим из метода. Нет смысла сравнивать один файл сам с собой.
-        if (fileQueue.size() < 2) {
-            return;
-        }
-
-        // Создаем ExecutorService с фиксированным пулом потоков
-        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-
-        // Извлекаем первый файл из очереди, удалив его
-        Path file = fileQueue.remove();
-
-        System.out.println("Проверка файла: " + file);
-
-        // Создаем группу для хранения дубликатов
-        List<String> group = new ArrayList<>();
-        group.add(file.toString());
-
-        // Список задач для параллельного выполнения
-        List<Future<Boolean>> futures = new ArrayList<>();
-
-        for (Path anotherFile : fileQueue) {
-            futures.add(executor.submit(() -> {
-                if (comparator.areFilesEqual(file, anotherFile)) {
-                    synchronized (group) {
-                        group.add(anotherFile.toString());
-                    }
-                    synchronized (fileQueue) {
-                        fileQueue.remove(anotherFile);
-                    }
-                    return true;
-                }
-                return false;
-            }));
-        }
-
-        // Ожидаем завершения всех задач
-        for (Future<Boolean> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
-        if (group.size() > 1) {
-            duplicates.add(group);
-        }
-
-        executor.shutdown();
-
-        // Хвостовая рекурсия для обработки оставшихся файлов в очереди
-        findDuplicatesInSameSizeFilesRekursHelper(fileQueue, duplicates, comparator, numThreads);
-    }
-
-
 
         // Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
     // начиная с указанного пути (path). Все файлы, найденные в процессе обхода,
     // группируются по их размеру в HasyMap filesBySize.
-    public void walkFileTree(String path, Map<Long, ConcurrentLinkedQueue<Path>> filesBySize) {
-
-        // для проверки валидности файла или папки
-        CheckValid2 checkValid = new CheckValid2();
+    public void walkFileTree(String path) {
 
         // Создаем объект File(директорий) для указанного пути
         File directory = new File(path);
@@ -239,9 +167,8 @@ public class FileDuplicateFinder2 {
             for (File file : files) {
                 // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
                 if (file.isDirectory()) {
-                    walkFileTree(file.getAbsolutePath(), filesBySize);
+                    walkFileTree(file.getAbsolutePath());
                 } else {
-                    allFiles++;
                     // Проверка валидности файла
                     if (checkValid.isValidFile(file)) {
                         // Если текущий файл не является директорией, добавляем его в карту
@@ -264,10 +191,10 @@ public class FileDuplicateFinder2 {
 
         Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
 
-        finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder", filesBySize);
-        //finder.walkFileTree("/home/alek7ey/Рабочий стол", filesBySize);
-        //finder.walkFileTree("/home/alek7ey", filesBySize);
-        //finder.walkFileTree("/home", filesBySize);
+        finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+        //finder.walkFileTree("/home/alek7ey/Рабочий стол");
+        //finder.walkFileTree("/home/alek7ey");
+        //finder.walkFileTree("/home");
 
 
         long endTime = System.currentTimeMillis();

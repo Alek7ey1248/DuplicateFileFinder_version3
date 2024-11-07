@@ -22,7 +22,7 @@ public class TesterTime2 {
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
         Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
         String directory = path; //  берем только первый путь так как в методе walkFileTree только один путь
-        finder.walkFileTree(directory, filesBySize);
+        finder.walkFileTree(directory);
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);
@@ -70,12 +70,12 @@ public class TesterTime2 {
         // Создание экземпляра класса FileDuplicateFinder и вызов метода walkFileTree для обхода файловой системы и группировки файлов по размеру в HashMap filesBySize
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
         Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
-        finder.walkFileTree(path, filesBySize);
+        finder.walkFileTree(path);
 
         // Засекаем время выполнения метода findDuplicateGroups
         long startTime = System.currentTimeMillis();
 
-        finder.findDuplicateGroups(filesBySize);
+        finder.findDuplicateGroups();
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);

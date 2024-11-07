@@ -2,19 +2,11 @@ package v2;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.IntStream;
+import java.nio.file.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 public class FileComparator2 {
 
@@ -50,203 +42,222 @@ public class FileComparator2 {
         }
 
         // Используем метод для больших файлов
-        if (size1 > LARGE_FILE_THRESHOLD) {
-            return compareLargeFiles(file1, file2);
-        }
+//        if (size1 > LARGE_FILE_THRESHOLD) {
+//            // для тестов кол-ва больш файлов -------------------------
+//            DuplicateFilePrinter2.largeFileSet.add(file1.getFileName());
+//            DuplicateFilePrinter2.largeFileSet.add(file2.getFileName());
+//            // для тестов-------------------------
+//            return compareLargeFiles(file1, file2);
+//            //return false;
+//        }
 
         // Используем побайтное сравнение для небольших файлов
         return compareFilesByteByByte(file1, file2);
     }
 
-    // Метод для побайтного сравнения содержимого двух файлов с конца до начала
-    private boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
+
+
+    // Метод для побайтного сравнения содержимого двух НЕБОЛЬШИХ файлов
+    public static boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
 
-            // Получаем размер файлов
+            // Получаем размеры файлов
             long size = channel1.size();
 
-            // Определяем размер блока для чтения
-            long blockSize = BLOCK_SIZE;
-            // Вычисляем количество блоков, необходимых для чтения всего файла
-            long numBlocks = (size + blockSize - 1) / blockSize;
+            // Сравниваем файлы поблочно
+            long position = 0;
+            long blockSize = BLOCK_SIZE; // Размер блока для чтения
 
-            // Параллельно проверяем каждый блок
-            return IntStream.range(0, (int) numBlocks).parallel().allMatch(i -> {
+            while (position < size) {
+                long remaining = size - position;
+                long bytesToRead = Math.min(blockSize, remaining);
+
+                // Создаем буферы для чтения блоков из обоих файлов
+                ByteBuffer buffer1 = ByteBuffer.allocate((int) bytesToRead);
+                ByteBuffer buffer2 = ByteBuffer.allocate((int) bytesToRead);
+
+                // Читаем блоки из файлов в буферы
+                channel1.read(buffer1, position);
+                channel2.read(buffer2, position);
+
+                // Переводим буферы в режим чтения
+                buffer1.flip();
+                buffer2.flip();
+
+                // Сравниваем содержимое буферов
+                for (int i = 0; i < bytesToRead; i++) {
+                    if (buffer1.get() != buffer2.get()) {
+                        return false; // Возвращаем false при несовпадении
+                    }
+                }
+
+                position += bytesToRead;
+            }
+
+            // Файлы идентичны
+            return true;
+        }
+    }
+
+
+
+
+    // Ускоренный метод для сравнения больших файлов с конца до начала
+//    private static boolean compareLargeFiles(Path file1, Path file2) throws IOException {
+//        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//        // Открываем каналы для чтения файлов
+//        FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+//        FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ);
+//
+//        // Получаем размер файлов
+//        long size = channel1.size();
+//        // Определяем размер блока для чтения
+//        long blockSize = BLOCK_SIZE * 2L;
+//        // Вычисляем количество блоков, необходимых для чтения всего файла
+//        long numBlocks = (size + blockSize - 1) / blockSize;
+//
+//        // Создаем пул потоков для параллельного чтения блоков
+//        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+//        // Используем CountDownLatch для ожидания завершения всех задач
+//        CountDownLatch latch = new CountDownLatch((int) numBlocks);
+//
+//        // Параллельно проверяем каждый блок
+//        for (int i = 0; i < numBlocks; i++) {
+//            final int blockIndex = i;
+//            // Подаем задачу на выполнение
+//            executor.submit(() -> {
+//                try {
+//                    // Создаем буферы для чтения блоков из обоих файлов
+//                    ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
+//                    ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+//
+//                    // Читаем блоки из файлов в буферы, начиная с конца файла
+//                    long position = size - (blockIndex + 1) * blockSize;
+//                    if (position < 0) {
+//                        position = 0;
+//                    }
+//
+//                    // Читаем блоки из файлов в буферы
+//                    channel1.read(buffer1, position);
+//                    channel2.read(buffer2, position);
+//
+//                    // Переводим буферы в режим чтения
+//                    buffer1.flip();
+//                    buffer2.flip();
+//
+//                    // если буферы не равны, то завершаем все задачи и пул потоков, возвращаем false
+//                    if (!buffer1.equals(buffer2)) {
+//                        executor.shutdownNow();
+//                        return false;
+//                    }
+//                } catch (FileSystemException e) {
+//                    System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
+//                    return false;
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    return false;
+//                } finally {
+//                    latch.countDown();
+//                }
+//                return true;
+//            });
+//        }
+//
+//        // закрываем пул потоков
+//        executor.shutdown();
+//        try {
+//            latch.await();
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//        } finally {
+//            channel1.close();
+//            channel2.close();
+//        }
+//        return true;
+//    }
+
+
+    // Ускоренный метод для сравнения больших файлов
+    private static boolean compareLargeFiles(Path file1, Path file2) throws IOException {
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        // Открываем каналы для чтения файлов
+        FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+        FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ);
+
+        // Получаем размер файлов
+        long size = channel1.size();
+        // Определяем размер блока для чтения
+        long blockSize = BLOCK_SIZE * 2L;
+        // Вычисляем количество блоков, необходимых для чтения всего файла
+        long numBlocks = (size + blockSize - 1) / blockSize;
+
+        // Создаем пул потоков для параллельного чтения блоков
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        // Используем CountDownLatch для ожидания завершения всех задач
+        CountDownLatch latch = new CountDownLatch((int) numBlocks);
+        // Флаг для прерывания выполнения задач
+        AtomicBoolean mismatchFound = new AtomicBoolean(false);
+
+        // Параллельно проверяем каждый блок
+        for (int i = 0; i < numBlocks; i++) {
+            final int blockIndex = i;
+            // Подаем задачу на выполнение
+            executor.submit(() -> {
                 try {
+                    if (mismatchFound.get()) {
+                        return false;
+                    }
+
                     // Создаем буферы для чтения блоков из обоих файлов
                     ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
                     ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
 
                     // Читаем блоки из файлов в буферы, начиная с конца файла
-                    long position = size - (i + 1) * blockSize; // !!! Изменено для чтения с конца файла
+                    long position = size - (blockIndex + 1) * blockSize;
                     if (position < 0) {
                         position = 0;
                     }
 
-                    channel1.read(buffer1, position); // !!! Изменено для чтения с конца файла
-                    channel2.read(buffer2, position); // !!! Изменено для чтения с конца файла
+                    // Читаем блоки из файлов в буферы
+                    channel1.read(buffer1, position);
+                    channel2.read(buffer2, position);
 
                     // Переводим буферы в режим чтения
                     buffer1.flip();
                     buffer2.flip();
 
-                    // Сравниваем содержимое буферов
-                    return buffer1.equals(buffer2);
+                    // если буферы не равны, то завершаем все задачи и пул потоков, возвращаем false
+                    if (!buffer1.equals(buffer2)) {
+                        mismatchFound.set(true);
+                        executor.shutdownNow();
+                        return false;
+                    }
                 } catch (FileSystemException e) {
-                    // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
                     System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
                     return false;
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
+                    return false;
+                } finally {
+                    latch.countDown();
                 }
+                return true;
             });
         }
-    }
 
-
-    // Ускоренный метод для сравнения больших файлов с конца до начала
-    private boolean compareLargeFiles(Path file1, Path file2) throws IOException {
-
-        // Открываем каналы для чтения файлов
-        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
-             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
-
-            // Получаем размер файла
-            long size = channel1.size();
-
-            // Увеличиваем размер блока для больших файлов
-            long blockSize = BLOCK_SIZE * 2L;
-            // Вычисляем количество блоков, необходимых для чтения всего файла
-            long numBlocks = (size + blockSize - 1) / blockSize;
-
-            // Создаем пул потоков с количеством потоков, равным количеству доступных процессоров
-            ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-            // Массив для хранения результатов выполнения задач
-            Future<Boolean>[] futures = new Future[(int) numBlocks];
-
-            // Для каждого блока создаем задачу для сравнения блоков файлов
-            for (int i = 0; i < numBlocks; i++) {
-                final int blockIndex = i;
-                futures[i] = executor.submit(() -> {
-                    try {
-                        // Создаем буферы для чтения блоков из обоих файлов
-                        ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
-                        ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
-
-                        // Читаем блоки из файлов в буферы, начиная с конца файла
-                        long position = size - (blockIndex + 1) * blockSize; // !!! Изменено для чтения с конца файла
-                        if (position < 0) {
-                            position = 0;
-                        }
-
-                        channel1.read(buffer1, position); // !!! Изменено для чтения с конца файла
-                        channel2.read(buffer2, position); // !!! Изменено для чтения с конца файла
-
-                        // Переводим буферы в режим чтения
-                        buffer1.flip();
-                        buffer2.flip();
-
-                        // Сравниваем содержимое буферов
-                        return buffer1.equals(buffer2);
-                    } catch (FileSystemException e) {
-                        // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
-                        System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
-                        return false;
-                    }
-                });
-            }
-
-            // Проверяем результаты выполнения всех задач
-            for (Future<Boolean> future : futures) {
-                try {
-                    // Если хотя бы одна задача вернула false, файлы не равны
-                    if (!future.get()) {
-                        executor.shutdown();
-                        return false;
-                    }
-                } catch (Exception e) {
-                    // В случае ошибки выводим стек ошибки и возвращаем false
-                    e.printStackTrace();
-                    executor.shutdown();
-                    return false;
-                }
-            }
-
-            // Завершаем работу пула потоков
-            executor.shutdown();
-            // Если все задачи вернули true, файлы равны
-            return true;
+        // закрываем пул потоков
+        executor.shutdown();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            channel1.close();
+            channel2.close();
         }
-    }
-
-    // - не используется !!!
-    // Метод для сравнения первых и последних байтов файлов
-    private boolean compareFirstAndLastBytes(Path file1, Path file2) throws IOException {
-        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
-             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
-
-            ByteBuffer buffer1 = ByteBuffer.allocate(1024);
-            ByteBuffer buffer2 = ByteBuffer.allocate(1024);
-
-            channel1.read(buffer1);
-            channel2.read(buffer2);
-
-            if (!buffer1.equals(buffer2)) {
-                return false;
-            }
-
-            buffer1.clear();
-            buffer2.clear();
-
-            channel1.position(channel1.size() - 1024);
-            channel2.position(channel2.size() - 1024);
-
-            channel1.read(buffer1);
-            channel2.read(buffer2);
-
-            return buffer1.equals(buffer2);
-        }
-    }
-
-
-    // Вспомогательный метод для предваительной проверки файлов на равенство.
-    // Сравнивает блоки в середине файлов
-    private boolean compareMiddleBytes(Path file1, Path file2) throws IOException {
-        // Открываем каналы для чтения файлов
-        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
-             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
-
-            // Создаем буферы для чтения первых 1024 байт из каждого файла
-            ByteBuffer buffer1 = ByteBuffer.allocate(1024);
-            ByteBuffer buffer2 = ByteBuffer.allocate(1024);
-
-            // Читаем первые 1024 байта из каждого файла в буферы
-            channel1.read(buffer1);
-            channel2.read(buffer2);
-
-            // Сравниваем содержимое буферов
-            if (!buffer1.equals(buffer2)) {
-                return false; // Если первые 1024 байта не равны, файлы не идентичны
-            }
-
-            // Очищаем буферы для повторного использования
-            buffer1.clear();
-            buffer2.clear();
-
-            // Устанавливаем позицию каналов на последние 1024 байта файлов
-            channel1.position(channel1.size() - 1024);
-            channel2.position(channel2.size() - 1024);
-
-            // Читаем последние 1024 байта из каждого файла в буферы
-            channel1.read(buffer1);
-            channel2.read(buffer2);
-
-            // Сравниваем содержимое буферов
-            return buffer1.equals(buffer2); // Возвращаем результат сравнения последних 1024 байт
-        }
+        return !mismatchFound.get();
     }
 
 

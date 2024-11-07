@@ -42,7 +42,7 @@ public class TesterUnit2 {
 	private Path file15;
 
 	// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
-	Map<Long, ConcurrentLinkedQueue<Path>> filesBySize;
+	//Map<Long, ConcurrentLinkedQueue<Path>> filesBySize;
 	List<List<String>> expectedProcessSameSizeFiles;
 
 	@Before
@@ -51,7 +51,7 @@ public class TesterUnit2 {
 		// Для тестирования метода walkFileTree класса FileDuplicateFinder
 		// Обходит файловую систему, начиная с указанного пути и группирует файлы по их размеру в HashMap filesBySize
 		// expectedFilesBySize - ожидаемый результат
-		finder = new FileDuplicateFinder2();
+		//finder = new FileDuplicateFinder2();
 		expectedFilesBySize = new HashMap<>();
 
 		ConcurrentLinkedQueue<Path> queue32 = new ConcurrentLinkedQueue<>();
@@ -142,48 +142,49 @@ public class TesterUnit2 {
 
 		// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 		// Создаем тестовые данные
-		filesBySize = new HashMap<>();
-		filesBySize.put(3359325264L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		//filesBySize = new HashMap<>();
+		finder = new FileDuplicateFinder2();
+		finder.filesBySize.put(3359325264L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
 		)));
-		filesBySize.put(94869L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(94869L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
 		)));
-		filesBySize.put(3771L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(3771L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc (копия)")
 		)));
-		filesBySize.put(136L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(136L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file2.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file2.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file1.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file1.txt")
 		)));
-		filesBySize.put(32L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(32L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/d2.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
 		)));
-		filesBySize.put(29L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(29L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/e1.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/e2.txt")
 		)));
-		filesBySize.put(23L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(23L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/c1.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c2.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c1.txt")
 		)));
-		filesBySize.put(20L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(20L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/a1.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2.txt")
 		)));
-		filesBySize.put(13L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(13L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/b2.txt"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/b1.txt")
 		)));
-		filesBySize.put(0L, new ConcurrentLinkedQueue<>(Arrays.asList(
+		finder.filesBySize.put(0L, new ConcurrentLinkedQueue<>(Arrays.asList(
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/aaaaaaaa"),
 				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
@@ -217,12 +218,13 @@ public class TesterUnit2 {
 	    expectedFilesBySize - ожидаемый результат*/
 	@Test
 	public void testWalkFileTree() throws IOException {
-		Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder", filesBySize);
+		//Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
+		finder = new FileDuplicateFinder2();
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
 
 		// Преобразуем карты в Map<Long, List<Path>> для корректного сравнения
 		Map<Long, List<Path>> expectedListMap = convertToListMap(expectedFilesBySize);
-		Map<Long, List<Path>> actualListMap = convertToListMap(filesBySize);
+		Map<Long, List<Path>> actualListMap = convertToListMap(finder.filesBySize);
 		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
 		assertEquals(expectedListMap, actualListMap);
 	}
@@ -251,9 +253,9 @@ public class TesterUnit2 {
 	 * Этот код сначала проверяет, что все ожидаемые группы присутствуют в фактическом результате, а затем проверяет, что в фактическом результате нет лишних групп. Если лишняя группа найдена, тест выводит сообщение с информацией о ней.*/
 	@Test
 	public void testFindDuplicateGroups() throws IOException {
-		Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder", filesBySize);
-		List<List<String>> actual = finder.findDuplicateGroups(filesBySize);
+		//Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+		List<List<String>> actual = finder.findDuplicateGroups();
 
 		for (List<String> expectedGroup : expectedProcessSameSizeFiles) {
 			boolean found = false;
