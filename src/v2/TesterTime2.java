@@ -52,9 +52,7 @@ public class TesterTime2 {
 
         System.out.println("-------------------------------------------------");
 
-        FileComparator2 fileComparator = new FileComparator2();
-
-        fileComparator.areFilesEqual(file1, file2);
+        FileComparator2.areFilesEqual(file1, file2);
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);

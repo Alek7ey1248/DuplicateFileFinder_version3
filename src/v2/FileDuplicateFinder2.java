@@ -40,7 +40,6 @@ public class FileDuplicateFinder2 {
     public List<List<String>> findDuplicateGroups() throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
-        FileComparator2 comparator = new FileComparator2();
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
@@ -56,7 +55,7 @@ public class FileDuplicateFinder2 {
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
-                findDuplicatesInSameSizeFiles(files, duplicates, comparator);
+                findDuplicatesInSameSizeFiles(files, duplicates);
 
                 return null;
             }));
@@ -84,10 +83,9 @@ public class FileDuplicateFinder2 {
      *
      * @param fileQueue — список(очередь) путей к файлам одинакового размера. Из HashMap filesBySize.
      * @param duplicates -  список для хранения групп побайтно одинаковых файлов.
-     * @param comparator — компаратор для сравнения файлов
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-    public void findDuplicatesInSameSizeFiles(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates, FileComparator2 comparator) throws IOException {
+    public void findDuplicatesInSameSizeFiles(ConcurrentLinkedQueue<Path> fileQueue, List<List<String>> duplicates) throws IOException {
         // Если файлов меньше двух, выходим из метода. Нет смысла сравнивать один файл сам с собой.
         if (fileQueue.size() < 2) {
             return;
@@ -112,7 +110,7 @@ public class FileDuplicateFinder2 {
             for (Path anotherFile : fileQueue) {
                 // Отправляем задачу на сравнение файлов в пул потоков
                 futures.add(executor.submit(() -> {
-                    if (comparator.areFilesEqual(file, anotherFile)) {
+                    if (FileComparator2.areFilesEqual(file, anotherFile)) {
                         synchronized (group) {
                             group.add(anotherFile.toString());
                         }

@@ -65,7 +65,8 @@ public class DuplicateFilePrinter2 {
         //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
         //String path = "/home/alek7ey/Рабочий стол";
         //String path = "/home/alek7ey/Рабочий стол/Большие файлы";
-        String path = "/home/alek7ey";
+        //String path = "/home/alek7ey";
+        String path = "/home/alek7ey/.cache";
 
 
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
@@ -77,11 +78,6 @@ public class DuplicateFilePrinter2 {
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);
         System.out.println("Время выполнения поиска дубликатов файлов в директории " + path + " --- " + duration + " секунд       ");
-        System.out.println("Кол-во больших файлов - " + DuplicateFilePrinter2.largeFileSet.size());
-        System.out.println("Список больших файлов:");
-        for (Path path1 : DuplicateFilePrinter2.largeFileSet) {
-            System.out.println(path1);
-        }
 
     }
 }
