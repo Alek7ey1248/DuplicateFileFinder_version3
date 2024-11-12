@@ -62,9 +62,9 @@ public class DuplicateFilePrinter2 {
         long startTime = System.currentTimeMillis();
 
         // Пример использования
-        //String path = "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder";
+        //String path = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
         //String path = "/home/alek7ey/Рабочий стол";
-        //String path = "/home/alek7ey/Рабочий стол/Большие файлы";
+        //String path = "/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы";
         String path = "/home/alek7ey";
         //String path = "/home/alek7ey/.cache";
 

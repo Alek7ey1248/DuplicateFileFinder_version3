@@ -189,8 +189,8 @@ public class FileDuplicateFinder2 {
 
         Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
 
-        finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
-        //finder.walkFileTree("/home/alek7ey/Рабочий стол");
+        //finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
+        finder.walkFileTree("/home/alek7ey/Рабочий стол");
         //finder.walkFileTree("/home/alek7ey");
         //finder.walkFileTree("/home");
 

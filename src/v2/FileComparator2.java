@@ -171,10 +171,8 @@ public class FileComparator2 {
         //System.out.println(" Порог для больших файлов (30% от доступной памяти): " + LARGE_FILE_THRESHOLD);
 
 
-//        Path file1 = Path.of("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/filmCopy/videoplayback (копия).mp4");;
-//        Path file2 = Path.of("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/videoplayback.mp4");
-        Path file1 = Path.of("/home/alek7ey/Рабочий стол/маленькие файлы/file1.txt");;
-        Path file2 = Path.of("/home/alek7ey/Рабочий стол/маленькие файлы/file1 (копия).txt");
+        Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt");;
+        Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt");
 
 
         long startTime = System.currentTimeMillis();

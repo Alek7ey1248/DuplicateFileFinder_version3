@@ -263,7 +263,7 @@ public class FileDuplicateFinder {
 
         Map<Long, List<Path>> filesBySize = new HashMap<>();
 
-        finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder", filesBySize);
+        finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", filesBySize);
         //finder.walkFileTree("/home/alek7ey/Рабочий стол", filesBySize);
         //finder.walkFileTree("/home/alek7ey", filesBySize);
         //finder.walkFileTree("/home", filesBySize);

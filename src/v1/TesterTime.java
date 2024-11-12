@@ -93,7 +93,7 @@ public class TesterTime {
         System.out.println();
         System.out.println("------------------------------------------");
         System.out.println(" Размер - 37 объектов, всего 6,7 ГБ ");
-        tester.timeWalkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+        tester.timeWalkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 
         System.out.println();
         System.out.println("------------------------------------------");
@@ -118,10 +118,10 @@ public class TesterTime {
         System.out.println("*******************************************");
         System.out.println("Тайминги метода areFilesEqual - сравнение файлов");
         System.out.println();
-        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc"), Path.of("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc (копия)"));
-        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"), Path.of("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"));
-        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"), Path.of("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат"));
-        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/videoplayback.mp4"), Path.of("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/filmCopy/videoplayback (копия).mp4"));
+        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"), Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)"));
+        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"), Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"));
+        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"), Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
+        tester.timeAreFilesEqual(Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"), Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
 
 
 //-----------------------------------------------------------------
@@ -134,7 +134,7 @@ public class TesterTime {
 
         System.out.println("-------------------------------------------------");
         System.out.println(" Размер - 37 объектов, всего 6,7 ГБ ");
-        tester.timeFindDuplicateGroups("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+        tester.timeFindDuplicateGroups("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 
         System.out.println("-------------------------------------------------");
         System.out.println(" 1188 объектов, всего 32,0 ГБ ");
