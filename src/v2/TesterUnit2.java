@@ -55,88 +55,88 @@ public class TesterUnit2 {
 		expectedFilesBySize = new HashMap<>();
 
 		ConcurrentLinkedQueue<Path> queue32 = new ConcurrentLinkedQueue<>();
-		queue32.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/d2.txt"));
-		queue32.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/d1.txt"));
+		queue32.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt"));
+		queue32.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt"));
 		expectedFilesBySize.put(32L, queue32);
 
 		ConcurrentLinkedQueue<Path> queue0 = new ConcurrentLinkedQueue<>();
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.sudo_as_admin_successful"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/aaaaaaaa"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/g1.txt"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"));
-		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"));
+		queue0.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa"));
 		expectedFilesBySize.put(0L, queue0);
 
 		ConcurrentLinkedQueue<Path> queue20 = new ConcurrentLinkedQueue<>();
-		queue20.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"));
-		queue20.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2.txt"));
-		queue20.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/a1.txt"));
+		queue20.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"));
+		queue20.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"));
+		queue20.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt"));
 		expectedFilesBySize.put(20L, queue20);
 
 		ConcurrentLinkedQueue<Path> queue94869 = new ConcurrentLinkedQueue<>();
-		queue94869.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"));
-		queue94869.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"));
+		queue94869.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"));
+		queue94869.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"));
 		expectedFilesBySize.put(94869L, queue94869);
 
 		ConcurrentLinkedQueue<Path> queue23 = new ConcurrentLinkedQueue<>();
-		queue23.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/c1.txt"));
-		queue23.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"));
-		queue23.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c2.txt"));
+		queue23.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt"));
+		queue23.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"));
+		queue23.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt"));
 		expectedFilesBySize.put(23L, queue23);
 
 		ConcurrentLinkedQueue<Path> queue136 = new ConcurrentLinkedQueue<>();
-		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file2.txt"));
-		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file2.txt"));
-		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file1.txt"));
-		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file1.txt"));
+		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt"));
+		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt"));
+		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt"));
+		queue136.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt"));
 		expectedFilesBySize.put(136L, queue136);
 
 		ConcurrentLinkedQueue<Path> queue3771 = new ConcurrentLinkedQueue<>();
-		queue3771.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc"));
-		queue3771.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc (копия)"));
+		queue3771.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"));
+		queue3771.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)"));
 		expectedFilesBySize.put(3771L, queue3771);
 
 		ConcurrentLinkedQueue<Path> queue3359325264 = new ConcurrentLinkedQueue<>();
-		queue3359325264.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат"));
-		queue3359325264.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
+		queue3359325264.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
+		queue3359325264.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
 		expectedFilesBySize.put(3359325264L, queue3359325264);
 
 		ConcurrentLinkedQueue<Path> queue13 = new ConcurrentLinkedQueue<>();
-		queue13.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/b1.txt"));
-		queue13.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/b2.txt"));
+		queue13.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt"));
+		queue13.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt"));
 		expectedFilesBySize.put(13L, queue13);
 
 		ConcurrentLinkedQueue<Path> queue29 = new ConcurrentLinkedQueue<>();
-		queue29.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/e2.txt"));
-		queue29.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/e1.txt"));
+		queue29.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt"));
+		queue29.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt"));
 		expectedFilesBySize.put(29L, queue29);
 
 
 		// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
 		//fileComparator = new FileComparator2();
-		file1 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/a1.txt");
-		file2 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2.txt");
-		file3 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c1.txt");
-		file4 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/d2.txt");
-		file5 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc (копия)");
-		file6 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc");
+		file1 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt");
+		file2 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt");
+		file3 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt");
+		file4 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt");
+		file5 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)");
+		file6 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc");
 		// фотки
-		file7 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg");
-		file8 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg");
+		file7 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg");
+		file8 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg");
 		// фильмы
-		file9 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
-		file10 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат");
+		file9 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
+		file10 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
 		// файлы нулевого размера
-		file11 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.sudo_as_admin_successful");
-		file12 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/aaaaaaaa");
-		file13 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/g1.txt");
+		file11 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful");
+		file12 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa");
+		file13 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt");
 		// очень большие файлы - фильмы 10,8 Гб
 		// не в тестовой папке !!!
-		file14 = Paths.get("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/videoplayback.mp4");
-		file15 = Paths.get("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/filmCopy/videoplayback (копия).mp4");
+		file14 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
+		file15 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
 
 
 
@@ -145,69 +145,69 @@ public class TesterUnit2 {
 		//filesBySize = new HashMap<>();
 		finder = new FileDuplicateFinder2();
 		finder.filesBySize.put(3359325264L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
 		)));
 		finder.filesBySize.put(94869L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
 		)));
 		finder.filesBySize.put(3771L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc (копия)")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)")
 		)));
 		finder.filesBySize.put(136L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file1.txt")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt")
 		)));
 		finder.filesBySize.put(32L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/d2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
 		)));
 		finder.filesBySize.put(29L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/e1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/e2.txt")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt")
 		)));
 		finder.filesBySize.put(23L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/c1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c1.txt")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt")
 		)));
 		finder.filesBySize.put(20L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/a1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2.txt")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt")
 		)));
 		finder.filesBySize.put(13L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/b2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/b1.txt")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt")
 		)));
 		finder.filesBySize.put(0L, new ConcurrentLinkedQueue<>(Arrays.asList(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.sudo_as_admin_successful"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/g1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
 		)));
 
 
 		// Ожидаемый результат метода findDuplicateGroups
 		expectedProcessSameSizeFiles = Arrays.asList(
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/фильм про солдат", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.bashrc (копия)"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file2.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file2.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/file1.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/file1.txt"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/d2.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/d1.txt"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/e1.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/e2.txt"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/c1.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c2.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/a1.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/a2.txt"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/b2.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/b1.txt"),
-				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/g2.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/.sudo_as_admin_successful", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/g1.txt", "/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt"),
+				Arrays.asList("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
 		);
 	}
 
@@ -220,13 +220,28 @@ public class TesterUnit2 {
 	public void testWalkFileTree() throws IOException {
 		//Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
 		finder = new FileDuplicateFinder2();
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 
-		// Преобразуем карты в Map<Long, List<Path>> для корректного сравнения
-		Map<Long, List<Path>> expectedListMap = convertToListMap(expectedFilesBySize);
-		Map<Long, List<Path>> actualListMap = convertToListMap(finder.filesBySize);
-		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
-		assertEquals(expectedListMap, actualListMap);
+//		// Преобразуем карты в Map<Long, List<Path>> для корректного сравнения
+//		Map<Long, List<Path>> expectedListMap = convertToListMap(expectedFilesBySize);
+//		Map<Long, List<Path>> actualListMap = convertToListMap(finder.filesBySize);
+//		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
+//		assertEquals(expectedListMap, actualListMap);
+
+		// Преобразуем карты в Map<Long, Set<Path>> для корректного сравнения
+		Map<Long, Set<Path>> expectedSetMap = new HashMap<>();
+		for (Map.Entry<Long, ConcurrentLinkedQueue<Path>> entry : expectedFilesBySize.entrySet()) {
+			expectedSetMap.put(entry.getKey(), new HashSet<>(entry.getValue()));
+		}
+
+		Map<Long, Set<Path>> actualSetMap = new HashMap<>();
+		for (Map.Entry<Long, ConcurrentLinkedQueue<Path>> entry : finder.filesBySize.entrySet()) {
+			actualSetMap.put(entry.getKey(), new HashSet<>(entry.getValue()));
+		}
+
+		// Сравниваем содержание полученного filesBySize и ожидаемого expectedFilesBySize
+		assertEquals(expectedSetMap, actualSetMap);
+
 	}
 
 
@@ -254,7 +269,7 @@ public class TesterUnit2 {
 	@Test
 	public void testFindDuplicateGroups() throws IOException {
 		//Map<Long, ConcurrentLinkedQueue<Path>> filesBySize = new HashMap<>();
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder");
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 		List<List<String>> actual = finder.findDuplicateGroups();
 
 		for (List<String> expectedGroup : expectedProcessSameSizeFiles) {
@@ -296,45 +311,45 @@ public class TesterUnit2 {
 
 		// Создаем список файлов одинакового размера
 		ConcurrentLinkedQueue<Path> files = new ConcurrentLinkedQueue<>();
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test01.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test02.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test03.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test04.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11 (копия).txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (другая копия).txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (копия).txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (3-я копия).txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (другая копия).txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (копия).txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test1одинтакой.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test2одинтакой.txt"));
-		files.add(Paths.get("/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test3одинтакой.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test1одинтакой.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test2одинтакой.txt"));
+		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test3одинтакой.txt"));
 
 		// Ожидаемый результат
 		List<List<String>> expected = new ArrayList<>();
 		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test01.txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test02.txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test03.txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test04.txt"
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt"
 		));
 		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11.txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test11 (копия).txt"
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt"
 		));
 		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21.txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (другая копия).txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test21 (копия).txt"
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt"
 		));
 		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31.txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (3-я копия).txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (другая копия).txt",
-				"/home/alek7ey/Рабочий стол/ListTestDuplicateFileFinder/test31 (копия).txt"
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt",
+				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"
 		));
 
 		// Результат работы метода
