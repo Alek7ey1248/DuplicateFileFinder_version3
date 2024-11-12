@@ -125,8 +125,8 @@ public class TesterUnit {
 		file13 = Paths.get("/home/alek7ey/Рабочий стол/TestsDuplicateFileFinder/test21/g1.txt");
 		// очень большие файлы - фильмы 10,8 Гб
 		// не в тестовой папке !!!
-		file14 = Paths.get("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/videoplayback.mp4");
-		file15 = Paths.get("/home/alek7ey/Рабочий стол/filmsTestDuplicateFileFinder/filmCopy/videoplayback (копия).mp4");
+		file14 = Paths.get("/home/alek7ey/Рабочий стол/Большие файлы/videoplayback .mp4");
+		file15 = Paths.get("/home/alek7ey/Рабочий стол/Большие файлы/videoplayback (копия).mp4");
 
 
 
@@ -234,7 +234,8 @@ public class TesterUnit {
 
 
 	/** Тестирование метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
-	 * Этот код сначала проверяет, что все ожидаемые группы присутствуют в фактическом результате, а затем проверяет, что в фактическом результате нет лишних групп. Если лишняя группа найдена, тест выводит сообщение с информацией о ней.*/
+	 * Этот код сначала проверяет, что все ожидаемые группы присутствуют в фактическом результате, а затем проверяет, что в фактическом
+	 * результате нет лишних групп. Если лишняя группа найдена, тест выводит сообщение с информацией о ней.*/
 	@Test
 	public void testFindDuplicateGroups() throws IOException {
 		Map<Long, List<Path>> filesBySize = new HashMap<>();
