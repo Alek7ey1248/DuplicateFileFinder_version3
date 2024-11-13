@@ -209,6 +209,16 @@ public class TesterUnit {
 		Map<Long, List<Path>> filesBySize = new HashMap<>();
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", filesBySize);
 
+		// Сортируем проверяемые и проверочные списки файлов одинакового размера что бы при сравнении у них совпадали порядки
+		for (Long key : filesBySize.keySet()) {
+			List<Path> actualList = filesBySize.get(key);
+			List<Path> expectedList = expectedFilesBySize.get(key);
+
+			if (actualList != null && expectedList != null) {
+				Collections.sort(actualList);
+				Collections.sort(expectedList);
+			}
+		}
 		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
 		assertEquals(expectedFilesBySize, filesBySize);
 	}

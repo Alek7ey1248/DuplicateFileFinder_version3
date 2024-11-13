@@ -222,12 +222,6 @@ public class TesterUnit2 {
 		finder = new FileDuplicateFinder2();
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 
-//		// Преобразуем карты в Map<Long, List<Path>> для корректного сравнения
-//		Map<Long, List<Path>> expectedListMap = convertToListMap(expectedFilesBySize);
-//		Map<Long, List<Path>> actualListMap = convertToListMap(finder.filesBySize);
-//		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
-//		assertEquals(expectedListMap, actualListMap);
-
 		// Преобразуем карты в Map<Long, Set<Path>> для корректного сравнения
 		Map<Long, Set<Path>> expectedSetMap = new HashMap<>();
 		for (Map.Entry<Long, ConcurrentLinkedQueue<Path>> entry : expectedFilesBySize.entrySet()) {
