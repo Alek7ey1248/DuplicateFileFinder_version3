@@ -38,8 +38,14 @@ public class FileComparator2 {
 
         // ----------------------------------------------------
         // для больших файлов используем ускоренный метод
-        if(Files.size(file1) > LARGE_FILE_THRESHOLD) {
-            return areLargeFilesEqual(file1, file2);
+        if (Files.size(file1) > LARGE_FILE_THRESHOLD) {
+            try {
+                return areLargeFilesEqual(file1, file2);
+            } catch (FileSystemException e) {
+                // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
+                System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
+                return false;
+            }
         }
         // ----------------------------------------------------
 
