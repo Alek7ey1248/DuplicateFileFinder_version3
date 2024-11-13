@@ -30,7 +30,7 @@ public class FileComparator {
     }
 
     // Основной метод для сравнения файлов
-    public boolean areFilesEqual(Path file1, Path file2) throws IOException {
+    public static boolean areFilesEqual(Path file1, Path file2) throws IOException {
 
         // Получаем размеры файлов
         long size1 = Files.size(file1);
@@ -61,49 +61,10 @@ public class FileComparator {
         }
     }
 
-    // Метод для побайтного сравнения содержимого двух файлов
-//    private boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
-//        // Открываем каналы для чтения файлов
-//        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
-//             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
-//
-//            // Получаем размер файлов
-//            long size = channel1.size();
-//
-//            // Определяем размер блока для чтения
-//            long blockSize = BLOCK_SIZE;
-//            // Вычисляем количество блоков, необходимых для чтения всего файла
-//            long numBlocks = (size + blockSize - 1) / blockSize;
-//
-//            // Параллельно проверяем каждый блок
-//            return IntStream.range(0, (int) numBlocks).parallel().allMatch(i -> {
-//                try {
-//                    // Создаем буферы для чтения блоков из обоих файлов
-//                    ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
-//                    ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
-//
-//                    // Читаем блоки из файлов в буферы
-//                    channel1.read(buffer1, i * blockSize);
-//                    channel2.read(buffer2, i * blockSize);
-//
-//                    // Переводим буферы в режим чтения
-//                    buffer1.flip();
-//                    buffer2.flip();
-//
-//                    // Сравниваем содержимое буферов
-//                    return buffer1.equals(buffer2);
-//                } catch (IOException e) {
-//                    // В случае ошибки выводим стек ошибки и возвращаем false
-//                    e.printStackTrace();
-//                    return false;
-//                }
-//            });
-//        }
-//    }
+
 
     // Метод для побайтного сравнения содержимого двух файлов
-    // лучше чем предыдущий метод по скорости
-    private boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
+    private static boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
@@ -147,7 +108,7 @@ public class FileComparator {
 
 
     // Ускоренный метод для сравнения больших файлов
-    private boolean compareLargeFiles(Path file1, Path file2) throws IOException {
+    private static boolean compareLargeFiles(Path file1, Path file2) throws IOException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
@@ -216,24 +177,4 @@ public class FileComparator {
         }
     }
 
-    public static void main(String[] args) {
-        FileComparator fileComparator = new FileComparator();
-
-        Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");;
-        Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
-
-        long startTime = System.currentTimeMillis();
-
-        try {
-            System.out.println(fileComparator.compareLargeFiles(file1, file2));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        long endTime = System.currentTimeMillis();
-        long duration = (long) ((endTime - startTime) / 1000.0);
-        System.out.println("Время выполнения areFilesEqual на сравнении файлов " + file1.getFileName() + " и " + file2.getFileName() + " --- " + duration + " секунд       " + (long) duration * 1000.0 + " милисекунд");
-
-        System.out.println(" Блоки для чтения файлов: " + BLOCK_SIZE);
-    }
 }

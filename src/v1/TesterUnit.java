@@ -23,7 +23,6 @@ public class TesterUnit {
 	private Map<Long, List<Path>> expectedFilesBySize;
 
 	// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
-	private FileComparator fileComparator;
 	private Path file1;
 	private Path file2;
 	private Path file3;
@@ -106,7 +105,6 @@ public class TesterUnit {
 
 
 		// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
-		fileComparator = new FileComparator();
 		file1 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt");
 		file2 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt");
 		file3 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt");
@@ -228,18 +226,18 @@ public class TesterUnit {
 	@Test
 	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
 		// Проверка на равенство файлов с одинаковым содержимым
-		assertEquals(true, fileComparator.areFilesEqual(file1, file2));
-		assertEquals(true, fileComparator.areFilesEqual(file5, file6));
-		assertEquals(true, fileComparator.areFilesEqual(file7, file8));
-		assertEquals(true, fileComparator.areFilesEqual(file9, file10));
+		assertEquals(true, FileComparator.areFilesEqual(file1, file2));
+		assertEquals(true, FileComparator.areFilesEqual(file5, file6));
+		assertEquals(true, FileComparator.areFilesEqual(file7, file8));
+		assertEquals(true, FileComparator.areFilesEqual(file9, file10));
 		// Проверка на равенство файлов с разным содержимым
-		assertEquals(false, fileComparator.areFilesEqual(file3, file4));
-		assertEquals(false, fileComparator.areFilesEqual(file5, file3));
+		assertEquals(false, FileComparator.areFilesEqual(file3, file4));
+		assertEquals(false, FileComparator.areFilesEqual(file5, file3));
 		// Проверка на равенство файлов нулевого размера
-		assertEquals(true, fileComparator.areFilesEqual(file11, file12));
-		assertEquals(true, fileComparator.areFilesEqual(file13, file11));
+		assertEquals(true, FileComparator.areFilesEqual(file11, file12));
+		assertEquals(true, FileComparator.areFilesEqual(file13, file11));
 		// Проверка на равенство очень больших файлов
-		assertEquals(true, fileComparator.areFilesEqual(file14, file15));
+		assertEquals(true, FileComparator.areFilesEqual(file14, file15));
 	}
 
 
@@ -287,7 +285,6 @@ public class TesterUnit {
 	@Test
 	public void testFindDuplicatesInSameSizeFiles() throws IOException {
 		FileDuplicateFinder finder = new FileDuplicateFinder();
-		FileComparator comparator = new FileComparator();
 
 		// Создаем список файлов одинакового размера
 		List<Path> files = new ArrayList<>();
@@ -334,7 +331,7 @@ public class TesterUnit {
 
 		// Результат работы метода
 		List<List<String>> actual = new ArrayList<>();
-		finder.findDuplicatesInSameSizeFiles(files, actual, comparator);
+		finder.findDuplicatesInSameSizeFiles(files, actual);
 
 //		System.out.println("Результат: ");
 //		for (List<String> s : actual) {

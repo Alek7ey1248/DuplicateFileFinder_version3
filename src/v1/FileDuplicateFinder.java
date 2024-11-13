@@ -39,7 +39,6 @@ public class FileDuplicateFinder {
     public List<List<String>> findDuplicateGroups(Map<Long, List<Path>> filesBySize) throws IOException {
         // Результат - Список для хранения дубликатов файлов
         List<List<String>> duplicates = new ArrayList<>();
-        FileComparator comparator = new FileComparator();
 
         // Создаем ExecutorService с фиксированным пулом потоков
         int numThreads = Runtime.getRuntime().availableProcessors();
@@ -55,7 +54,7 @@ public class FileDuplicateFinder {
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
-                findDuplicatesInSameSizeFiles(files, duplicates, comparator);
+                findDuplicatesInSameSizeFiles(files, duplicates);
                 return null;
             }));
         }
@@ -82,10 +81,9 @@ public class FileDuplicateFinder {
      *
      * @param files — список путей к файлам одинакового размера. Из HashMap filesBySize.
      * @param duplicates -  список для хранения групп побайтно одинаковых файлов.
-     * @param comparator — компаратор для сравнения файлов
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates, FileComparator comparator) throws IOException {
+    public void findDuplicatesInSameSizeFiles(List<Path> files, List<List<String>> duplicates) throws IOException {
         if (files.size() < 2) {
             return;
         }
@@ -114,7 +112,7 @@ public class FileDuplicateFinder {
 
                 // Отправляем задачу на сравнение файлов в пул потоков
                 futures.add(executor.submit(() -> {
-                    if (comparator.areFilesEqual(file, anotherFile)) {
+                    if (FileComparator.areFilesEqual(file, anotherFile)) {
                         synchronized (group) {
                             group.add(anotherFile.toString());
                         }

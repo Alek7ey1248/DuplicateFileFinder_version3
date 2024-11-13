@@ -27,16 +27,19 @@ public class DuplicateFilePrinter2 {
             }
         }
 
-        // Сортируем размеры файлов по убыванию
+        // Сортируем размеры файлов
         List<Long> sortedSizes = new ArrayList<>(filesBySize.keySet());
-        sortedSizes.sort(Collections.reverseOrder());
+        // по убыванию
+        //sortedSizes.sort(Collections.reverseOrder());
+        // по возрастанию
+        Collections.sort(sortedSizes);
 
         // Выводим группы файлов в консоль, начиная с самых больших
         for (Long size : sortedSizes) {
             for (List<String> group : filesBySize.get(size)) {
-                System.out.println("Группа файлов типа: " + Path.of(group.get(0)).getFileName() + " размера: " + size + " байт");
+                System.out.println("Группа файлов типа: '" + Path.of(group.get(0)).getFileName() + "';     размера: " + size + " байт");
                 for (String filePath : group) {
-                    System.out.println(filePath);
+                    System.out.println("                     " + filePath);
                 }
                 System.out.println();
                 System.out.println("--------------------");
@@ -65,15 +68,15 @@ public class DuplicateFilePrinter2 {
         //String path = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
         //String path = "/home/alek7ey/Рабочий стол";
         //String path = "/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы";
-        //String path = "/home/alek7ey";
-        String path = "/home/alek7ey/.cache";
+        String path = "/home/alek7ey";
+        //String path = "/home/alek7ey/.cache";
 
 
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();
         List<List<String>> duplicates = finder.findDuplicates(path);
 
-//        DuplicateFilePrinter2 printer = new DuplicateFilePrinter2();
-//        printer.printDuplicates(duplicates);
+        DuplicateFilePrinter2 printer = new DuplicateFilePrinter2();
+        printer.printDuplicates(duplicates);
 
         long endTime = System.currentTimeMillis();
         long duration = (long) ((endTime - startTime) / 1000.0);
