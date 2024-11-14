@@ -17,9 +17,9 @@ import java.util.concurrent.Future;
 public class FileDuplicateFinder {
 
     /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
-    private final Map<Long, List<Path>> filesBySize;
+    private final Map<Long, Set<Path>> filesBySize;
 
-    public Map<Long, List<Path>> getFilesBySize() {
+    public Map<Long, Set<Path>> getFilesBySize() {
         return filesBySize;
     }
 
@@ -69,7 +69,7 @@ public class FileDuplicateFinder {
         // перебираю ключи (размеры файлов)
         for (Long size : filesBySize.keySet()) {
             // Получаю список файлов для текущего размера
-            List<Path> files = filesBySize.get(size);
+            Set<Path> files = filesBySize.get(size);
 
             // Отправляем задачу на обработку файлов в пул потоков
             futures.add(executor.submit(() -> {
@@ -100,7 +100,7 @@ public class FileDuplicateFinder {
      * @param files — список путей к файлам одинакового размера. Из HashMap filesBySize.
      * @throws IOException при возникновении ошибки ввода-вывода
      */
-    public void findDuplicatesInSameSizeFiles(List<Path> files) throws IOException {
+    public void findDuplicatesInSameSizeFiles(Set<Path> files) throws IOException {
         if (files.size() < 2) {
             return;
         }
@@ -111,7 +111,13 @@ public class FileDuplicateFinder {
 
         while (files.size() > 1) {
             // Извлекаем первый файл
-            Path file = files.removeFirst();
+            //Path file = files.removeFirst();
+
+            Iterator<Path> iterator = files.iterator();
+            Path file = iterator.next();
+            iterator.remove();
+
+
             System.out.println("Проверка файла: " + file);
             List<String> group = new ArrayList<>();
             group.add(file.toString());
@@ -198,7 +204,7 @@ public class FileDuplicateFinder {
                     if (checkValid.isValidFile(file)) {
                         // Если текущий файл не является директорией, добавляем его в карту
                         // Группируем файлы по их размеру
-                        filesBySize.computeIfAbsent(file.length(), k -> new ArrayList<>()).add(file.toPath());
+                        filesBySize.computeIfAbsent(file.length(), k -> new HashSet<>()).add(file.toPath());
                     }
                 }
             }

@@ -64,9 +64,9 @@ public class DuplicateFilePrinter {
 
         long startTime = System.currentTimeMillis();
 
-        String[] paths = {"/home/alek7ey/Рабочий стол"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол"};
         //String[] paths = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
-        //String[] paths = "/home/alek7ey";
+        String[] paths = {"/home/alek7ey"};
         //String[] paths = "/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы";
         //String[] paths = "/home/alek7ey/.cache";
         //String[] paths = "/home/alek7ey/snap/flutter";
