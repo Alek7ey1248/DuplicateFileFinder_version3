@@ -204,8 +204,9 @@ public class TesterUnit {
 	    expectedFilesBySize - ожидаемый результат*/
 	@Test
 	public void testWalkFileTree() throws IOException {
-		Map<Long, List<Path>> filesBySize = new HashMap<>();
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", filesBySize);
+
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
+		Map<Long, List<Path>> filesBySize = finder.getFilesBySize();
 
 		// Сортируем проверяемые и проверочные списки файлов одинакового размера что бы при сравнении у них совпадали порядки
 		for (Long key : filesBySize.keySet()) {
@@ -247,8 +248,9 @@ public class TesterUnit {
 	@Test
 	public void testFindDuplicateGroups() throws IOException {
 		Map<Long, List<Path>> filesBySize = new HashMap<>();
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", filesBySize);
-		List<List<String>> actual = finder.findDuplicateGroups(filesBySize);
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
+		finder.findDuplicateGroups();
+		List<List<String>> actual = finder.getDuplicates();
 
 		for (List<String> expectedGroup : expectedProcessSameSizeFiles) {
 			boolean found = false;
@@ -330,8 +332,8 @@ public class TesterUnit {
 		));
 
 		// Результат работы метода
-		List<List<String>> actual = new ArrayList<>();
-		finder.findDuplicatesInSameSizeFiles(files, actual);
+		finder.findDuplicatesInSameSizeFiles(files);
+		List<List<String>> actual = finder.getDuplicates();
 
 //		System.out.println("Результат: ");
 //		for (List<String> s : actual) {

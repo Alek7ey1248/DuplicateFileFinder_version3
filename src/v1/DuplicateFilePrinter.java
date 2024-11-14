@@ -8,8 +8,9 @@ import java.util.*;
 public class DuplicateFilePrinter {
 
     // Метод для вывода групп дубликатов файлов в консоль
-    public void printDuplicates(List<List<String>> duplicates) {
+    public static void printDuplicates(List<List<String>> duplicates) {
         // Создаем карту для хранения групп файлов по их размеру
+        // Ключ - размер файла, значение - списки групп одинаковых файлов
         Map<Long, List<List<String>>> filesBySize = new HashMap<>();
 
         // Заполняем карту, вычисляя размер каждого файла
@@ -63,24 +64,26 @@ public class DuplicateFilePrinter {
 
         long startTime = System.currentTimeMillis();
 
-        // Пример использования
-        //String path = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
-        //String path = "/home/alek7ey";
-        //String path = "/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы";
-        //String path = "/home/alek7ey/.cache";
-        //String path = "/home/alek7ey/snap/flutter";
-        String path = "/home/alek7ey/Рабочий стол";
+        String[] paths = {"/home/alek7ey/Рабочий стол"};
+        //String[] paths = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
+        //String[] paths = "/home/alek7ey";
+        //String[] paths = "/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы";
+        //String[] paths = "/home/alek7ey/.cache";
+        //String[] paths = "/home/alek7ey/snap/flutter";
+        //String path = "/home/alek7ey/Рабочий стол";
 
 
         FileDuplicateFinder finder = new FileDuplicateFinder();
-        List<List<String>> duplicates = finder.findDuplicates(path);
 
-        DuplicateFilePrinter printer = new DuplicateFilePrinter();
-        printer.printDuplicates(duplicates);
+        // ищем дубликаты файлов в директории
+        finder.findDuplicates(paths);
+
+        // выводим отсортированные результаты поиска дубликатов
+        printDuplicates(finder.getDuplicates());
 
         long endTime = System.currentTimeMillis();
-        long duration = (long) ((endTime - startTime) / 1000.0);
-        System.out.println("Время выполнения поиска дубликатов файлов в директории " + path + " --- " + duration + " секунд       ");
+        long duration = (long) (endTime - startTime);
+        System.out.println("Время выполнения поиска дубликатов файлов в директориях " + Arrays.toString(paths) + " --- " + duration + " ms       ");
 
     }
 }

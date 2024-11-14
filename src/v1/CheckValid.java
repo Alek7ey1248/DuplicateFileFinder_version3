@@ -5,21 +5,26 @@ import java.util.*;
 
 public class CheckValid {
 
-    public List<String> getValidDirectoryPaths(String[] paths) {
-        List<String> validPaths = new ArrayList<>();
+    public boolean getValidDirectoryPaths(String[] paths) {
+        if (paths.length == 0) {
+            System.err.println("Укажите пути для поиска дубликатов.");
+            return false;
+        }
         for (String path : paths) {
-            if (isValidDirectoryPath(path)) {
-                validPaths.add(new File(path).getAbsolutePath());
+            if (!isValidDirectoryPath(path)) {
+                return false;
             }
         }
-        if (validPaths.isEmpty()) {
-            System.err.println("There are no correct arguments");
-        }
-        return validPaths;
+        return true;
     }
 
 
     public boolean isValidDirectoryPath(String path) {
+
+        if (path == null || path.isEmpty()) {
+            System.err.println("Путь к директории не указан");
+            return false;
+        }
         File directory = new File(path);
         if (!directory.exists()) {
             System.err.println("Directory " + directory.getAbsolutePath() + " не существует");
@@ -30,7 +35,7 @@ public class CheckValid {
             return false;
         }
         if (directory.listFiles() == null) {
-            System.err.println("Directory " + directory.getAbsolutePath() + " недоступна для чтения");
+            System.err.println("Directory " + directory.getAbsolutePath() + " недоступен для чтения");
             return false;
         }
         return true;
