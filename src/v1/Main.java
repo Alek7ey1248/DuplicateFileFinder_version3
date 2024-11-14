@@ -13,8 +13,8 @@ public class Main {
 
         // Пример использования
         //String[] paths = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
-        String[] paths = {"/home/alek7ey", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", "/home/alek7ey/Рабочий стол/TestsDFF"};
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", "/home/alek7ey/Рабочий стол/TestsDFF"};
+        String[] paths = {"/home/alek7ey"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
         //String[] paths = "/home/alek7ey/.cache";
         //String[] paths = "/home/alek7ey/snap/flutter";
         //String[] paths = {"/home/alek7ey/Рабочий стол"};
