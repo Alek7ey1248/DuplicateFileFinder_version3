@@ -7,6 +7,7 @@ import java.nio.file.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 public class FileComparator2 {
@@ -45,6 +46,8 @@ public class FileComparator2 {
                 // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
                 System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
                 return false;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
         // ----------------------------------------------------
@@ -99,7 +102,7 @@ public class FileComparator2 {
 
 
     // Ускоренный метод для сравнения больших файлов
-    private static boolean areLargeFilesEqual(Path file1, Path file2) throws IOException {
+    private static boolean areLargeFilesEqual(Path file1, Path file2) throws IOException, InterruptedException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
@@ -151,12 +154,14 @@ public class FileComparator2 {
                     // Если хотя бы одна задача вернула false, файлы не равны
                     if (!future.get()) {
                         executor.shutdown();
+                        executor.awaitTermination(60, TimeUnit.SECONDS);
                         return false;
                     }
                 } catch (Exception e) {
                     // В случае ошибки выводим стек ошибки и возвращаем false
                     e.printStackTrace();
                     executor.shutdown();
+                    executor.awaitTermination(60, TimeUnit.SECONDS);
                     return false;
                 }
             }
@@ -177,8 +182,10 @@ public class FileComparator2 {
         //System.out.println(" Порог для больших файлов (30% от доступной памяти): " + LARGE_FILE_THRESHOLD);
 
 
-        Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt");;
-        Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt");
+        //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
+        Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
+        //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .zip");
+        Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
 
 
         long startTime = System.currentTimeMillis();

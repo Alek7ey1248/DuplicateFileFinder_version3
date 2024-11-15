@@ -45,11 +45,13 @@ public class FileComparator {
         // Используем ускоренный метод для больших файлов
         if (size1 > LARGE_FILE_THRESHOLD) {
             try {
-            return compareLargeFiles(file1, file2);
+                return compareLargeFiles(file1, file2);
             } catch (FileSystemException e) {
                 // Логируем и пропускаем файлы, которые не удается открыть - это на случай если нет прав доступа или типа того
                 System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
                 return false;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
 
@@ -62,7 +64,6 @@ public class FileComparator {
             return false;
         }
     }
-
 
 
     // Метод для побайтного сравнения содержимого двух файлов
@@ -108,9 +109,8 @@ public class FileComparator {
     }
 
 
-
     // Ускоренный метод для сравнения больших файлов
-    private static boolean compareLargeFiles(Path file1, Path file2) throws IOException {
+    private static boolean compareLargeFiles(Path file1, Path file2) throws IOException, InterruptedException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
@@ -121,7 +121,7 @@ public class FileComparator {
             System.out.println("size = " + size);
 
             // Увеличиваем размер блока для больших файлов
-            long blockSize = BLOCK_SIZE * 1L;
+            long blockSize = BLOCK_SIZE * 10L;
             System.out.println("blockSize = " + blockSize);
             // Вычисляем количество блоков, необходимых для чтения всего файла
             long numBlocks = size / blockSize;
@@ -152,14 +152,12 @@ public class FileComparator {
 
                         // Сравниваем содержимое буферов
                         if (!buffer1.equals(buffer2)) {
-                            executor.shutdownNow();
                             return false;
                         }
                         return true;
                     } catch (IOException e) {
                         // В случае ошибки выводим стек ошибки и возвращаем false
                         e.printStackTrace();
-                        executor.shutdownNow();
                         return false;
                     }
                 });
@@ -171,31 +169,56 @@ public class FileComparator {
                     // Если хотя бы одна задача вернула false, файлы не равны
                     if (!future.get()) {
                         executor.shutdown();
+                        executor.awaitTermination(60, TimeUnit.SECONDS);
                         return false;
                     }
                 } catch (Exception e) {
                     // В случае ошибки выводим стек ошибки и возвращаем false
                     e.printStackTrace();
                     executor.shutdown();
+                    executor.awaitTermination(60, TimeUnit.SECONDS);
                     return false;
                 }
             }
 
-            // Завершаем работу пула потоков - на скорость вроде повлияло
+            // Завершаем работу пула потоков
             executor.shutdown();
             try {
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {    // метод блокирует выполнение текущего потока до тех пор, пока все задачи не завершат выполнение, либо не истечет указанный тайм-аут (60 секунд), либо текущий поток не будет прерван, в зависимости от того, что произойдет первым. Если метод возвращает false, это означает, что тайм-аут истек до завершения всех задач.
-                    executor.shutdownNow();    // метод инициирует упорядоченное завершение работы пула потоков. Новые задачи больше не принимаются, но уже запущенные задачи продолжают выполняться.
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
                 }
-            } catch (InterruptedException e) {  // Этот блок catch перехватывает исключение InterruptedException, которое может быть выброшено, если текущий поток был прерван во время ожидания завершения задач.
-                executor.shutdownNow();      // В случае прерывания текущего потока, этот метод также принудительно завершает работу пула потоков.
-                Thread.currentThread().interrupt();   // Восстанавливает статус прерывания текущего потока, чтобы другие части кода могли корректно обработать факт прерывания.
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
 
             // Если все задачи вернули true, файлы равны
             return true;
         }
-
     }
 
+
+
+
+    public static void main(String[] args) {
+
+        long startTime = System.currentTimeMillis();
+
+        try {
+            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
+            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
+            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .zip");
+            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
+
+//            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
+//            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt");
+            System.out.println(areFilesEqual(file1, file2));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        long endTime = System.currentTimeMillis();
+        long duration = (long) (endTime - startTime);
+        System.out.println("Время выполнения сравнения файлов --- " + duration + " ms       ");
+    }
 }
