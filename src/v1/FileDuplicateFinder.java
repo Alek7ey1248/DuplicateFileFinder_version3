@@ -9,10 +9,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class FileDuplicateFinder {
 
@@ -88,8 +85,16 @@ public class FileDuplicateFinder {
             }
         }
 
-        // Завершаем работу ExecutorService
+        // Завершаем работу пула потоков - на скорость вроде повлияло
         executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {    // метод блокирует выполнение текущего потока до тех пор, пока все задачи не завершат выполнение, либо не истечет указанный тайм-аут (60 секунд), либо текущий поток не будет прерван, в зависимости от того, что произойдет первым. Если метод возвращает false, это означает, что тайм-аут истек до завершения всех задач.
+                executor.shutdownNow();    // метод инициирует упорядоченное завершение работы пула потоков. Новые задачи больше не принимаются, но уже запущенные задачи продолжают выполняться.
+            }
+        } catch (InterruptedException e) {  // Этот блок catch перехватывает исключение InterruptedException, которое может быть выброшено, если текущий поток был прерван во время ожидания завершения задач.
+            executor.shutdownNow();      // В случае прерывания текущего потока, этот метод также принудительно завершает работу пула потоков.
+            Thread.currentThread().interrupt();   // Восстанавливает статус прерывания текущего потока, чтобы другие части кода могли корректно обработать факт прерывания.
+        }
     }
 
 
@@ -168,6 +173,14 @@ public class FileDuplicateFinder {
 
         // Завершаем работу ExecutorService
         executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {    // метод блокирует выполнение текущего потока до тех пор, пока все задачи не завершат выполнение, либо не истечет указанный тайм-аут (60 секунд), либо текущий поток не будет прерван, в зависимости от того, что произойдет первым. Если метод возвращает false, это означает, что тайм-аут истек до завершения всех задач.
+                executor.shutdownNow();    // метод инициирует упорядоченное завершение работы пула потоков. Новые задачи больше не принимаются, но уже запущенные задачи продолжают выполняться.
+            }
+        } catch (InterruptedException e) {  // Этот блок catch перехватывает исключение InterruptedException, которое может быть выброшено, если текущий поток был прерван во время ожидания завершения задач.
+            executor.shutdownNow();      // В случае прерывания текущего потока, этот метод также принудительно завершает работу пула потоков.
+            Thread.currentThread().interrupt();   // Восстанавливает статус прерывания текущего потока, чтобы другие части кода могли корректно обработать факт прерывания.
+        }
     }
 
 
