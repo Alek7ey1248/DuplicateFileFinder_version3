@@ -25,7 +25,9 @@ public class FileComparator {
 
     // Метод для получения размера блока для поблочного чтения
     private static int getBlockSize() {
+        // Получаем количество доступных процессоров
         int availableProcessors = Runtime.getRuntime().availableProcessors();
+        System.out.println("availableProcessors = " + availableProcessors);
         return 8192 * availableProcessors; // 8 KB * количество процессоров
     }
 
@@ -113,13 +115,18 @@ public class FileComparator {
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
 
+            System.out.println("LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
             // Получаем размер файла
             long size = channel1.size();
+            System.out.println("size = " + size);
 
             // Увеличиваем размер блока для больших файлов
-            long blockSize = BLOCK_SIZE * 2L;
+            long blockSize = BLOCK_SIZE * 1L;
+            System.out.println("blockSize = " + blockSize);
             // Вычисляем количество блоков, необходимых для чтения всего файла
-            long numBlocks = (size + blockSize - 1) / blockSize;
+            //long numBlocks = (size + blockSize - 1) / blockSize;
+            long numBlocks = size / blockSize;
+            System.out.println("numBlocks = " + numBlocks);
 
             // Создаем пул потоков с количеством потоков, равным количеству доступных процессоров
             ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());

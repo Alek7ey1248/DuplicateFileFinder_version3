@@ -22,20 +22,20 @@ public class CheckValid {
     public boolean isValidDirectoryPath(String path) {
 
         if (path == null || path.isEmpty()) {
-            System.err.println("Путь к директории не указан");
+            System.err.println("     '"+ path + "'   - Путь к директории не указан");
             return false;
         }
         File directory = new File(path);
         if (!directory.exists()) {
-            System.err.println("Directory " + directory.getAbsolutePath() + " не существует");
+            System.err.println("Directory - '" + directory.getAbsolutePath() + "'  -  не существует");
             return false;
         }
         if (!directory.isDirectory()) {
-            System.err.println("Directory " + directory.getAbsolutePath() + " это не каталог");
+            System.err.println("Directory '" + directory.getAbsolutePath() + "'   -  это не каталог");
             return false;
         }
         if (directory.listFiles() == null) {
-            System.err.println("Directory " + directory.getAbsolutePath() + " недоступен для чтения");
+            System.err.println("Directory '" + directory.getAbsolutePath() + "'   -  недоступен для чтения");
             return false;
         }
         return true;
