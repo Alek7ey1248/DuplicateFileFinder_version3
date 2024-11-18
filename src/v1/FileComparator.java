@@ -43,7 +43,7 @@ public class FileComparator {
         }
 
         // Используем ускоренный метод для больших файлов
-        if (size1 > LARGE_FILE_THRESHOLD) {
+        //if (size1 > LARGE_FILE_THRESHOLD) {
             try {
                 return compareLargeFiles(file1, file2);
             } catch (FileSystemException e) {
@@ -53,16 +53,16 @@ public class FileComparator {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }
+        //}
 
         // Используем побайтное сравнение для всех файлов
-        try {
-            return compareFilesByteByByte(file1, file2);
-        } catch (FileSystemException e) {
-            // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
-            System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
-            return false;
-        }
+//        try {
+//            return compareFilesByteByByte(file1, file2);
+//        } catch (FileSystemException e) {
+//            // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
+//            System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
+//            return false;
+//        }
     }
 
 
@@ -110,94 +110,177 @@ public class FileComparator {
     }
 
 
-    // Ускоренный метод для сравнения больших файлов
+//    // Ускоренный метод для сравнения больших файлов
+//    private static boolean compareLargeFiles(Path file1, Path file2) throws IOException, InterruptedException {
+//        // Открываем каналы для чтения файлов
+//        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
+//             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
+//
+//            System.out.println("LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
+//            // Получаем размер файла
+//            long size = channel1.size();
+//            System.out.println("size = " + size);
+//
+//            // Увеличиваем размер блока для больших файлов
+//            long blockSize = BLOCK_SIZE * 1L;
+//            System.out.println("blockSize = " + blockSize);
+//            // Вычисляем количество блоков, необходимых для чтения всего файла
+//            long numBlocks = size / blockSize;
+//            System.out.println("numBlocks = " + numBlocks);
+//
+//            // Создаем пул потоков с количеством потоков, равным количеству доступных процессоров
+//            ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+//
+//            // Массив для хранения результатов выполнения задач
+//            Future<Boolean>[] futures = new Future[(int) numBlocks];
+//
+//            // Для каждого блока создаем задачу для сравнения блоков файлов
+//            for (int i = 0; i < numBlocks; i++) {
+//                final int blockIndex = i;
+//                futures[i] = executor.submit(() -> {
+//                    try {
+//                        // Создаем буферы для чтения блоков из обоих файлов
+//                        ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
+//                        ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+//
+//                        // Читаем блоки из файлов в буферы
+//                        channel1.read(buffer1, blockIndex * blockSize);
+//                        channel2.read(buffer2, blockIndex * blockSize);
+//
+//                        // Переводим буферы в режим чтения
+//                        buffer1.flip();
+//                        buffer2.flip();
+//
+//                        // Сравниваем содержимое буферов
+//                        if (!buffer1.equals(buffer2)) {
+//                            return false;
+//                        }
+//                        return true;
+//                    } catch (IOException e) {
+//                        // В случае ошибки выводим стек ошибки и возвращаем false
+//                        e.printStackTrace();
+//                        return false;
+//                    }
+//                });
+//            }
+//
+//            // Проверяем результаты выполнения всех задач
+//            for (Future<Boolean> future : futures) {
+//                try {
+//                    // Если хотя бы одна задача вернула false, файлы не равны
+//                    if (!future.get()) {
+//                        executor.shutdown();
+//                        executor.awaitTermination(60, TimeUnit.SECONDS);
+//                        return false;
+//                    }
+//                } catch (Exception e) {
+//                    // В случае ошибки выводим стек ошибки и возвращаем false
+//                    e.printStackTrace();
+//                    executor.shutdown();
+//                    executor.awaitTermination(60, TimeUnit.SECONDS);
+//                    return false;
+//                }
+//            }
+//
+//            // Завершаем работу пула потоков
+//            executor.shutdown();
+//            try {
+//                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                    executor.shutdownNow();
+//                }
+//            } catch (InterruptedException e) {
+//                executor.shutdownNow();
+//                Thread.currentThread().interrupt();
+//            }
+//
+//            // Если все задачи вернули true, файлы равны
+//            return true;
+//        }
+//    }
+
+
     private static boolean compareLargeFiles(Path file1, Path file2) throws IOException, InterruptedException {
         // Открываем каналы для чтения файлов
         try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
 
-            System.out.println("LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
+            //System.out.println("LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
             // Получаем размер файла
             long size = channel1.size();
-            System.out.println("size = " + size);
+            //System.out.println("size = " + size);
 
             // Увеличиваем размер блока для больших файлов
             long blockSize = BLOCK_SIZE * 1L;
-            System.out.println("blockSize = " + blockSize);
+            //System.out.println("blockSize = " + blockSize);
             // Вычисляем количество блоков, необходимых для чтения всего файла
             long numBlocks = size / blockSize;
-            System.out.println("numBlocks = " + numBlocks);
+            //System.out.println("numBlocks = " + numBlocks);
 
-            // Создаем пул потоков с количеством потоков, равным количеству доступных процессоров
-            ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+//            // Увеличиваем размер блока для больших файлов
+//            long blockSize = BLOCK_SIZE * 2L;
+//            // Вычисляем количество блоков, необходимых для чтения всего файла
+//            long numBlocks = (size + blockSize - 1) / blockSize;
+
+            // Количество доступных процессоров
+            int availableProcessors = Runtime.getRuntime().availableProcessors();
+            //System.out.println("availableProcessors = " + availableProcessors);
 
             // Массив для хранения результатов выполнения задач
-            Future<Boolean>[] futures = new Future[(int) numBlocks];
+            boolean[] results = new boolean[availableProcessors];
+            Thread[] threads = new Thread[availableProcessors];
 
-            // Для каждого блока создаем задачу для сравнения блоков файлов
-            for (int i = 0; i < numBlocks; i++) {
-                final int blockIndex = i;
-                futures[i] = executor.submit(() -> {
-                    try {
-                        // Создаем буферы для чтения блоков из обоих файлов
-                        ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
-                        ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
+            // Переменная для отслеживания текущего блока
+            long currentBlock = 0;
 
-                        // Читаем блоки из файлов в буферы
-                        channel1.read(buffer1, blockIndex * blockSize);
-                        channel2.read(buffer2, blockIndex * blockSize);
+            while (currentBlock < numBlocks) {
+                // Создаем потоки для проверки блоков файлов
+                for (int i = 0; i < availableProcessors && currentBlock < numBlocks; i++, currentBlock++) {
+                    final long blockIndex = currentBlock;
+                    final int threadIndex = i;
+                    threads[threadIndex] = new Thread(() -> {
+                        try {
+                            // Создаем буферы для чтения блоков из обоих файлов
+                            ByteBuffer buffer1 = ByteBuffer.allocate((int) blockSize);
+                            ByteBuffer buffer2 = ByteBuffer.allocate((int) blockSize);
 
-                        // Переводим буферы в режим чтения
-                        buffer1.flip();
-                        buffer2.flip();
+                            // Читаем блоки из файлов в буферы
+                            channel1.read(buffer1, blockIndex * blockSize);
+                            channel2.read(buffer2, blockIndex * blockSize);
 
-                        // Сравниваем содержимое буферов
-                        if (!buffer1.equals(buffer2)) {
-                            return false;
+                            // Переводим буферы в режим чтения
+                            buffer1.flip();
+                            buffer2.flip();
+
+                            // Сравниваем содержимое буферов
+                            results[threadIndex] = buffer1.equals(buffer2);
+                        } catch (IOException e) {
+                            // В случае ошибки выводим стек ошибки и устанавливаем результат в false
+                            e.printStackTrace();
+                            results[threadIndex] = false;
                         }
-                        return true;
-                    } catch (IOException e) {
-                        // В случае ошибки выводим стек ошибки и возвращаем false
-                        e.printStackTrace();
+                    });
+                    threads[threadIndex].start();
+                }
+
+                // Ждем завершения всех потоков
+                for (Thread thread : threads) {
+                    if (thread != null) {
+                        thread.join();
+                    }
+                }
+
+                // Проверяем результаты выполнения всех задач
+                for (boolean result : results) {
+                    if (!result) {
                         return false;
                     }
-                });
-            }
-
-            // Проверяем результаты выполнения всех задач
-            for (Future<Boolean> future : futures) {
-                try {
-                    // Если хотя бы одна задача вернула false, файлы не равны
-                    if (!future.get()) {
-                        executor.shutdown();
-                        executor.awaitTermination(60, TimeUnit.SECONDS);
-                        return false;
-                    }
-                } catch (Exception e) {
-                    // В случае ошибки выводим стек ошибки и возвращаем false
-                    e.printStackTrace();
-                    executor.shutdown();
-                    executor.awaitTermination(60, TimeUnit.SECONDS);
-                    return false;
                 }
-            }
-
-            // Завершаем работу пула потоков
-            executor.shutdown();
-            try {
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    executor.shutdownNow();
-                }
-            } catch (InterruptedException e) {
-                executor.shutdownNow();
-                Thread.currentThread().interrupt();
             }
 
             // Если все задачи вернули true, файлы равны
             return true;
         }
     }
-
 
 
 
