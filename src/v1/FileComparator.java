@@ -66,6 +66,7 @@ public class FileComparator {
     }
 
 
+
     // Метод для побайтного сравнения содержимого двух файлов
     private static boolean compareFilesByteByByte(Path file1, Path file2) throws IOException {
         // Открываем каналы для чтения файлов
@@ -121,7 +122,7 @@ public class FileComparator {
             System.out.println("size = " + size);
 
             // Увеличиваем размер блока для больших файлов
-            long blockSize = BLOCK_SIZE * 10L;
+            long blockSize = BLOCK_SIZE * 1L;
             System.out.println("blockSize = " + blockSize);
             // Вычисляем количество блоков, необходимых для чтения всего файла
             long numBlocks = size / blockSize;
@@ -205,9 +206,9 @@ public class FileComparator {
         long startTime = System.currentTimeMillis();
 
         try {
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
+            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
             //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
-            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
+            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
             Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
 
 //            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
