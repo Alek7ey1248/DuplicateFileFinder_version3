@@ -43,7 +43,7 @@ public class FileComparator {
         }
 
         // Используем ускоренный метод для больших файлов
-        //if (size1 > LARGE_FILE_THRESHOLD) {
+        if (size1 > LARGE_FILE_THRESHOLD) {
             try {
                 return compareLargeFiles(file1, file2);
             } catch (FileSystemException e) {
@@ -53,16 +53,16 @@ public class FileComparator {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        //}
+        }
 
         // Используем побайтное сравнение для всех файлов
-//        try {
-//            return compareFilesByteByByte(file1, file2);
-//        } catch (FileSystemException e) {
-//            // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
-//            System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
-//            return false;
-//        }
+        try {
+            return compareFilesByteByByte(file1, file2);
+        } catch (FileSystemException e) {
+            // Логируем и пропускаем файлы, которые не удается открыть  - это на случай если нет прав доступа или типа того
+            System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
+            return false;
+        }
     }
 
 
@@ -81,7 +81,9 @@ public class FileComparator {
 
             // Сравниваем файлы блок за блоком
             for (long position = 0; position < size; position += blockSize) {
+                // Вычисляем количество байт, которые нужно прочитать
                 long remaining = size - position;
+                // Определяем количество байт, которые нужно прочитать в текущем блоке
                 long bytesToRead = Math.min(blockSize, remaining);
 
                 // Создаем буферы для чтения блоков из обоих файлов
@@ -207,19 +209,14 @@ public class FileComparator {
             //System.out.println("LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
             // Получаем размер файла
             long size = channel1.size();
-            //System.out.println("size = " + size);
+            System.out.println("size = " + size);
 
             // Увеличиваем размер блока для больших файлов
             long blockSize = BLOCK_SIZE * 1L;
-            //System.out.println("blockSize = " + blockSize);
+            System.out.println("blockSize = " + blockSize);
             // Вычисляем количество блоков, необходимых для чтения всего файла
-            long numBlocks = size / blockSize;
-            //System.out.println("numBlocks = " + numBlocks);
-
-//            // Увеличиваем размер блока для больших файлов
-//            long blockSize = BLOCK_SIZE * 2L;
-//            // Вычисляем количество блоков, необходимых для чтения всего файла
-//            long numBlocks = (size + blockSize - 1) / blockSize;
+            long numBlocks = (size + blockSize - 1) / blockSize; // Округляем вверх - Этот код гарантирует, что все байты файла будут проверены, даже если размер файла не кратен размеру блока.
+            System.out.println("numBlocks = " + numBlocks);
 
             // Количество доступных процессоров
             int availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -232,6 +229,7 @@ public class FileComparator {
             // Переменная для отслеживания текущего блока
             long currentBlock = 0;
 
+            // Сравниваем файлы блок за блоком
             while (currentBlock < numBlocks) {
                 // Создаем потоки для проверки блоков файлов
                 for (int i = 0; i < availableProcessors && currentBlock < numBlocks; i++, currentBlock++) {
