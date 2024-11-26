@@ -6,9 +6,10 @@ import java.util.*;
 public class PrintFileGroup {
 
     // method for outputting res to the console
-    public void printDuplicateGroups(List<List<File>> duplicateGroups) {
 
-        for (List<File> group : duplicateGroups) {
+    public void printDuplicateGroups(List<List<File>> duplicates) {
+
+        for (List<File> group : duplicates) {
 
             if (!group.isEmpty()) {
                 System.out.println();
