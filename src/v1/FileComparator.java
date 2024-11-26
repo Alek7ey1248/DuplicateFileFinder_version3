@@ -209,14 +209,14 @@ public class FileComparator {
             //System.out.println("LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
             // Получаем размер файла
             long size = channel1.size();
-            System.out.println("size = " + size);
+            //System.out.println("size = " + size);
 
             // Увеличиваем размер блока для больших файлов
-            long blockSize = BLOCK_SIZE * 1L;
-            System.out.println("blockSize = " + blockSize);
+            long blockSize = BLOCK_SIZE * 2L;
+            //System.out.println("blockSize = " + blockSize);
             // Вычисляем количество блоков, необходимых для чтения всего файла
             long numBlocks = (size + blockSize - 1) / blockSize; // Округляем вверх - Этот код гарантирует, что все байты файла будут проверены, даже если размер файла не кратен размеру блока.
-            System.out.println("numBlocks = " + numBlocks);
+            //System.out.println("numBlocks = " + numBlocks);
 
             // Количество доступных процессоров
             int availableProcessors = Runtime.getRuntime().availableProcessors();

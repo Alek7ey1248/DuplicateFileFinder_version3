@@ -1,8 +1,5 @@
 package v1;
 
-import v2.CheckValid2;
-import v2.FileComparator2;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -192,7 +189,7 @@ public class FileDuplicateFinder {
     public void walkFileTree(String path) {
 
         // Для проверки валидности папки или файла
-        CheckValid2 checkValid = new CheckValid2();
+        CheckValid checkValid = new CheckValid();
 
         // Создаем объект File(директорий) для указанного пути
         File directory = new File(path);
