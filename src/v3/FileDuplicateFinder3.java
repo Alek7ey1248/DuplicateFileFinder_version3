@@ -1,5 +1,8 @@
 package v3;
 
+import v1.CheckValid;
+import v1.FileComparator;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -18,100 +21,141 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder3 {
 
-    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold();  // Порог для больших файлов
-    private final Map<Long, Set<Path>> filesByHash = new HashMap<>();      // Файлы, сгруппированные по хешу
-    private final Map<Long, Set<Path>> largeFilesBySize = new HashMap<>();   // Большие файлы, сгруппированные по размеру
-    private final List<List<File>> duplicates = new ArrayList<>();    // Список дубликатов
+    /* HashMap fileByHash - для хранения файлов, сгруппированных по хешу */
+    private final Map<Long, Set<Path>> fileByHash;
 
-    // Определяем порог для больших файлов на основе доступной памяти
-    private static long getLargeFileThreshold() {
-        long availableMemory = Runtime.getRuntime().maxMemory();
-        return availableMemory / 3;
+    /* геттер для получения списка дубликатов */
+    public Map<Long, Set<Path>> getFilesByHash() {
+        return fileByHash;
     }
 
-    // Метод для поиска дубликатов файлов в указанных директориях
-    public void findDuplicates(String[] paths) throws IOException, InterruptedException, ExecutionException {
+    /* Список для хранения результата - групп дубликатов файлов */
+    private final List<List<String>> duplicates;
+
+    /* геттер для получения списка дубликатов */
+    public List<List<String>> getDuplicates() {
+        return duplicates;
+    }
+
+    /* класс вычисления хеша */
+    private Hashing hashing;
+
+
+    /* Конструктор */
+    public FileDuplicateFinder3() {
+        fileByHash = new HashMap<>();
+        hashing = new Hashing();
+        duplicates = new ArrayList<>();
+    }
+
+
+    /* Основной метод для поиска групп дубликатов файлов
+     * @return duplicates - список групп дубликатов файлов
+     * @return path - путь к директории, в которой нужно найти дубликаты
+     * */
+    public void findDuplicates(String[] paths) throws IOException {
+
+        // Рекурсивный обход директорий для группировки файлов по их хешу в карту filesByHash
         for (String path : paths) {
             walkFileTree(path);
         }
-        findLargeDuplicates();
-        createDuplicatesList();
+
+        // Поиск групп дубликатов файлов из карты filesByHash в список duplicates
+        findDuplicatesGroup();
+
+        // Вывод групп дубликатов файлов в консоль
+        printDuplicateResults();
     }
 
-    // Рекурсивный обход директорий для группировки файлов по их размеру или хешу
-    private void walkFileTree(String path) throws IOException {
-        Files.walk(Paths.get(path))
-                .filter(Files::isRegularFile)
-                .forEach(file -> {
-                    try {
-                        long fileSize = Files.size(file);
-                        if (fileSize <= LARGE_FILE_THRESHOLD) {
-                            long fileHash = new Hashing().calculateHashWithSize(file.toFile());
-                            filesByHash.computeIfAbsent((long) fileHash, k -> new HashSet<>()).add(file);
-                        } else {
-                            largeFilesBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-    }
 
-    // Метод для поиска дубликатов среди больших файлов
-    private void findLargeDuplicates() throws IOException, InterruptedException, ExecutionException {
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        List<Future<Map<Long, Set<Path>>>> futures = new ArrayList<>();
+    /* Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
+     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их хешу в HasyMap filesByHash.
+     * @param path - путь к директории, с которой начинается обход файловой системы
+     */
+    public void walkFileTree(String path) {
 
-        for (Map.Entry<Long, Set<Path>> entry : largeFilesBySize.entrySet()) {
-            futures.add(executor.submit(() -> {
-                Map<Long, Set<Path>> result = new HashMap<>();
-                Set<Path> files = entry.getValue();
-                for (Path file1 : files) {
-                    for (Path file2 : files) {
-                        if (!file1.equals(file2) && FileComparator3.compareLargeFiles(file1, file2)) {
-                            result.computeIfAbsent(entry.getKey(), k -> new HashSet<>()).add(file1);
-                            result.get(entry.getKey()).add(file2);
-                        }
+        // Для проверки валидности папки или файла
+        CheckValid checkValid = new CheckValid();
+
+        // Создаем объект File(директорий) для указанного пути
+        File directory = new File(path);
+
+        // Проверка валидности директории
+        if (!checkValid.isValidDirectoryPath(directory.getAbsolutePath())) {
+            return;
+        }
+
+        // Получаем список всех файлов и директорий в указанной директории
+        File[] files = directory.listFiles();
+
+        // Проверяем, что массив не пустой
+        if (files != null) {
+            // Создаем список потоков для параллельной обработки
+            List<Thread> threads = new ArrayList<>();
+
+            // Перебираем каждый файл и директорию в текущей директории
+            for (File file : files) {
+                // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
+                if (file.isDirectory()) {
+                    Thread thread = new Thread(() -> walkFileTree(file.getAbsolutePath()));
+                    threads.add(thread);
+                    thread.start();
+                } else {
+                    // Проверка валидности файла
+                    if (checkValid.isValidFile(file)) {
+                        // Создаем новый поток для вычисления хеша и добавления файла в карту
+                        Thread thread = new Thread(() -> {
+                            // Вычисляем хеш файла с учетом его размера
+                            long fileHash = hashing.calculateHashWithSize(file);
+                            // Группируем файлы по их хешу
+                            synchronized (fileByHash) {
+                                fileByHash.computeIfAbsent(fileHash, k -> new HashSet<>()).add(file.toPath());
+                            }
+                        });
+                        threads.add(thread);
+                        thread.start();
                     }
                 }
-                return result;
-            }));
-        }
+            }
 
-        for (Future<Map<Long, Set<Path>>> future : futures) {
-            Map<Long, Set<Path>> result = future.get();
-            result.forEach((key, value) -> largeFilesBySize.merge(key, value, (oldSet, newSet) -> {
-                oldSet.addAll(newSet);
-                return oldSet;
-            }));
+// Ожидаем завершения всех потоков
+            for (Thread thread : threads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-
-        executor.shutdown();
     }
 
-    // Метод для создания списка дубликатов из карт filesByHash и largeFilesBySize
-    private void createDuplicatesList() {
-        filesByHash.values().forEach(set -> {
-            if (set.size() > 1) {
-                List<File> group = new ArrayList<>();
-                set.forEach(path -> group.add(path.toFile()));
+
+    /*
+    * Метод для поиска групп дубликатов файлов из карты filesByHash в список duplicates
+    * и сортировки списка по размеру файлов в каждой группе
+    * */
+    public void findDuplicatesGroup() {
+
+        // Перебираем все файлы, сгруппированные по хешу
+        for (Map.Entry<Long, Set<Path>> entry : fileByHash.entrySet()) {
+            // Если в группе больше одного файла, добавляем их в список duplicates
+            if (entry.getValue().size() > 1) {
+                List<String> group = new ArrayList<>();
+                for (Path path : entry.getValue()) {
+                    group.add(path.toString());
+                }
                 duplicates.add(group);
             }
-        });
+        }
 
-        largeFilesBySize.values().forEach(set -> {
-            if (set.size() > 1) {
-                List<File> group = new ArrayList<>();
-                set.forEach(path -> group.add(path.toFile()));
-                duplicates.add(group);
-            }
-        });
 
-        duplicates.sort((list1, list2) -> {
+        // Сортируем список duplicates по размеру файлов в каждом списке
+        duplicates.sort((group1, group2) -> {
             try {
-                long size1 = Files.size(list1.get(0).toPath());
-                long size2 = Files.size(list2.get(0).toPath());
-                return Long.compare(size2, size1);
+                long size1 = Files.size(Paths.get(group1.get(0)));
+                long size2 = Files.size(Paths.get(group2.get(0)));
+                return Long.compare(size1, size2); // Сортировка по убыванию размера
+                //return Long.compare(size2, size1); // Сортировка по возрастанию размера
             } catch (IOException e) {
                 e.printStackTrace();
                 return 0;
@@ -119,8 +163,19 @@ public class FileDuplicateFinder3 {
         });
     }
 
-    // Метод для получения списка дубликатов
-    public List<List<File>> getDuplicates() {
-        return duplicates;
+
+
+    // выводит группы дубликатов файлов в консоль из списка дубликатов duplicates, результат поиска дубликатов основным классом FileDuplicateFinder
+    public void printDuplicateResults() throws IOException {
+        for (List<String> group : duplicates) {
+            System.out.println();
+            System.out.println("Группа дубликатов тмпа файла: '" + Paths.get(group.get(0)).getFileName() + "     размера - " + Files.size(Paths.get(group.get(0))) + " байт -------------------------------");
+            for (String filePath : group) {
+                System.out.println(filePath);
+            }
+            System.out.println();
+            System.out.println("--------------------");
+        }
     }
+
 }

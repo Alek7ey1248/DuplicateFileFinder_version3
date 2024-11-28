@@ -30,9 +30,6 @@ public class Main {
             FileDuplicateFinder3 fdf = new FileDuplicateFinder3();;
             fdf.findDuplicates(paths);
 
-            PrintFileGroup printFileGroup = new PrintFileGroup();
-
-            printFileGroup.printDuplicateGroups(fdf.getDuplicates());
 
         long endTime = System.nanoTime();
         long duration = (endTime - startTime) / 1_000_000; // Перевод наносекунд в миллисекунды
