@@ -10,22 +10,26 @@ import java.security.NoSuchAlgorithmException;
 
 public class Hashing {
 
+    private static int BUFFER_SIZE; // Оптимальный размер буфера на основе доступной памяти
+
+
     public Hashing() {
+        BUFFER_SIZE = getOptimalBufferSize();
+        //BUFFER_SIZE = 1048576;
+        //BUFFER_SIZE = 8192;
+        //BUFFER_SIZE = 4096;
     }
 
     // Метод для расчета хеша файла с учетом размера файла
     public long calculateHashWithSize(File file) {
-        System.out.println(" обработка - " + file.getAbsolutePath() );
+        System.out.println(" обработка - " + file.getAbsolutePath() + "///    Buffer size: " + BUFFER_SIZE);
         try {
             // Получаем экземпляр MessageDigest для алгоритма SHA-256
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-            // Определяем оптимальный размер буфера на основе доступной памяти
-            int bufferSize = getOptimalBufferSize();
-
             // Используем BufferedInputStream для уменьшения количества операций ввода-вывода
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file), bufferSize)) {
-                byte[] buffer = new byte[bufferSize];
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE)) {
+                byte[] buffer = new byte[BUFFER_SIZE];
                 int bytesRead;
                 while ((bytesRead = bis.read(buffer)) != -1) {
                     digest.update(buffer, 0, bytesRead);
@@ -55,10 +59,45 @@ public class Hashing {
         }
     }
 
+
+
     // Метод для определения оптимального размера буфера на основе доступной памяти
+    // Метод для определения оптимального размера буфера на основе доступной памяти и количества процессоров
     private int getOptimalBufferSize() {
+        // Получаем максимальное количество доступной памяти
         long maxMemory = Runtime.getRuntime().maxMemory();
-        // Используем 1/256 доступной памяти для буфера, но не менее 8KB и не более 1MB
-        return (int) Math.min(Math.max(maxMemory / 256, 8192), 1048576);
+        // Получаем количество доступных процессоров
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        long bsLong = maxMemory / (availableProcessors * 8192L * 8);
+        int bs = (int)bsLong ;
+
+        int minBufferSize = 1024 * availableProcessors / 2 ;
+        return Math.max(bs, minBufferSize);
+    }
+
+
+    public static void main(String[] args) {
+        // Получаем экземпляр Runtime
+        Runtime runtime = Runtime.getRuntime();
+
+        // Получаем максимальное количество памяти, которое может быть использовано JVM
+        long maxMemory = runtime.maxMemory();
+
+        // Выводим объем памяти в гигабайтах
+        System.out.println("Максимальный объем памяти (в байтах): " + maxMemory);
+
+        // Получаем количество доступных процессоров
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        System.out.println("кол-во процессоров: " + availableProcessors);
+
+
+
+        long bsLong = maxMemory / (availableProcessors * 8192L * 8);
+        int bs = (int)bsLong ;
+
+        int minBufferSize = 1024 * availableProcessors / 2 ;
+        int bufferSize = Math.max(bs, minBufferSize);
+        System.out.println("bs: " + bs + "         bufferSize: " + bufferSize);
     }
 }

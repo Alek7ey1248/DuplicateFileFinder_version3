@@ -40,12 +40,16 @@ public class FileDuplicateFinder3 {
     /* класс вычисления хеша */
     private Hashing hashing;
 
+    /* класс проверки валидности */
+    CheckValid checkValid;
+
 
     /* Конструктор */
     public FileDuplicateFinder3() {
         fileByHash = new HashMap<>();
         hashing = new Hashing();
         duplicates = new ArrayList<>();
+        checkValid = new CheckValid();
     }
 
 
@@ -75,15 +79,15 @@ public class FileDuplicateFinder3 {
     public void walkFileTree(String path) {
 
         // Для проверки валидности папки или файла
-        CheckValid checkValid = new CheckValid();
+        //CheckValid checkValid = new CheckValid();
 
         // Создаем объект File(директорий) для указанного пути
         File directory = new File(path);
 
         // Проверка валидности директории
-        if (!checkValid.isValidDirectoryPath(directory.getAbsolutePath())) {
-            return;
-        }
+//        if (!checkValid.isValidDirectoryPath(directory.getAbsolutePath())) {
+//            return;
+//        }
 
         // Получаем список всех файлов и директорий в указанной директории
         File[] files = directory.listFiles();
@@ -100,20 +104,21 @@ public class FileDuplicateFinder3 {
                     Thread thread = new Thread(() -> walkFileTree(file.getAbsolutePath()));
                     threads.add(thread);
                     thread.start();
+
                 } else {
                     // Проверка валидности файла
                     if (checkValid.isValidFile(file)) {
                         // Создаем новый поток для вычисления хеша и добавления файла в карту
-                        Thread thread = new Thread(() -> {
+                        //Thread thread = new Thread(() -> {
                             // Вычисляем хеш файла с учетом его размера
                             long fileHash = hashing.calculateHashWithSize(file);
                             // Группируем файлы по их хешу
                             synchronized (fileByHash) {
                                 fileByHash.computeIfAbsent(fileHash, k -> new HashSet<>()).add(file.toPath());
                             }
-                        });
-                        threads.add(thread);
-                        thread.start();
+                        //});
+//                        threads.add(thread);
+//                        thread.start();
                     }
                 }
             }

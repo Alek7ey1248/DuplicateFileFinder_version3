@@ -24,7 +24,7 @@ public class Main {
 
 
         // проверим валидность аргументов
-            CheckValid isValid = new CheckValid();
+            //CheckValid isValid = new CheckValid();
             //List<String> validPaths = isValid.getValidDirectoryPaths(paths);   !!!!!! НАДО СДЕЛАТЬ !!!!!
 
             FileDuplicateFinder3 fdf = new FileDuplicateFinder3();;
