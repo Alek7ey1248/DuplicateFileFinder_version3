@@ -199,10 +199,10 @@ public class FileComparator {
         long startTime = System.currentTimeMillis();
 
         try {
-            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
-            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
+            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
+            Path file1 = Path.of("/home/alek7ey/.cache/JetBrains/IdeaIC2024.3/caches/content.dat");
+            Path file2 = Path.of("/home/alek7ey/.cache/JetBrains/IdeaIC2024.2/caches/content.dat");
+            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
 
 //            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
 //            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt");

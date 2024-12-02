@@ -22,7 +22,7 @@ public class Hashing {
 
     // Метод для расчета хеша файла с учетом размера файла
     public long calculateHashWithSize(File file) {
-        System.out.println(" обработка - " + file.getAbsolutePath() + "///    Buffer size: " + BUFFER_SIZE);
+        System.out.println(" обработка - " + file.getAbsolutePath());
         try {
             // Получаем экземпляр MessageDigest для алгоритма SHA-256
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
