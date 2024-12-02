@@ -20,6 +20,7 @@ public class FileKey implements Comparable<FileKey> {
     // конструктор для создания ключа файла на основе размера и хеша
     public FileKey(File file) {
         this.size = file.length();
+        //this.hash = hashing.calculateHashWithSize(file);
         this.hash = hashing.calculateHashWithSize(file);
     }
 
@@ -33,9 +34,10 @@ public class FileKey implements Comparable<FileKey> {
     }
 
     // переопределение метода hashCode для корректного сравнения объектов
+    // Метод hashCode нужен для того, чтобы предоставить уникальное целочисленное представление объекта, что необходимо для корректной работы коллекций, основанных на хешировании, таких как HashMap и HashSet. Он гарантирует, что объекты, которые считаются равными (через метод equals), имеют одинаковый хеш-код, что позволяет этим коллекциям эффективно хранить и извлекать объекты.
     @Override
     public int hashCode() {
-        return Objects.hash(size, hash);
+        return size == 0 ? 0 : Objects.hash(size, hash);
     }
 
     /* переопределение метода compareTo для сортировки объектов по размеру
