@@ -25,10 +25,12 @@ public class FileProcessor extends RecursiveAction {
         } else {
             // Определяем количество доступных процессоров
             int availableProcessors = Runtime.getRuntime().availableProcessors();
+            // Разбиваем файлы на подзадачи для параллельной обработки в зависимости от количества процессоров на компьютере и порога THRESHOLD (10) файлов в подзадаче (подзадача обрабатывается последовательно)
             List<List<File>> partitions = partitionFiles(Arrays.asList(files), availableProcessors);
 
             // Создаем подзадачи для параллельной обработки
             List<FileProcessor> tasks = new ArrayList<>();
+            // Добавляем подзадачи в список
             for (List<File> partition : partitions) {
                 tasks.add(new FileProcessor(partition.toArray(new File[0]), hasher));
             }
@@ -36,6 +38,7 @@ public class FileProcessor extends RecursiveAction {
         }
     }
 
+    // Обработка файлов последовательно (в одном потоке)
     private void processFilesSequentially() {
         for (File file : files) {
             if (file.isFile()) {
@@ -60,8 +63,8 @@ public class FileProcessor extends RecursiveAction {
 
         // Пример использования
         FileHasher fileHasher = new FileHasher();
-        //File directory = new File("/home/alek7ey/.cache");
-        File directory = new File("/home/alek7ey");
+        File directory = new File("/home/alek7ey/.cache");
+        //File directory = new File("/home/alek7ey/snap");
 
 
         // Получаем список всех файлов в директории

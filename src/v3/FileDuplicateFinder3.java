@@ -22,18 +22,18 @@ import java.util.concurrent.*;
 public class FileDuplicateFinder3 {
 
     /* HashMap fileByHash - для хранения файлов, сгруппированных по хешу */
-    private final Map<Long, Set<Path>> fileByHash;
+    private final Map<Long, Set<File>> fileByHash;
 
     /* геттер для получения списка дубликатов */
-    public Map<Long, Set<Path>> getFilesByHash() {
+    public Map<Long, Set<File>> getFilesByHash() {
         return fileByHash;
     }
 
     /* Список для хранения результата - групп дубликатов файлов */
-    private final List<List<String>> duplicates;
+    private final List<List<File>> duplicates;
 
     /* геттер для получения списка дубликатов */
-    public List<List<String>> getDuplicates() {
+    public List<List<File>> getDuplicates() {
         return duplicates;
     }
 
@@ -108,17 +108,8 @@ public class FileDuplicateFinder3 {
                 } else {
                     // Проверка валидности файла
                     if (checkValid.isValidFile(file)) {
-                        // Создаем новый поток для вычисления хеша и добавления файла в карту
-                        //Thread thread = new Thread(() -> {
-                            // Вычисляем хеш файла с учетом его размера
-                            long fileHash = hashing.calculateHashWithSize(file);
-                            // Группируем файлы по их хешу
-                            synchronized (fileByHash) {
-                                fileByHash.computeIfAbsent(fileHash, k -> new HashSet<>()).add(file.toPath());
-                            }
-                        //});
-//                        threads.add(thread);
-//                        thread.start();
+                        // Добавляем файл в мапу по хешу
+                        addFile(file);
                     }
                 }
             }
@@ -135,6 +126,26 @@ public class FileDuplicateFinder3 {
     }
 
 
+    // Метод для добавления файла в мапу по ключу - хэшу
+    public void addFile(File file) {
+        System.out.println("обрабатывается - : " + file.getName());
+
+        // Вычисляем хэш файла
+        long fileHash = hashing.calculateHashWithSize(file);
+
+        // Если хэш уже есть в мапе, добавляем файл к существующему списку
+        if (fileByHash.containsKey(fileHash)) {
+            fileByHash.get(fileHash).add(file);
+        } else {
+            // Иначе создаем новый список и добавляем файл
+            Set<File> fileSet = new HashSet<>();
+            fileSet.add(file);
+            fileByHash.put(fileHash, fileSet);
+        }
+    }
+
+
+
     /*
     * Метод для поиска групп дубликатов файлов из карты filesByHash в список duplicates
     * и сортировки списка по размеру файлов в каждой группе
@@ -142,12 +153,12 @@ public class FileDuplicateFinder3 {
     public void findDuplicatesGroup() {
 
         // Перебираем все файлы, сгруппированные по хешу
-        for (Map.Entry<Long, Set<Path>> entry : fileByHash.entrySet()) {
+        for (Map.Entry<Long, Set<File>> entry : fileByHash.entrySet()) {
             // Если в группе больше одного файла, добавляем их в список duplicates
             if (entry.getValue().size() > 1) {
-                List<String> group = new ArrayList<>();
-                for (Path path : entry.getValue()) {
-                    group.add(path.toString());
+                List<File> group = new ArrayList<>();
+                for (File file : entry.getValue()) {
+                    group.add(file);
                 }
                 duplicates.add(group);
             }
@@ -157,8 +168,8 @@ public class FileDuplicateFinder3 {
         // Сортируем список duplicates по размеру файлов в каждом списке
         duplicates.sort((group1, group2) -> {
             try {
-                long size1 = Files.size(Paths.get(group1.get(0)));
-                long size2 = Files.size(Paths.get(group2.get(0)));
+                long size1 = Files.size(group1.get(0).toPath());
+                long size2 = Files.size(group2.get(0).toPath());
                 return Long.compare(size1, size2); // Сортировка по убыванию размера
                 //return Long.compare(size2, size1); // Сортировка по возрастанию размера
             } catch (IOException e) {
@@ -172,11 +183,11 @@ public class FileDuplicateFinder3 {
 
     // выводит группы дубликатов файлов в консоль из списка дубликатов duplicates, результат поиска дубликатов основным классом FileDuplicateFinder
     public void printDuplicateResults() throws IOException {
-        for (List<String> group : duplicates) {
+        for (List<File> group : duplicates) {
             System.out.println();
-            System.out.println("Группа дубликатов тмпа файла: '" + Paths.get(group.get(0)).getFileName() + "     размера - " + Files.size(Paths.get(group.get(0))) + " байт -------------------------------");
-            for (String filePath : group) {
-                System.out.println(filePath);
+            System.out.println("Группа дубликатов тмпа файла: '" + Paths.get(group.get(0).getName()) + "     размера - " + Files.size(group.get(0).toPath()) + " байт -------------------------------");
+            for (File file : group) {
+                System.out.println(file.getAbsolutePath());
             }
             System.out.println();
             System.out.println("--------------------");
