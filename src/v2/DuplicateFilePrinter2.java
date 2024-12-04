@@ -68,8 +68,8 @@ public class DuplicateFilePrinter2 {
         //String path = "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";
         //String path = "/home/alek7ey/Рабочий стол";
         //String path = "/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы";
-        //String path = "/home/alek7ey";
-        String path = "/home/alek7ey/.cache";
+        String path = "/home/alek7ey";
+        //String path = "/home/alek7ey/.cache";
 
 
         FileDuplicateFinder2 finder = new FileDuplicateFinder2();

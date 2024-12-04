@@ -1,13 +1,12 @@
 package v3;
 
-import v3.CheckValid;
-import v1.FileComparator;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /*
@@ -26,11 +25,6 @@ public class FileDuplicateFinder3 {
     */
     private final TreeMap<FileKey, Set<File>> fileByHash;
 
-    /* геттер для получения карты файлов по хешу */
-    public TreeMap<FileKey, Set<File>> getFilesByHash() {
-        return fileByHash;
-    }
-
     /* Конструктор */
     public FileDuplicateFinder3() {
         fileByHash = new TreeMap<>();
@@ -47,9 +41,9 @@ public class FileDuplicateFinder3 {
         for (String path : paths) {
             walkFileTree(path);
         }
-
         // Вывод групп дубликатов файлов в консоль
         printDuplicateResults();
+
     }
 
 
@@ -57,27 +51,47 @@ public class FileDuplicateFinder3 {
      * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их хешу в HasyMap filesByHash.
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
+//    public void walkFileTree(String path) {
+//
+//        // Создаем объект File(директорий) для указанного пути
+//        File directory = new File(path);
+//
+//        // Получаем список всех файлов и директорий в указанной директории
+//        File[] files = directory.listFiles();
+//
+//        // Проверяем, что массив не пустой
+//        if (files != null) {
+//            // Перебираем каждый файл и директорию в текущей директории
+//            for (File file : files) {
+//                // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
+//                if (file.isDirectory()) {
+//                    walkFileTree(file.getAbsolutePath());
+//                } else {
+//                        // Добавляем файл в мапу по хешу
+//                        addFileToTreeMap(file);
+//                }
+//            }
+//
+//        }
+//    }
+
+    /* тот же метод с использованием очереди */
     public void walkFileTree(String path) {
+        Queue<File> queue = new LinkedList<>();
+        queue.add(new File(path));
 
-        // Создаем объект File(директорий) для указанного пути
-        File directory = new File(path);
-
-        // Получаем список всех файлов и директорий в указанной директории
-        File[] files = directory.listFiles();
-
-        // Проверяем, что массив не пустой
-        if (files != null) {
-            // Перебираем каждый файл и директорию в текущей директории
-            for (File file : files) {
-                // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
-                if (file.isDirectory()) {
-                    walkFileTree(file.getAbsolutePath());
-                } else {
-                        // Добавляем файл в мапу по хешу
+        while (!queue.isEmpty()) {
+            File directory = queue.poll();
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        queue.add(file);
+                    } else {
                         addFileToTreeMap(file);
+                    }
                 }
             }
-
         }
     }
 
@@ -87,18 +101,19 @@ public class FileDuplicateFinder3 {
         System.out.println("обрабатывается - : " + file.getName());
 
         // Вычисляем хэш файла
-        //long fileHash = hashing.calculateHashWithSize(file);
         FileKey fileKey = new FileKey(file);
 
-        // Если хэш уже есть в мапе, добавляем файл к существующему списку
-        if (fileByHash.containsKey(fileKey)) {
-            fileByHash.get(fileKey).add(file);
-        } else {
-            // Иначе создаем новый список и добавляем файл
-            Set<File> fileSet = new HashSet<>();
-            fileSet.add(file);
-            fileByHash.put(fileKey, fileSet);
-        }
+        fileByHash.computeIfAbsent(fileKey, k -> new HashSet<>()).add(file);
+
+//        // Если хэш уже есть в мапе, добавляем файл к существующему списку
+//        if (fileByHash.containsKey(fileKey)) {
+//            fileByHash.get(fileKey).add(file);
+//        } else {
+//            // Иначе создаем новый список и добавляем файл
+//            Set<File> fileSet = new HashSet<>();
+//            fileSet.add(file);
+//            fileByHash.put(fileKey, fileSet);
+//        }
     }
 
 
@@ -122,6 +137,12 @@ public class FileDuplicateFinder3 {
                 System.out.println("--------------------");
             }
         }
+    }
+
+
+    /* геттер для получения карты файлов по хешу */
+    public TreeMap<FileKey, Set<File>> getFilesByHash() {
+        return fileByHash;
     }
 
 }

@@ -3,24 +3,19 @@ package v3;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
 
 // класс для хранения ключа файла - размера и хеша
 public class FileKey implements Comparable<FileKey> {
-    private final long size;
-    public long getSize() {
-        return size;
-    }
-    private final long hash;
-    public long getHash() {
-        return hash;
-    }
 
-    private Hashing hashing = new Hashing();
+    private final long size;
+    private final long hash;
 
     // конструктор для создания ключа файла на основе размера и хеша
     public FileKey(File file) {
         this.size = file.length();
-        this.hash = hashing.calculateHashWithSize(file);
+        this.hash = new Hashing().calculateHash(file);
     }
 
     // переопределение методов equals и hashCode для корректного сравнения объектов
@@ -49,5 +44,9 @@ public class FileKey implements Comparable<FileKey> {
             return sizeComparison;
         }
         return Long.compare(this.hash, other.hash);
+    }
+
+    public long getSize() {
+        return size;
     }
 }
