@@ -1,12 +1,14 @@
 package v3;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Stream;
+
 
 
 public class Hashing {
@@ -14,20 +16,19 @@ public class Hashing {
     private static int BUFFER_SIZE; // Оптимальный размер буфера на основе доступной памяти
     private static MessageDigest digest;  // экземпляр MessageDigest для алгоритма SHA-256
     private static int LARGE_FILE_THRESHOLD; // Порог для больших файлов
-    private final ForkJoinPool forkJoinPool;
-    // много поточность
+    private final ExecutorService executorService; // Пул потоков для многопоточного хеширования
+
 
     // конструктор
-    public Hashing() {
-        BUFFER_SIZE = getOptimalBufferSize();
+    public Hashing(ExecutorService executorService) {
+        BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java
         LARGE_FILE_THRESHOLD = getOptimalLargeFileSize();
         try { // Получаем экземпляр MessageDigest для алгоритма SHA-256
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Алгоритм SHA-256 не найден", e);
         }
-        this.forkJoinPool = new ForkJoinPool();
-        //this.forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
+        this.executorService = executorService;
     }
 
     /* Метод для расчета хеша файла
@@ -52,32 +53,38 @@ public class Hashing {
     }
 
 
-    /* Метод для расчета хеша файла с учетом размера файла
+    /* Метод для расчета хеша файла
     * @param file - файл, для которого нужно рассчитать хеш
      */
     private long calculateHashSmallFile(File file) {
         System.out.println(" обработка SmallFile - " + file.getAbsolutePath());
-            // Используем BufferedInputStream для уменьшения количества операций ввода-вывода
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE)) {
-                byte[] buffer = new byte[BUFFER_SIZE];
-                int bytesRead;
-                while ((bytesRead = bis.read(buffer)) != -1) {
-                    digest.update(buffer, 0, bytesRead);
-                }
-            } catch (FileNotFoundException e) {
-                System.err.println("Файл не найден: ------ " + file.getAbsolutePath() + ": " + e.getMessage());
-                return -1;
-            } catch (IOException e) {
-                System.err.println("Ошибка чтения файла " + file.getAbsolutePath() + ": " + e.getMessage());
-                return -1;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            FileInputStream fis = new FileInputStream(file);
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead);
             }
-        // Получаем байты хеша и преобразуем их в целое число
+            fis.close();
+
+            // Add the file size to the hash
+            long fileSize = file.length();
+            byte[] sizeBytes = ByteBuffer.allocate(Long.BYTES).putLong(fileSize).array();
+            digest.update(sizeBytes);
+
             byte[] hashBytes = digest.digest();
-            Long hash = 0l;
+            int hash = 0;
             for (byte b : hashBytes) {
                 hash = (hash << 8) + (b & 0xff);
             }
             return hash;
+        } catch (IOException | UncheckedIOException e) {
+            System.err.println("Error reading file " + file.getName() + " in the method calculateContentHash: " + e.getMessage());
+            return -1;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -85,66 +92,37 @@ public class Hashing {
     /* Метод для расчета хеша больших файлов с использованием многопоточности
     * @param file - файл, для которого нужно рассчитать хеш
      */
-
     private long calculateHashLargeFile(File file) throws IOException, NoSuchAlgorithmException, InterruptedException, ExecutionException {
         System.out.println(" обработка LargeFile - " + file.getAbsolutePath());
+        List<Future<byte[]>> futures = new ArrayList<>();
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE)) {
             byte[] buffer = new byte[BUFFER_SIZE];
-            ForkJoinTask<byte[]> task = forkJoinPool.submit(() -> {
-                try {
-                    int bytesRead;
-                    while ((bytesRead = bis.read(buffer)) != -1) {
-                        byte[] chunk = new byte[bytesRead];
-                        System.arraycopy(buffer, 0, chunk, 0, bytesRead);
-                        MessageDigest chunkDigest = MessageDigest.getInstance("SHA-256");
-                        chunkDigest.update(chunk);
-                        byte[] chunkHash = chunkDigest.digest();
-                        digest.update(chunkHash);
-                    }
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    throw new RuntimeException(e);
-                }
-                return digest.digest();
-            });
-
-            byte[] hashBytes = task.get();
-            long hash = 0L;
-            for (byte b : hashBytes) {
-                hash = (hash << 8) + (b & 0xff);
+            int bytesRead;
+            while ((bytesRead = bis.read(buffer)) != -1) {
+                byte[] chunk = Arrays.copyOf(buffer, bytesRead);
+                futures.add(executorService.submit(() -> {
+                    MessageDigest chunkDigest = MessageDigest.getInstance("SHA-256");
+                    chunkDigest.update(chunk);
+                    return chunkDigest.digest();
+                }));
             }
-            return hash;
         }
+
+        for (Future<byte[]> future : futures) {
+            byte[] chunkHash = future.get();
+            digest.update(chunkHash);
+        }
+
+        byte[] hashBytes = digest.digest();
+        long hash = 0L;
+        for (byte b : hashBytes) {
+            hash = (hash << 8) + (b & 0xff);
+        }
+        return hash;
     }
 
-
-    /* этот вариант пока не работает - перегружает память
-//    private long calculateHashLargeFile(File file) throws IOException, NoSuchAlgorithmException, InterruptedException, ExecutionException {
-//        System.out.println(" обработка - " + file.getAbsolutePath());
-//        List<Future<byte[]>> futures = new ArrayList<>();
-//        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file), BUFFER_SIZE)) {
-//            byte[] buffer = new byte[BUFFER_SIZE];
-//            int bytesRead;
-//            while ((bytesRead = bis.read(buffer)) != -1) {
-//                byte[] chunk = new byte[bytesRead];
-//                System.arraycopy(buffer, 0, chunk, 0, bytesRead);
-//                futures.add(executorService.submit(() -> {
-//                    MessageDigest chunkDigest = MessageDigest.getInstance("SHA-256");
-//                    chunkDigest.update(chunk);
-//                    return chunkDigest.digest();
-//                }));
-//            }
-//        }
-//        for (Future<byte[]> future : futures) {
-//            byte[] chunkHash = future.get();
-//            digest.update(chunkHash);
-//        }
-//        byte[] hashBytes = digest.digest();
-//        long hash = 0L;
-//        for (byte b : hashBytes) {
-//            hash = (hash << 8) + (b & 0xff);
-//        }
-//        return hash;
-//    }
 
 
 
