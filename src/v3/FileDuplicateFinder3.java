@@ -20,7 +20,7 @@ public class FileDuplicateFinder3 {
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
     private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ExecutorService executorService;
-    private static final int FILES_SIZE_THRESHOLD = getOptimalFilesSize();; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
+    private static final int FILES_SIZE_THRESHOLD = getOptimalFilesSize() * 30;; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
