@@ -160,11 +160,8 @@ public class FileDuplicateFinder3 {
      */
     public void addFileToTreeMap(File file) {
         System.out.println("обрабатывается - : " + file.getName());
-
-        // Вычисляем хэш файла
-        FileKey fileKey = new FileKey(file, executorService);
-
-        fileByHash.computeIfAbsent(fileKey, k -> new HashSet<>()).add(file);
+        FileKey fileKey = new FileKey(file, executorService); // Вычисляем хэш файла
+        fileByHash.computeIfAbsent(fileKey, k -> new HashSet<>()).add(file); // Добавляем файл в мапу по хэшу и размеру
     }
 
 
