@@ -13,9 +13,9 @@ public class FileKey implements Comparable<FileKey> {
     private final long hash;
 
     // конструктор для создания ключа файла на основе размера и хеша
-    public FileKey(File file, ExecutorService executorService) {
+    public FileKey(File file) {
         this.size = file.length();
-        this.hash = new Hashing(executorService).calculateHash(file);
+        this.hash = new Hashing().calculateHash(file);
     }
 
     // переопределение методов equals и hashCode для корректного сравнения объектов

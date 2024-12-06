@@ -23,14 +23,16 @@ public class FileDuplicateFinder3 {
     //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
     private final ExecutorService executorService;
-    private static final int FILES_SIZE_THRESHOLD = calculateMemoryPerThread(); //getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
+    private final Semaphore semaphore;
+    public static final int FILES_SIZE_THRESHOLD = calculateMemoryPerThread(); //getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
-        fileBySize = new HashMap<>();
+        this.fileBySize = new HashMap<>();
         //fileByHash = new TreeMap<>();
-        fileByHash = new ConcurrentSkipListMap<>();
-        executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());  // Создаем пул потоков с количеством равным количеству доступных процессоров
+        this.fileByHash = new ConcurrentSkipListMap<>();
+        this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());  // Создаем пул потоков с количеством равным количеству доступных процессоров
+        this.semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());  // Создаем семафор с количеством разрешений равным половине количества доступных процессоров
     }
 
 
@@ -38,10 +40,9 @@ public class FileDuplicateFinder3 {
      * @return duplicates - список групп дубликатов файлов
      * @return path - путь к директории, в которой нужно найти дубликаты
      * */
-    public void findDuplicates(String[] paths) throws IOException {
+    public void findDuplicates(String[] paths) {
 
         for (String path : paths) { // Рекурсивный обход директорий для группировки файлов по их пазмеру в карту filesByHash
-
             walkFileTree(path);
         }
 
@@ -53,7 +54,7 @@ public class FileDuplicateFinder3 {
 
 
     /* Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
-     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HasyMap filesBySize.
+     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
     public void walkFileTree(String path) {
@@ -74,25 +75,11 @@ public class FileDuplicateFinder3 {
         }
     }
 
-    /*
-     * Метод добавления файлов в fileByHash из fileBySize для файлов, количество которых одного размера больше одного
+
+    /* Метод для добавления файлов в TreeMap fileByHash из HashMap fileBySize
+        * При добавлении файлов в TreeMap fileByHash, файлы группируются по их хешу и размеру
+        *   файлы подаются на обработку в параллельные потоки
      */
-//    public void addFilesToTreeMap() {
-//        // Проходим по всем записям в HashMap fileBySize
-//        for (Map.Entry<Long, Set<File>> entry : fileBySize.entrySet()) {
-//            // Получаем значение (Set<File>) для текущей записи
-//            Set<File> files = entry.getValue();
-//            // Проверяем, что в группе есть файлы больше одного
-//            if (files.size() > 1) {
-//                // Проходим по всем файлам в группе и добавляем их в TreeMap fileByHash
-//                for (File file : files) {
-//                    addFileToTreeMap(file);
-//                }
-//            }
-//        }
-//    }
-
-
     public void addFilesToTreeMap() {
         // Список для хранения задач Future
         List<Future<Void>> futures = new ArrayList<>();
@@ -120,8 +107,15 @@ public class FileDuplicateFinder3 {
                         final List<File> batchToProcess = new ArrayList<>(currentBatch);
                         // Создаем задачу для обработки группы файлов
                         Future<Void> future = executorService.submit(() -> {
-                            for (File f : batchToProcess) {
-                                addFileToTreeMap(f);
+                            // Захватываем семафор перед выполнением задачи
+                            semaphore.acquire();
+                            try {
+                                for (File f : batchToProcess) {
+                                    addFileToTreeMap(f);  // Добавляем файл в fileByHash
+                                }
+                            } finally {
+                                // Освобождаем семафор после завершения задачи
+                                semaphore.release();
                             }
                             return null;
                         });
@@ -140,8 +134,15 @@ public class FileDuplicateFinder3 {
         if (!currentBatch.isEmpty()) {
             final List<File> batchToProcess = new ArrayList<>(currentBatch);
             Future<Void> future = executorService.submit(() -> {
-                for (File f : batchToProcess) {
-                    addFileToTreeMap(f);
+                // Захватываем семафор перед выполнением задачи
+                semaphore.acquire();
+                try {
+                    for (File f : batchToProcess) {
+                        addFileToTreeMap(f);  // Добавляем файл в fileByHash
+                    }
+                } finally {
+                    // Освобождаем семафор после завершения задачи
+                    semaphore.release();
                 }
                 return null;
             });
@@ -152,25 +153,25 @@ public class FileDuplicateFinder3 {
         for (Future<Void> future : futures) {
             try {
                 future.get();
+                System.gc(); // Вызываем сборщик мусора после завершения каждой задачи
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!  Ошибка при обработке группы файлов: " + e.getMessage());
             }
         }
     }
 
 
-    /* Метод для добавления файла в мапу по ключу - хэшу
+    /* Метод для добавления файла в мап fileByHash по ключу - хэшу
     * @param file - файл, который нужно добавить в мапу
      */
     public void addFileToTreeMap(File file) {
-        System.out.println("обрабатывается - : " + file.getName());
-        FileKey fileKey = new FileKey(file, executorService); // Вычисляем хэш файла
+        FileKey fileKey = new FileKey(file); // Вычисляем хэш файла
         fileByHash.computeIfAbsent(fileKey, k -> new HashSet<>()).add(file); // Добавляем файл в мапу по хэшу и размеру
     }
 
 
     // выводит группы дубликатов файлов
-    public void printDuplicateResults() throws IOException {
+    public void printDuplicateResults() {
         // Проходим по всем записям в TreeMap fileByHash
         for (Map.Entry<FileKey, Set<File>> entry : fileByHash.entrySet()) {
             // Получаем ключ (FileKey) и значение (Set<File>) для текущей записи
@@ -192,11 +193,6 @@ public class FileDuplicateFinder3 {
     }
 
 
-    /* геттер для получения карты файлов по хешу */
-    public ConcurrentSkipListMap<FileKey, Set<File>> getFilesByHash() {
-        return fileByHash;
-    }
-
     /* Метод для получения оптимального порога величины суммарного
     * размера группы файлов запущеных в одном потоке
     */
@@ -217,15 +213,18 @@ public class FileDuplicateFinder3 {
     private static int calculateMemoryPerThread() {
         // Получаем количество доступных процессоров
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-
-        // Получаем общий объем оперативной памяти
-        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-        long totalMemory = ((com.sun.management.OperatingSystemMXBean) osBean).getTotalPhysicalMemorySize();
-
         // Рассчитываем объем памяти на один поток
-        int memoryPerThread = (int) (totalMemory / availableProcessors);
+        return (int) (getTotalMemory() / availableProcessors);
+    }
 
-        return memoryPerThread;
+    /* Метод для получения общего объема памяти - вспомогательный метод для calculateMemoryPerThread */
+    public static long getTotalMemory() {
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
+            return ((com.sun.management.OperatingSystemMXBean) osBean).getTotalMemorySize();
+        } else {
+            throw new UnsupportedOperationException("Unsupported OperatingSystemMXBean implementation");
+        }
     }
 
     /**
