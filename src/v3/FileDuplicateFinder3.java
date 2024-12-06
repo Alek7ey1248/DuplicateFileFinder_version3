@@ -2,6 +2,8 @@ package v3;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -18,14 +20,16 @@ import java.util.concurrent.*;
 public class FileDuplicateFinder3 {
 
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
-    private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
+    //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
+    private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
     private final ExecutorService executorService;
-    private static final int FILES_SIZE_THRESHOLD = getOptimalFilesSize() * 30;; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
+    private static final int FILES_SIZE_THRESHOLD = calculateMemoryPerThread(); //getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
         fileBySize = new HashMap<>();
-        fileByHash = new TreeMap<>();
+        //fileByHash = new TreeMap<>();
+        fileByHash = new ConcurrentSkipListMap<>();
         executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());  // Создаем пул потоков с количеством равным количеству доступных процессоров
     }
 
@@ -189,7 +193,7 @@ public class FileDuplicateFinder3 {
 
 
     /* геттер для получения карты файлов по хешу */
-    public TreeMap<FileKey, Set<File>> getFilesByHash() {
+    public ConcurrentSkipListMap<FileKey, Set<File>> getFilesByHash() {
         return fileByHash;
     }
 
@@ -204,6 +208,24 @@ public class FileDuplicateFinder3 {
 
         // Устанавливаем оптимальный размер файла как 1/4 от максимальной памяти, деленной на количество процессоров
         return (int) (maxMemory / (availableProcessors * 4));
+    }
+
+
+    /* Метод для расчета объема памяти на один поток
+    * альтернативный метод предыдущему
+     */
+    private static int calculateMemoryPerThread() {
+        // Получаем количество доступных процессоров
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        // Получаем общий объем оперативной памяти
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        long totalMemory = ((com.sun.management.OperatingSystemMXBean) osBean).getTotalPhysicalMemorySize();
+
+        // Рассчитываем объем памяти на один поток
+        int memoryPerThread = (int) (totalMemory / availableProcessors);
+
+        return memoryPerThread;
     }
 
     /**
