@@ -40,16 +40,16 @@ public class Hashing {
             return -1;
         }
 
-        if (file.length() < LARGE_FILE_THRESHOLD) {
+//        if (file.length() < LARGE_FILE_THRESHOLD) {
             return calculateHashSmallFile(file);
-        } else {
-            try {
-                return calculateHashLargeFile(file);
-            } catch (IOException | NoSuchAlgorithmException | InterruptedException | ExecutionException e) {
-                System.err.println("Ошибка при обработке файла " + file.getAbsolutePath() + ": " + e.getMessage());
-                return -1;
-            }
-        }
+//        } else {
+//            try {
+//                return calculateHashLargeFile(file);
+//            } catch (IOException | NoSuchAlgorithmException | InterruptedException | ExecutionException e) {
+//                System.err.println("Ошибка при обработке файла " + file.getAbsolutePath() + ": " + e.getMessage());
+//                return -1;
+//            }
+//        }
     }
 
 

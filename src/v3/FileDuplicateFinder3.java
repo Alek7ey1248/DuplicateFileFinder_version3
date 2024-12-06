@@ -3,9 +3,7 @@ package v3;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /*
@@ -19,12 +17,14 @@ import java.util.concurrent.TimeUnit;
 
 public class FileDuplicateFinder3 {
 
-    private final Map<Long, Set<File>> fileBySize = new HashMap<>();   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
+    private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
     private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ExecutorService executorService;
+    private static final int FILES_SIZE_THRESHOLD = getOptimalFilesSize();; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
+        fileBySize = new HashMap<>();
         fileByHash = new TreeMap<>();
         executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());  // Создаем пул потоков с количеством равным количеству доступных процессоров
     }
@@ -73,17 +73,83 @@ public class FileDuplicateFinder3 {
     /*
      * Метод добавления файлов в fileByHash из fileBySize для файлов, количество которых одного размера больше одного
      */
+//    public void addFilesToTreeMap() {
+//        // Проходим по всем записям в HashMap fileBySize
+//        for (Map.Entry<Long, Set<File>> entry : fileBySize.entrySet()) {
+//            // Получаем значение (Set<File>) для текущей записи
+//            Set<File> files = entry.getValue();
+//            // Проверяем, что в группе есть файлы больше одного
+//            if (files.size() > 1) {
+//                // Проходим по всем файлам в группе и добавляем их в TreeMap fileByHash
+//                for (File file : files) {
+//                    addFileToTreeMap(file);
+//                }
+//            }
+//        }
+//    }
+
+
     public void addFilesToTreeMap() {
+        // Список для хранения задач Future
+        List<Future<Void>> futures = new ArrayList<>();
+        // Список для текущей группы файлов
+        List<File> currentBatch = new ArrayList<>();
+        // Переменная для хранения текущего суммарного размера группы файлов
+        long currentBatchSize = 0;
+
         // Проходим по всем записям в HashMap fileBySize
         for (Map.Entry<Long, Set<File>> entry : fileBySize.entrySet()) {
             // Получаем значение (Set<File>) для текущей записи
             Set<File> files = entry.getValue();
             // Проверяем, что в группе есть файлы больше одного
             if (files.size() > 1) {
-                // Проходим по всем файлам в группе и добавляем их в TreeMap fileByHash
+                // Проходим по всем файлам в группе
                 for (File file : files) {
-                    addFileToTreeMap(file);
+                    // Добавляем файл в текущую группу
+                    currentBatch.add(file);
+                    // Увеличиваем текущий суммарный размер группы файлов
+                    currentBatchSize += file.length();
+
+                    // Если текущий суммарный размер группы файлов превышает LARGE_FILE_THRESHOLD
+                    if (currentBatchSize >= FILES_SIZE_THRESHOLD) {
+                        // Создаем копию текущей группы файлов для обработки в параллельном потоке
+                        final List<File> batchToProcess = new ArrayList<>(currentBatch);
+                        // Создаем задачу для обработки группы файлов
+                        Future<Void> future = executorService.submit(() -> {
+                            for (File f : batchToProcess) {
+                                addFileToTreeMap(f);
+                            }
+                            return null;
+                        });
+                        // Добавляем задачу в список задач Future
+                        futures.add(future);
+                        // Очищаем текущую группу файлов
+                        currentBatch.clear();
+                        // Сбрасываем текущий суммарный размер группы файлов
+                        currentBatchSize = 0;
+                    }
                 }
+            }
+        }
+
+        // Если остались файлы в текущей группе, обрабатываем их
+        if (!currentBatch.isEmpty()) {
+            final List<File> batchToProcess = new ArrayList<>(currentBatch);
+            Future<Void> future = executorService.submit(() -> {
+                for (File f : batchToProcess) {
+                    addFileToTreeMap(f);
+                }
+                return null;
+            });
+            futures.add(future);
+        }
+
+        // Ожидаем завершения всех задач
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -130,6 +196,19 @@ public class FileDuplicateFinder3 {
         return fileByHash;
     }
 
+    /* Метод для получения оптимального порога величины суммарного
+    * размера группы файлов запущеных в одном потоке
+    */
+    private static int getOptimalFilesSize() {
+        // Получаем максимальное количество доступной памяти
+        long maxMemory = Runtime.getRuntime().maxMemory();
+        // Получаем количество доступных процессоров
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        // Устанавливаем оптимальный размер файла как 1/4 от максимальной памяти, деленной на количество процессоров
+        return (int) (maxMemory / (availableProcessors * 4));
+    }
+
     /**
      * Метод для корректного завершения работы ExecutorService
      */
@@ -148,6 +227,13 @@ public class FileDuplicateFinder3 {
             executorService.shutdownNow(); // Принудительно останавливаем все задачи
             Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
         }
+    }
+
+    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+
+       System.out.println("FILES_SIZE_THRESHOLD: " + FILES_SIZE_THRESHOLD);
+
+
     }
 
 }
