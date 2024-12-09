@@ -10,7 +10,7 @@ import java.util.concurrent.RecursiveAction;
 
 public class FileProcessor extends RecursiveAction {
     private final File[] files;
-    private final FileHasher hasher;
+    private final FileHasher hasher;   // Хэширование файлов
     private static final int THRESHOLD = 10;
 
     public FileProcessor(File[] files, FileHasher hasher) {
@@ -18,6 +18,7 @@ public class FileProcessor extends RecursiveAction {
         this.hasher = hasher;
     }
 
+    // Рекурсивный метод для обработки файлов в параллельном режиме
     @Override
     protected void compute() {
         if (files.length <= THRESHOLD) {
@@ -47,6 +48,7 @@ public class FileProcessor extends RecursiveAction {
         }
     }
 
+    // Метод для разделения файлов на подзадачи
     private List<List<File>> partitionFiles(List<File> files, int partitions) {
         List<List<File>> result = new ArrayList<>();
         for (int i = 0; i < partitions; i++) {
@@ -58,12 +60,13 @@ public class FileProcessor extends RecursiveAction {
         return result;
     }
 
+
     public static void main(String[] args) {
         long startTime = System.nanoTime();
 
         // Пример использования
         FileHasher fileHasher = new FileHasher();
-        File directory = new File("/home/alek7ey/.cache");
+        File directory = new File("/home/alek7ey");
         //File directory = new File("/home/alek7ey/snap");
 
 
@@ -75,6 +78,7 @@ public class FileProcessor extends RecursiveAction {
         // Обрабатываем файлы
         if (files != null) {
             ForkJoinPool pool = new ForkJoinPool();
+            // Обрабатываем файлы в параллельном режиме
             pool.invoke(new FileProcessor(files, fileHasher));
         }
 
