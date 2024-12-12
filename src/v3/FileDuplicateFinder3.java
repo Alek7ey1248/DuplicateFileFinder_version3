@@ -23,8 +23,8 @@ public class FileDuplicateFinder3 {
     //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
     private final ExecutorService executorService;
-    private final Semaphore semaphore;
-    public static final int FILES_SIZE_THRESHOLD = calculateMemoryPerThread(); //getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
+    //private final Semaphore semaphore;
+    public static final long FILES_SIZE_THRESHOLD = calculateMemoryPerThread() / 6; // ????????!!!!!!!!!!getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
@@ -32,7 +32,7 @@ public class FileDuplicateFinder3 {
         //fileByHash = new TreeMap<>();
         this.fileByHash = new ConcurrentSkipListMap<>();
         this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());  // Создаем пул потоков с количеством равным количеству доступных процессоров
-        this.semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());  // Создаем семафор с количеством разрешений равным половине количества доступных процессоров
+        //this.semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());  // Создаем семафор с количеством разрешений равным половине количества доступных процессоров
     }
 
 
@@ -107,16 +107,16 @@ public class FileDuplicateFinder3 {
                         final List<File> batchToProcess = new ArrayList<>(currentBatch);
                         // Создаем задачу для обработки группы файлов
                         Future<Void> future = executorService.submit(() -> {
-                            // Захватываем семафор перед выполнением задачи
-                            semaphore.acquire();
-                            try {
+//                            // Захватываем семафор перед выполнением задачи
+//                            semaphore.acquire();
+//                            try {
                                 for (File f : batchToProcess) {
                                     addFileToTreeMap(f);  // Добавляем файл в fileByHash
                                 }
-                            } finally {
-                                // Освобождаем семафор после завершения задачи
-                                semaphore.release();
-                            }
+//                            } finally {
+//                                // Освобождаем семафор после завершения задачи
+//                                semaphore.release();
+//                            }
                             return null;
                         });
                         // Добавляем задачу в список задач Future
@@ -134,16 +134,16 @@ public class FileDuplicateFinder3 {
         if (!currentBatch.isEmpty()) {
             final List<File> batchToProcess = new ArrayList<>(currentBatch);
             Future<Void> future = executorService.submit(() -> {
-                // Захватываем семафор перед выполнением задачи
-                semaphore.acquire();
-                try {
+//                // Захватываем семафор перед выполнением задачи
+//                semaphore.acquire();
+//                try {
                     for (File f : batchToProcess) {
                         addFileToTreeMap(f);  // Добавляем файл в fileByHash
                     }
-                } finally {
-                    // Освобождаем семафор после завершения задачи
-                    semaphore.release();
-                }
+//                } finally {
+//                    // Освобождаем семафор после завершения задачи
+//                    semaphore.release();
+//                }
                 return null;
             });
             futures.add(future);
@@ -210,11 +210,11 @@ public class FileDuplicateFinder3 {
     /* Метод для расчета объема памяти на один поток
     * альтернативный метод предыдущему
      */
-    private static int calculateMemoryPerThread() {
+    private static long calculateMemoryPerThread() {
         // Получаем количество доступных процессоров
-        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        long availableProcessors = Runtime.getRuntime().availableProcessors();
         // Рассчитываем объем памяти на один поток
-        return (int) (getTotalMemory() / availableProcessors);
+        return getTotalMemory() / availableProcessors;
     }
 
     /* Метод для получения общего объема памяти - вспомогательный метод для calculateMemoryPerThread */

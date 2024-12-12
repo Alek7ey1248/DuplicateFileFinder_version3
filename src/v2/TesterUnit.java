@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class TesterUnit {
 
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру
-	private FileDuplicateFinder finder;
+	private v2.FileDuplicateFinder finder;
 	private Map<Long, Set<Path>> expectedFilesBySize;
 
 	// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
