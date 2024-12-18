@@ -35,9 +35,14 @@ public class ExecutorCallableExample {
         Future<Integer> future[] = new Future[3];
 
         // запускаем задачи на выполнение в пуле потоков
-        future[0] = executor.submit(callable);
-        future[1] = executor.submit(callable);
-        future[2] = executor.submit(callable);
+//        future[0] = executor.submit(callable);
+//        future[1] = executor.submit(callable);
+//        future[2] = executor.submit(callable);
+
+        for (int n=0; n<3; n++) {
+            future[n] = executor.submit(callable);
+        }
+
 
         // результат выполнения задачи в main потоке
         Integer resMain = 0;
@@ -75,22 +80,6 @@ public class ExecutorCallableExample {
         }
 
         System.out.println(" ============= resMain = " + resMain);
-
-
-
-
-        // запускаем задачи на выполнение
-//        for (int p = 0; p < 3; p++) {
-//            System.out.println("**********   p = " + p);
-//            future[p] = executor.submit(callable);
-//            try {
-//                int res = future[p].get();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            } catch (ExecutionException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
 
         // останавливаем пул потоков
         executor.shutdown();
