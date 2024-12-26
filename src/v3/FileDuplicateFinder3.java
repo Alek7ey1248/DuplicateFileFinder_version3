@@ -23,16 +23,13 @@ public class FileDuplicateFinder3 {
     //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
     private final ExecutorService executorService;
-    //private final Semaphore semaphore;
     public static final long FILES_SIZE_THRESHOLD = calculateMemoryPerThread() / 6; // ????????!!!!!!!!!!getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
         this.fileBySize = new HashMap<>();
-        //fileByHash = new TreeMap<>();
         this.fileByHash = new ConcurrentSkipListMap<>();
-        this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());  // Создаем пул потоков с количеством равным количеству доступных процессоров
-        //this.semaphore = new Semaphore(Runtime.getRuntime().availableProcessors());  // Создаем семафор с количеством разрешений равным половине количества доступных процессоров
+        this.executorService = Executors.newVirtualThreadPerTaskExecutor();
     }
 
 
@@ -81,12 +78,6 @@ public class FileDuplicateFinder3 {
         *   файлы подаются на обработку в параллельные потоки
      */
     public void addFilesToTreeMap() {
-        // Список для хранения задач Future
-        List<Future<Void>> futures = new ArrayList<>();
-        // Список для текущей группы файлов
-        List<File> currentBatch = new ArrayList<>();
-        // Переменная для хранения текущего суммарного размера группы файлов
-        long currentBatchSize = 0;
 
         // Проходим по всем записям в HashMap fileBySize
         for (Map.Entry<Long, Set<File>> entry : fileBySize.entrySet()) {
@@ -96,66 +87,10 @@ public class FileDuplicateFinder3 {
             if (files.size() > 1) {
                 // Проходим по всем файлам в группе
                 for (File file : files) {
-                    // Добавляем файл в текущую группу
-                    currentBatch.add(file);
-                    // Увеличиваем текущий суммарный размер группы файлов
-                    currentBatchSize += file.length();
-
-                    // Если текущий суммарный размер группы файлов превышает LARGE_FILE_THRESHOLD
-                    if (currentBatchSize >= FILES_SIZE_THRESHOLD) {
-                        // Создаем копию текущей группы файлов для обработки в параллельном потоке
-                        final List<File> batchToProcess = new ArrayList<>(currentBatch);
-                        // Создаем задачу для обработки группы файлов
-                        Future<Void> future = executorService.submit(() -> {
-//                            // Захватываем семафор перед выполнением задачи
-//                            semaphore.acquire();
-//                            try {
-                                for (File f : batchToProcess) {
-                                    addFileToTreeMap(f);  // Добавляем файл в fileByHash
-                                }
-//                            } finally {
-//                                // Освобождаем семафор после завершения задачи
-//                                semaphore.release();
-//                            }
-                            return null;
-                        });
-                        // Добавляем задачу в список задач Future
-                        futures.add(future);
-                        // Очищаем текущую группу файлов
-                        currentBatch.clear();
-                        // Сбрасываем текущий суммарный размер группы файлов
-                        currentBatchSize = 0;
-                    }
+                    executorService.submit(() -> {  // запускаем виртуальный поток
+                        addFileToTreeMap(file);  // Добавляем файл в fileByHash
+                    });
                 }
-            }
-        }
-
-        // Если остались файлы в текущей группе, обрабатываем их
-        if (!currentBatch.isEmpty()) {
-            final List<File> batchToProcess = new ArrayList<>(currentBatch);
-            Future<Void> future = executorService.submit(() -> {
-//                // Захватываем семафор перед выполнением задачи
-//                semaphore.acquire();
-//                try {
-                    for (File f : batchToProcess) {
-                        addFileToTreeMap(f);  // Добавляем файл в fileByHash
-                    }
-//                } finally {
-//                    // Освобождаем семафор после завершения задачи
-//                    semaphore.release();
-//                }
-                return null;
-            });
-            futures.add(future);
-        }
-
-        // Ожидаем завершения всех задач
-        for (Future<Void> future : futures) {
-            try {
-                future.get();
-                System.gc(); // Вызываем сборщик мусора после завершения каждой задачи
-            } catch (InterruptedException | ExecutionException e) {
-                System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!  Ошибка при обработке группы файлов: " + e.getMessage());
             }
         }
     }
@@ -255,3 +190,15 @@ public class FileDuplicateFinder3 {
     }
 
 }
+
+
+
+//        executorService.submit(() -> {
+//        for (File f : batchToProcess) {
+//addFileToTreeMap(f);  // Добавляем файл в fileByHash
+//                                }
+//                                        return null;
+//                                        });
+//                                        // Очищаем текущую группу файлов
+//                                        currentBatch.clear();
+//                    }
