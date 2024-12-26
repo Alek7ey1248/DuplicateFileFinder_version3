@@ -11,11 +11,11 @@ import java.util.concurrent.*;
 
 public class Hashing {
 
-    private static final int BUFFER_SIZE = getOptimalBufferSize() * 100;  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
+    private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
     private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize(); // порог для больших файлов
-    private static final int maxVirtualThreads = (int)calculateVirtualThreadLimit()/100; // лимит на количество виртуальных потоков
+    private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
+    //private static final int NUM_BLOCKS =  (int) Math.ceil((double) fileSize / LARGE_FILE_SIZE); // Получаем количество блоков = размер файла / порог для больших файлов
     private final ExecutorService executor;
-    private final Semaphore semaphore = new Semaphore(maxVirtualThreads);
 
     // конструктор
     public Hashing() {
@@ -37,12 +37,11 @@ public class Hashing {
         }
         // если файл больше порога, используем bufferSize для больших файлов
         return calculateHashFile(file, BUFFER_SIZE);
-
     }
 
 
 
-    /* Метод для расчета хеша файла
+    /* Метод для расчета хеша файлnumBlocksа
      * @param file - файл, для которого нужно рассчитать хеш
      */
     public long calculateHashFile(File file, int bufferSize) {
@@ -86,31 +85,21 @@ public class Hashing {
         Long heshLong = 0L; // Переменная для хранения хеша
         long fileSize = file.length(); // Получаем размер файла
 
-        //int numBlocks = Runtime.getRuntime().availableProcessors(); // Получаем количество блоков = кол-во доступных процессоров
-        //long partSize = (long) Math.ceil((double) fileSize / numBlocks);  // Размер каждой части файла (округляем в большую сторону)
+        long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS);  // Размер каждой части файла (округляем в большую сторону)
 
-        int numBlocks =  (int) Math.ceil((double) fileSize / LARGE_FILE_SIZE); // Получаем количество блоков = размер файла / порог для больших файлов
-        long partSize = LARGE_FILE_SIZE; // Размер каждой части файла
+        //long partSize = LARGE_FILE_SIZE; // Размер каждой части файла
 
         List<Future<Long>> futures = new ArrayList<>(); // Список для хранения Future
 
-        for (int i = 0; i < numBlocks; i++) {
+        for (int i = 0; i < NUM_BLOCKS; i++) {
             long start = i * partSize; // Начало части
-            long end = (i == numBlocks - 1) ? fileSize : (i + 1) * partSize; // Конец части
-            try {
-                semaphore.acquire(); // Захватываем разрешение
-                //System.out.println("---------- симафор ----------------------------");
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            long end = (i == NUM_BLOCKS - 1) ? fileSize : (i + 1) * partSize; // Конец части
             Future<Long> future = executor.submit(() -> {
                 try (RandomAccessFile raf = new RandomAccessFile(file, "r")) { // Создаем новый RandomAccessFile для каждого потока
                     //System.out.println("поток - " + Thread.currentThread());
                     return processFilePart(raf, start, end, bufferSize);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
-                } finally {
-                semaphore.release();
                 }
             });
             futures.add(future); // Добавляем Future в список
@@ -145,6 +134,7 @@ public class Hashing {
         long bytesReadTotal = 0; // Общее количество прочитанных байт
         int bytesRead; // Количество байт, прочитанных из файла
 
+        // пока есть байты в файле, читаем их и обновляем хеш
         while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(bufferSize, end - start - bytesReadTotal))) != -1) {
             digest.update(buffer, 0, bytesRead); // Обновляем хеш
             bytesReadTotal += bytesRead; // Обновляем общее количество прочитанных байт
@@ -243,7 +233,7 @@ public class Hashing {
         long duration = (endTime - startTime) / 1_000_000; // Перевод наносекунд в миллисекунды
         System.out.println("Время выполнения программы: " + duration + " мс");
 
-        System.out.println("maxVirtualThreads - " + maxVirtualThreads);
+        System.out.println(" BUFFER_SIZE - " + BUFFER_SIZE);
     }
 }
 

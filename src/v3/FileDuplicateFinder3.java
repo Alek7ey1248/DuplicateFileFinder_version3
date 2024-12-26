@@ -22,14 +22,17 @@ public class FileDuplicateFinder3 {
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
     //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
-    private final ExecutorService executorService;
+    private final ExecutorService executorWalkFileTree;
+    private final ExecutorService executorAddFilesToTreeMap;
+
     public static final long FILES_SIZE_THRESHOLD = calculateMemoryPerThread() / 6; // ????????!!!!!!!!!!getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
         this.fileBySize = new HashMap<>();
         this.fileByHash = new ConcurrentSkipListMap<>();
-        this.executorService = Executors.newVirtualThreadPerTaskExecutor();
+        this.executorWalkFileTree = Executors.newVirtualThreadPerTaskExecutor();
+        this.executorAddFilesToTreeMap = Executors.newVirtualThreadPerTaskExecutor();
     }
 
 
@@ -43,8 +46,9 @@ public class FileDuplicateFinder3 {
             walkFileTree(path);
         }
 
+        //shutdown(executorWalkFileTree); // Завершаем работу ExecutorService
         addFilesToTreeMap(); // Добавляем файлы в TreeMap fileByHash из HashMap fileBySize
-        shutdown(); // Завершаем работу ExecutorService
+        shutdown(executorAddFilesToTreeMap); // Завершаем работу ExecutorService
         printDuplicateResults();  // Вывод групп дубликатов файлов в консоль
 
     }
@@ -62,13 +66,15 @@ public class FileDuplicateFinder3 {
         if (files != null) {  // Проверяем, что массив не пустой
             for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
                 if (file.isDirectory()) {  // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
-                    walkFileTree(file.getAbsolutePath());
+                   walkFileTree(file.getAbsolutePath());
                 } else {
                     // Добавляем файл в карту fileBySize по его размеру
                     long fileSize = file.length();
                     fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
                 }
             }
+            shutdown(executorWalkFileTree); // Завершаем работу ExecutorService
+            System.out.println("Обработана директория: " + directory.getAbsolutePath());
         }
     }
 
@@ -87,7 +93,7 @@ public class FileDuplicateFinder3 {
             if (files.size() > 1) {
                 // Проходим по всем файлам в группе
                 for (File file : files) {
-                    executorService.submit(() -> {  // запускаем виртуальный поток
+                    executorAddFilesToTreeMap.submit(() -> {  // запускаем виртуальный поток
                         addFileToTreeMap(file);  // Добавляем файл в fileByHash
                     });
                 }
@@ -165,19 +171,19 @@ public class FileDuplicateFinder3 {
     /**
      * Метод для корректного завершения работы ExecutorService
      */
-    private void shutdown() {
-        executorService.shutdown(); // Останавливаем прием новых задач
+    private void shutdown(ExecutorService executor) {
+        executor.shutdown(); // Останавливаем прием новых задач
         try {
-            // Ждем завершения текущих задач в течение 60 секунд
-            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
-                executorService.shutdownNow(); // Принудительно останавливаем все задачи
+            // Ждем завершения текущих задач в течение 120 секунд
+            if (!executor.awaitTermination(120, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Принудительно останавливаем все задачи
                 // Ждем завершения принудительно остановленных задач в течение 60 секунд
-                if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                if (!executor.awaitTermination(120, TimeUnit.SECONDS)) {
                     System.err.println("ExecutorService не завершился корректно");
                 }
             }
         } catch (InterruptedException ie) {
-            executorService.shutdownNow(); // Принудительно останавливаем все задачи
+            executor.shutdownNow(); // Принудительно останавливаем все задачи
             Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
         }
     }

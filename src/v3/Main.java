@@ -13,8 +13,8 @@ public class Main {
         long startTime = System.nanoTime();
 
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
-        //String[] paths = {"/home/alek7ey"};
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
+        String[] paths = {"/home/alek7ey"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
         //String[] paths = {"/home/alek7ey/.cache"};
         //String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey/.jdks"};
