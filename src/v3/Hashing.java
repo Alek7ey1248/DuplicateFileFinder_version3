@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 public class Hashing {
 
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
-    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize(); // порог для больших файлов
+    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize() / 10; // порог для больших файлов
     private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
     //private static final int NUM_BLOCKS =  (int) Math.ceil((double) fileSize / LARGE_FILE_SIZE); // Получаем количество блоков = размер файла / порог для больших файлов
     private final ExecutorService executor;
@@ -33,22 +33,38 @@ public class Hashing {
 
         if (file.length() < LARGE_FILE_SIZE) {
             // если файл меньше порога, используем bufferSize для не больших файлов
-            return calculateHashFile(file, 8192);
+            return calculateHashSmallFile(file);
         }
         // если файл больше порога, используем bufferSize для больших файлов
-        return calculateHashFile(file, BUFFER_SIZE);
+        return calculateHashLargeFile(file);
     }
 
+
+    /* Метод для расчета хеша небольшого файла
+     * @param file - файл, для которого нужно рассчитать хеш
+     */
+    private Long calculateHashSmallFile(File file) {
+        System.out.println("Обработка SmallFile - " + file.getAbsolutePath());
+        try {
+            MessageDigest digest = createMessageDigest();  // создаем объект MessageDigest для хеширования
+            updateDigestWithSmallFileContent(file, digest); // Обновляем хеш содержимым файла
+            updateDigestWithFileSize(file); // Обновляем хеш размером файла
+            return convertHashToLong(digest); // Преобразуем хеш в число
+        } catch (IOException | UncheckedIOException e) {
+            System.err.println("Ошибка чтения файла " + file.getName() + ": " + e.getMessage());
+            return -1L; // Возвращаем -1 в случае ошибки
+        }
+    }
 
 
     /* Метод для расчета хеша файлnumBlocksа
      * @param file - файл, для которого нужно рассчитать хеш
      */
-    public long calculateHashFile(File file, int bufferSize) {
+    public long calculateHashLargeFile(File file) {
         System.out.println("Обработка - " + file.getAbsolutePath());
         try {
             Long heshLong = 0L;   // переменная для хранения хеша
-            heshLong = updateDigestWithFileContent(file, bufferSize);   // Обновляем хеш содержимым файла
+            heshLong = updateDigestWithLargeFileContent(file);   // Обновляем хеш содержимым файла
             heshLong = heshLong + updateDigestWithFileSize(file);      // Обновляем хеш размером файла
             return heshLong;             // Преобразуем хеш в число
         } catch (IOException | UncheckedIOException e) {
@@ -70,18 +86,18 @@ public class Hashing {
 
 
     // Вспомогательный метод для обновления хеша содержимым файла
-//    private void updateDigestWithFileContent(MessageDigest digest, File file, int bufferSize) throws IOException {
-//        try (FileInputStream fis = new FileInputStream(file)) { // Используем try-with-resources для автоматического закрытия
-//            byte[] buffer = new byte[bufferSize]; // Буфер для чтения файла
-//            int bytesRead; // Количество байт, прочитанных из файла
-//            // Читаем файл и обновляем хеш
-//            while ((bytesRead = fis.read(buffer)) != -1) {
-//                digest.update(buffer, 0, bytesRead); // Обновляем хеш
-//            }
-//        }
-//    }
+    private void updateDigestWithSmallFileContent(File file, MessageDigest digest) throws IOException {
+        try (FileInputStream fis = new FileInputStream(file)) { // Используем try-with-resources для автоматического закрытия
+            byte[] buffer = new byte[8192]; // Буфер для чтения файла
+            int bytesRead; // Количество байт, прочитанных из файла
+            // Читаем файл и обновляем хеш
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead); // Обновляем хеш
+            }
+        }
+    }
 
-    private Long updateDigestWithFileContent(File file, int bufferSize) throws IOException {
+    private Long updateDigestWithLargeFileContent(File file) throws IOException {
         Long heshLong = 0L; // Переменная для хранения хеша
         long fileSize = file.length(); // Получаем размер файла
 
@@ -97,7 +113,7 @@ public class Hashing {
             Future<Long> future = executor.submit(() -> {
                 try (RandomAccessFile raf = new RandomAccessFile(file, "r")) { // Создаем новый RandomAccessFile для каждого потока
                     //System.out.println("поток - " + Thread.currentThread());
-                    return processFilePart(raf, start, end, bufferSize);
+                    return processFilePart(raf, start, end, BUFFER_SIZE);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
