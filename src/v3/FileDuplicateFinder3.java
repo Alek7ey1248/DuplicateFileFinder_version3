@@ -22,7 +22,7 @@ public class FileDuplicateFinder3 {
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
     //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
-    private final ExecutorService executorWalkFileTree;
+    //private final ExecutorService executorWalkFileTree;
     private final ExecutorService executorAddFilesToTreeMap;
 
     public static final long FILES_SIZE_THRESHOLD = calculateMemoryPerThread() / 6; // ????????!!!!!!!!!!getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
@@ -31,7 +31,7 @@ public class FileDuplicateFinder3 {
     public FileDuplicateFinder3() {
         this.fileBySize = new HashMap<>();
         this.fileByHash = new ConcurrentSkipListMap<>();
-        this.executorWalkFileTree = Executors.newVirtualThreadPerTaskExecutor();
+        //this.executorWalkFileTree = Executors.newVirtualThreadPerTaskExecutor();
         this.executorAddFilesToTreeMap = Executors.newVirtualThreadPerTaskExecutor();
     }
 
@@ -73,8 +73,8 @@ public class FileDuplicateFinder3 {
                     fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
                 }
             }
-            shutdown(executorWalkFileTree); // Завершаем работу ExecutorService
-            System.out.println("Обработана директория: " + directory.getAbsolutePath());
+            //shutdown(executorWalkFileTree); // Завершаем работу ExecutorService
+            //System.out.println("Обработана директория: " + directory.getAbsolutePath());
         }
     }
 

@@ -3,8 +3,6 @@ package v3;
 
 import java.io.File;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Semaphore;
 
 // класс для хранения ключа файла - размера и хеша
 public class FileKey implements Comparable<FileKey> {
@@ -15,23 +13,23 @@ public class FileKey implements Comparable<FileKey> {
     // конструктор для создания ключа файла на основе размера и хеша
     public FileKey(File file) {
         this.size = file.length();
-        this.hash = new Hashing().calculateHash(file);
+        this.hash = Hashing.calculateHash(file) + size;
     }
 
     // переопределение методов equals и hashCode для корректного сравнения объектов
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FileKey fileKey = (FileKey) o;
-        return size == fileKey.size && hash == fileKey.hash;
+        if (this == o) return true;  // если объекты равны по ссылке
+        if (o == null || getClass() != o.getClass()) return false;  // если объекты разных классов
+        FileKey fileKey = (FileKey) o;     // приведение объекта к типу FileKey
+        return size == fileKey.size && hash == fileKey.hash;  // сравнение полей size и hash
     }
 
     // переопределение метода hashCode для корректного сравнения объектов
     @Override
     public int hashCode() {
         return Objects.hash(size, hash);
-    }
+    } // хеширование полей size и hash
 
     /* переопределение метода compareTo для сортировки объектов по размеру
     * TreeMap<FileKey, Set<File>> fileByHash будет сортироваться по размеру файла автоматически
