@@ -10,19 +10,10 @@ import java.util.concurrent.*;
 
 public class Hashing {
 
-//    private static File file;
-//    private static Long fileSize;
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
     private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize(); // порог для больших файлов
     private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
     private static final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков для многопоточности
-
-    // конструктор
-//    public Hashing(File file) {
-//        this.file = file;
-//        this.fileSize = file.length();
-//        this.executor= Executors.newVirtualThreadPerTaskExecutor();
-//    }
 
     /* Метод для расчета хеша файла
     * @param file - файл, для которого нужно рассчитать хеш
@@ -50,7 +41,6 @@ public class Hashing {
         try {
             MessageDigest digest = createMessageDigest();  // создаем объект MessageDigest для хеширования
             updateDigestWithSmallFileContent(file, digest); // Обновляем хеш содержимым файла
-            //updateDigestWithFileSize(); // Обновляем хеш размером файла
             return convertHashToLong(digest); // Преобразуем хеш в число
         } catch (IOException | UncheckedIOException e) {
             System.err.println("Ошибка чтения файла " + file.getName() + ": " + e.getMessage());
@@ -65,10 +55,7 @@ public class Hashing {
     public static long calculateHashLargeFile(File file) {
         System.out.println("Обработка LargeFile - " + file.getAbsolutePath());
         try {
-            Long heshLong;   // переменная для хранения хеша
-            heshLong = updateDigestWithLargeFileContent(file);   // Обновляем хеш содержимым файла
-            //heshLong = heshLong + updateDigestWithFileSize();      // Обновляем хеш размером файла
-            return heshLong;             // Преобразуем хеш в число
+            return updateDigestWithLargeFileContent(file);   // Обновляем хеш содержимым файла             // Преобразуем хеш в число
         } catch (IOException | UncheckedIOException e) {
             System.err.println("Ошибка чтения файла " + file.getName() + ": " + e.getMessage());
             return -1; // Возвращаем -1 в случае ошибки
@@ -114,7 +101,7 @@ public class Hashing {
             Future<Long> future = executor.submit(() -> {
                 try (RandomAccessFile raf = new RandomAccessFile(file, "r")) { // Создаем новый RandomAccessFile для каждого потока
                     //System.out.println("поток - " + Thread.currentThread());
-                    return processFilePart(raf, start, end, BUFFER_SIZE);
+                    return processFilePart(raf, start, end); // Обрабатываем часть файла
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -144,15 +131,15 @@ public class Hashing {
 
 
     // Вспомогательный метод для обработки части файла
-    private static Long processFilePart(RandomAccessFile raf, long start, long end, int bufferSize) throws IOException {
+    private static Long processFilePart(RandomAccessFile raf, long start, long end) throws IOException {
         MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
-        byte[] buffer = new byte[bufferSize]; // Буфер для чтения файла
+        byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
         raf.seek(start); // Переходим к началу части файла
         long bytesReadTotal = 0; // Общее количество прочитанных байт
         int bytesRead; // Количество байт, прочитанных из файла
 
         // пока есть байты в файле, читаем их и обновляем хеш
-        while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(bufferSize, end - start - bytesReadTotal))) != -1) {
+        while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(BUFFER_SIZE, end - start - bytesReadTotal))) != -1) {
             digest.update(buffer, 0, bytesRead); // Обновляем хеш
             bytesReadTotal += bytesRead; // Обновляем общее количество прочитанных байт
         }
