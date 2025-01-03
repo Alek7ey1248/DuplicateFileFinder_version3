@@ -1,5 +1,3 @@
-package v1;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

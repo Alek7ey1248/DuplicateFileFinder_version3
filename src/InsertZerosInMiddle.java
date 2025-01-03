@@ -1,5 +1,3 @@
-package v1;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Path;
@@ -9,7 +7,7 @@ import java.nio.file.Path;
 // Что бы была копия больщого файла, но с нулями в середине.
 public class InsertZerosInMiddle {
     public static void main(String[] args) {
-        Path filePath = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
+        Path filePath = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
         try {
             insertZerosInMiddle(filePath);
             System.out.println("Нули успешно вставлены.");

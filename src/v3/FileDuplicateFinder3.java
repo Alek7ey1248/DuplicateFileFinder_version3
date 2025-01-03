@@ -19,19 +19,17 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder3 {
 
+    private  final CheckValid checkValid;
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
     //private final TreeMap<FileKey, Set<File>> fileByHash;    // HashMap fileByHash - для хранения файлов, сгруппированных по хешу. Ключ FileKey хранит размер и хеш файла
     private final ConcurrentSkipListMap<FileKey, Set<File>> fileByHash;  // вместо TreeMap используем ConcurrentSkipListMap для безопасности в многопоточной среде
-    //private final ExecutorService executorWalkFileTree;
     private final ExecutorService executorAddFilesToTreeMap;
-
-    public static final long FILES_SIZE_THRESHOLD = calculateMemoryPerThread() / 6; // ????????!!!!!!!!!!getOptimalFilesSize() * 30; // Порог для больших файлов взят из Hashing. Тут порог кол-ва файлов в одном потоке в методе addFilesToTreeMap
 
     /* Конструктор */
     public FileDuplicateFinder3() {
+        this.checkValid = new CheckValid();
         this.fileBySize = new HashMap<>();
         this.fileByHash = new ConcurrentSkipListMap<>();
-        //this.executorWalkFileTree = Executors.newVirtualThreadPerTaskExecutor();
         this.executorAddFilesToTreeMap = Executors.newVirtualThreadPerTaskExecutor();
     }
 
@@ -60,6 +58,11 @@ public class FileDuplicateFinder3 {
      */
     public void walkFileTree(String path) {
 
+        if (!checkValid.isValidDirectoryPath(path)) {
+            System.out.println("Невалидная директория: " + path);
+            return;
+        }
+
         File directory = new File(path); // Создаем объект File(директорий) для указанного пути
         File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
 
@@ -68,6 +71,9 @@ public class FileDuplicateFinder3 {
                 if (file.isDirectory()) {  // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
                    walkFileTree(file.getAbsolutePath());
                 } else {
+                    if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
+                        continue;
+                    }
                     // Добавляем файл в карту fileBySize по его размеру
                     long fileSize = file.length();
                     fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
@@ -190,7 +196,6 @@ public class FileDuplicateFinder3 {
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
 
-       System.out.println("FILES_SIZE_THRESHOLD: " + FILES_SIZE_THRESHOLD);
 
 
     }

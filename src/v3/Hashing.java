@@ -201,7 +201,7 @@ public class Hashing {
         int availableProcessors = Runtime.getRuntime().availableProcessors();
 
         // Устанавливаем оптимальный размер файла как 1/4 от максимальной памяти, деленной на количество процессоров
-        return (int) (maxMemory / (availableProcessors * 4));
+        return (int) (maxMemory / (availableProcessors));
     }
 
     // Метод для расчета максимального количества виртуальных потоков
