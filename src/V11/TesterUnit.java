@@ -40,7 +40,7 @@ public class TesterUnit {
 
 	// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 	Map<Long, Set<Path>> filesBySize;
-	List<Set<String>> expectedProcessSameSizeFiles;
+	List<Set<Path>> expectedProcessSameSizeFiles;
 
 	@Before
 	public void setUp() throws Exception {
@@ -183,16 +183,56 @@ public class TesterUnit {
 
 		// Ожидаемый результат метода findDuplicateGroups
 		expectedProcessSameSizeFiles = Arrays.asList(
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt"),
-				Set.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt")
+				),
+				Set.of(
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt"),
+						Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa")
+				)
 		);
 	}
 
@@ -253,11 +293,11 @@ public class TesterUnit {
 		//Map<Long, List<Path>> filesBySize = new HashMap<>();
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 		finder.findDuplicateGroups();
-		List<List<String>> actual = finder.getDuplicates();
+		List<List<Path>> actual = finder.getDuplicates();
 
-		for (Set<String> expectedGroup : expectedProcessSameSizeFiles) {
+		for (Set<Path> expectedGroup : expectedProcessSameSizeFiles) {
 			boolean found = false;
-			for (List<String> actualGroup : actual) {
+			for (List<Path> actualGroup : actual) {
 				if (actualGroup.containsAll(expectedGroup) && expectedGroup.containsAll(actualGroup)) {
 					found = true;
 					break;
@@ -267,11 +307,11 @@ public class TesterUnit {
 		}
 
 		// Проверка на наличие лишних групп
-		for (List<String> actualGroup : actual) {
-			Set<String> actualSet = new HashSet<>(actualGroup);
+		for (List<Path> actualGroup : actual) {
+			Set<Path> actualSet = new HashSet<>(actualGroup);
 			boolean found = false;
-			for (Set<String> expectedGroup : expectedProcessSameSizeFiles) {
-				Set<String> expectedSet = new HashSet<>(expectedGroup);
+			for (Set<Path> expectedGroup : expectedProcessSameSizeFiles) {
+				Set<Path> expectedSet = new HashSet<>(expectedGroup);
 				if (actualSet.equals(expectedSet)) {
 					found = true;
 					break;
@@ -311,32 +351,35 @@ public class TesterUnit {
 		files.add(Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test3одинтакой.txt"));
 
 		// Ожидаемый результат
-		List<List<String>> expected = new ArrayList<>();
-		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt"
+		List<List<Path>> expected = new ArrayList<>();
+		expected.add(Arrays.asList(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt")
 		));
-		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt"
+
+		expected.add(Arrays.asList(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt")
 		));
-		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt"
+
+		expected.add(Arrays.asList(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt")
 		));
-		expected.add(List.of(
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt",
-				"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"
+
+		expected.add(Arrays.asList(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt")
 		));
 
 		// Результат работы метода
 		finder.findDuplicatesInSameSizeFiles(files);
-		List<List<String>> actual = finder.getDuplicates();
+		List<List<Path>> actual = finder.getDuplicates();
 
 //		System.out.println("Результат: ");
 //		for (List<String> s : actual) {
@@ -348,11 +391,11 @@ public class TesterUnit {
 
 		// Проверка результата
 		assertEquals(expected.size(), actual.size());
-		for (List<String> expectedGroup : expected) {
+		for (List<Path> expectedGroup : expected) {
 			boolean found = false;
-			Set<String> expectedSet = new HashSet<>(expectedGroup);
-			for (List<String> actualGroup : actual) {
-				Set<String> actualSet = new HashSet<>(actualGroup);
+			Set<Path> expectedSet = new HashSet<>(expectedGroup);
+			for (List<Path> actualGroup : actual) {
+				Set<Path> actualSet = new HashSet<>(actualGroup);
 				if (actualSet.equals(expectedSet)) {
 					found = true;
 					break;

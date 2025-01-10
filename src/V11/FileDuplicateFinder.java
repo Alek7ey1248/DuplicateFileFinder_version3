@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class FileDuplicateFinder {
 
@@ -20,12 +17,12 @@ public class FileDuplicateFinder {
     }
 
     /* Список для хранения результата - групп дубликатов файлов */
-    private final List<List<String>> duplicates;
-    public List<List<String>> getDuplicates() {
+    private final List<List<Path>> duplicates;
+    public List<List<Path>> getDuplicates() {
         return duplicates;
     }
 
-    private final ExecutorService executor;
+    //private final ExecutorService executor;
 
 
     /* Конструктор */
@@ -34,7 +31,7 @@ public class FileDuplicateFinder {
         this.filesBySize = new HashMap<>();
         //duplicates = new ArrayList<>();
         this.duplicates = Collections.synchronizedList(new ArrayList<>());
-        this.executor = Executors.newVirtualThreadPerTaskExecutor();
+        //this.executor = Executors.newVirtualThreadPerTaskExecutor();
     }
 
 
@@ -95,6 +92,7 @@ public class FileDuplicateFinder {
         // Создаем ExecutorService с фиксированным пулом потоков
         //int numThreads = Runtime.getRuntime().availableProcessors();
         //ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
         // Список задач для параллельного выполнения
         List<Future<Void>> futures = new ArrayList<>();
@@ -123,6 +121,15 @@ public class FileDuplicateFinder {
 
         // Завершаем работу пула потоков - на скорость вроде повлияло
         executor.shutdown();
+        try {
+            // Ждем завершения всех задач в течение 60 секунд
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Принудительно завершаем все активные задачи
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow(); // Принудительно завершаем все активные задачи
+            Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+        }
     }
 
 
@@ -137,46 +144,39 @@ public class FileDuplicateFinder {
         if (files.size() < 2) {
             return;
         }
+//        System.out.println("---------------------------------------------------------------");
+//        System.out.println(" Проверяем группу файлов - " + Arrays.toString(files.toArray()));
 
-        // Создаем ExecutorService с фиксированным пулом потоков
-        //int numThreads = Runtime.getRuntime().availableProcessors();
-        //ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        // Создаем ExecutorService с виртуальными потоками
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
         while (files.size() > 1) {
             // Извлекаем первый файл
-            //Path file = files.removeFirst();
-
             Iterator<Path> iterator = files.iterator();
             Path file = iterator.next();
-            iterator.remove();
-
+            iterator.remove();   // Удаляем первый файл из списка
 
             System.out.println("Проверка файла: " + file);
-            List<String> group = Collections.synchronizedList(new ArrayList<>());
-            group.add(file.toString());
+            //List<String> group = Collections.synchronizedList(new ArrayList<>());
+            List<Path> group = new CopyOnWriteArrayList<>();   // потокобезопасный список для добавления путей к дубликатам
+            group.add(file);   // Добавляем путь к первому файлу в группу дубликатов
 
-            // Временный список для хранения найденных дубликатов, что бы потом удалить их из списка files
-            List<Path> toRemove = Collections.synchronizedList(new ArrayList<>());
+            List<Path> toRemove = new CopyOnWriteArrayList<>();   // потокобезопасный список для удаления дубликатов из files
 
             // Список задач для параллельного выполнения
             List<Future<Boolean>> futures = new ArrayList<>();
 
             // Перебираем оставшиеся файлы в списке
             for (Path anotherFile : files) {
-//                if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
-//                    continue;
-//                }
+                if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
+                    continue;
+                }
 
                 // Отправляем задачу на сравнение файлов в пул потоков
                 futures.add(executor.submit(() -> {
-                    if (FileComparator.areFilesEqual(file, anotherFile)) {
-//                        synchronized (group) {
-                            group.add(anotherFile.toString());
-//                        }
-//                        synchronized (toRemove) {
-                            toRemove.add(anotherFile);
-//                        }
+                    if (V11.FileComparator.areFilesEqual(file, anotherFile)) {
+                            group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
+                            toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
                         return true;
                     }
                     return false;
@@ -192,8 +192,7 @@ public class FileDuplicateFinder {
                 }
             }
 
-            // Удаляем найденные дубликаты из очереди
-            files.removeAll(toRemove);
+            files.removeAll(toRemove);  // Удаляем дубликаты из списка файлов одинакового размера
             // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
             if (group.size() > 1) {
                 duplicates.add(group);
@@ -202,6 +201,15 @@ public class FileDuplicateFinder {
 
         // Завершаем работу ExecutorService
         executor.shutdown();
+        try {
+            // Ждем завершения всех задач в течение 60 секунд
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Принудительно завершаем все активные задачи
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow(); // Принудительно завершаем все активные задачи
+            Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+        }
     }
 
 }

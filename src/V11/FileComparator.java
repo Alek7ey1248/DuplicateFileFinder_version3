@@ -13,7 +13,7 @@ import java.util.concurrent.*;
 
 public class FileComparator {
 
-    private static final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    //private static ExecutorService executor;
     //private static final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold();   // Порог для больших файлов
     private static final int BLOCK_SIZE = getBlockSize();       // Размер блока для поблочного чтения для больших файлов
@@ -56,7 +56,7 @@ public class FileComparator {
             }
         }
 
-        // Используем ускоренный метод для больших файлов
+         //Используем ускоренный метод для больших файлов
         try {
             return compareLargeFiles(file1, file2);
         } catch (FileSystemException e) {
@@ -124,45 +124,55 @@ public class FileComparator {
 
     /* Вспомогательный метод для сравнения содержимого каналов двух больших файлов */
     private static boolean compareLargeFileContents(FileChannel channel1, FileChannel channel2, long size) {
-
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
         List<Future<Boolean>> futures = new ArrayList<>();
         long position = 0;
+
         try {
             while (position < size) { // Пока не достигнем конца файла
                 long remaining = size - position;
                 long bytesToRead = Math.min(BLOCK_SIZE, remaining);
-
                 // Создаем задачу для сравнения содержимого блока
                 TaskCompareFileContents task = new TaskCompareFileContents(channel1, channel2, position, bytesToRead);
                 try {
-                    futures.add(executor.submit(task));
-                    //System.out.println("Задача была запущена: ");
+                    Future<Boolean> future = executor.submit(task);
+                    futures.add(future);
                 } catch (RejectedExecutionException e) {
-                //System.out.println("Задача была отклонена так как нашлись блоки которые не равны: " + e.getMessage());
-                executor.shutdown(); // Завершаем работу пула потоков
+                    //System.out.println("Задача была отклонена: " + e.getMessage());
+                    return false; // Завершаем, если задача была отклонена
                 }
                 position += bytesToRead; // Переходим к следующему блоку
             }
 
+            // Ждем завершения всех задач и проверяем результаты
             for (Future<Boolean> future : futures) {
-                //System.out.println("Поток завершил работу: " + Thread.currentThread());
                 try {
                     if (!future.get()) {
-                        //executor.shutdown(); // Завершаем работу пула потоков в случае несовпадения
                         return false; // Возвращаем false при несовпадении
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException("Ошибка при сравнении блоков файлов", e);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+                    System.out.println("Поток был прерван: " + e.getMessage());
+                    return false;
+                } catch (ExecutionException e) {
+                    System.out.println("Ошибка при выполнении задачи: " + e.getCause());
+                    return false; // Возвращаем false в случае ошибки выполнения
                 }
             }
-
         } finally {
             executor.shutdown(); // Завершаем работу пула потоков
+//            try {
+//                //System.out.println("Ожидаем завершения потоков...");
+//                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                    executor.shutdownNow(); // Принудительно завершаем, если не завершился
+//                }
+//            } catch (InterruptedException e) {
+//                executor.shutdownNow(); // Принудительно завершаем в случае прерывания
+//                Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+//            }
         }
-
-        return true; // Все блоки идентичны
+        return true; // Возвращаем true, если все блоки совпадают
     }
-
 
 
 
@@ -194,17 +204,21 @@ public class FileComparator {
         try {
             //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
+            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
+            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
+
 
             //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (пустой).zip");  // Разные файлы
 
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
+            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
+            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
 
-            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
-            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
+            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
+            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
 
 
             System.out.println(areFilesEqual(file1, file2));

@@ -9,16 +9,16 @@ import java.util.*;
 public class DuplicateFilePrinter {
 
     // Метод для вывода групп дубликатов файлов в консоль
-    public static void printDuplicates(List<List<String>> duplicates) {
+    public static void printDuplicates(List<List<Path>> duplicates) {
         // Создаем карту для хранения групп файлов по их размеру
         // Ключ - размер файла, значение - списки групп одинаковых файлов
-        Map<Long, List<List<String>>> filesBySize = new HashMap<>();
+        Map<Long, List<List<Path>>> filesBySize = new HashMap<>();
 
         // Заполняем карту, вычисляя размер каждого файла
-        for (List<String> group : duplicates) {
+        for (List<Path> group : duplicates) {
             if (!group.isEmpty()) {
                 try {
-                    long size = Files.size(Path.of(group.get(0)));
+                    long size = Files.size(group.get(0));
                     filesBySize.computeIfAbsent(size, k -> new ArrayList<>()).add(group);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -36,10 +36,10 @@ public class DuplicateFilePrinter {
 
         // Выводим группы файлов в консоль, начиная с самых больших
         for (Long size : sortedSizes) {
-            for (List<String> group : filesBySize.get(size)) {
-                System.out.println("Группа файлов типа: '" + Path.of(group.get(0)).getFileName() + "';     размера: " + size + " байт");
+            for (List<Path> group : filesBySize.get(size)) {
+                System.out.println("Группа файлов типа: '" + group.get(0).getFileName() + "';     размера: " + size + " байт");
                 System.out.println();
-                for (String filePath : group) {
+                for (Path filePath : group) {
                     System.out.println("                  " + filePath);
                 }
                 System.out.println();
