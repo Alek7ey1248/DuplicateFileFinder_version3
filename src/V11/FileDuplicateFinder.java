@@ -9,31 +9,17 @@ import java.util.concurrent.*;
 public class FileDuplicateFinder {
 
     private final CheckValid checkValid;
-
-    /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
-    private final Map<Long, Set<Path>> filesBySize;
-    public Map<Long, Set<Path>> getFilesBySize() {
-        return filesBySize;
-    }
-
-    /* Список для хранения результата - групп дубликатов файлов */
-    private final List<List<Path>> duplicates;
-    public List<List<Path>> getDuplicates() {
-        return duplicates;
-    }
-
-    //private final ExecutorService executor;
-
+    private final Map<Long, Set<Path>> filesBySize;  /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
+    public Map<Long, Set<Path>> getFilesBySize() {return filesBySize;}
+    private final List<List<Path>> duplicates;  /* Список для хранения результата - групп дубликатов файлов */
+    public List<List<Path>> getDuplicates() {return duplicates;}
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.filesBySize = new HashMap<>();
-        //duplicates = new ArrayList<>();
         this.duplicates = Collections.synchronizedList(new ArrayList<>());
-        //this.executor = Executors.newVirtualThreadPerTaskExecutor();
     }
-
 
 
     /* Основной метод для поиска групп дубликатов файлов
@@ -41,14 +27,10 @@ public class FileDuplicateFinder {
      * @return path - путь к директории, в которой нужно найти дубликаты
     * */
     public void findDuplicates(String[] paths) throws IOException {
-
-        // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
-        for(String path : paths) {
+        for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
-
-        // Параллельная обработка файлов одинакового размера из карты filesBySize для поиска дубликатов в список duplicates
-        findDuplicateGroups();
+        findDuplicateGroups();  // Параллельная обработка файлов одинакового размера из карты filesBySize для поиска дубликатов в список duplicates
     }
 
 
@@ -57,23 +39,15 @@ public class FileDuplicateFinder {
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
     public void walkFileTree(String path) {
+        File directory = new File(path);  // Создаем объект File(директорий) для указанного пути
+        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
 
-        // Создаем объект File(директорий) для указанного пути
-        File directory = new File(path);
-
-        // Получаем список всех файлов и директорий в указанной директории
-        File[] files = directory.listFiles();
-
-        // Проверяем, что массив не пустой
-        if (files != null) {
-            // Перебираем каждый файл и директорию в текущей директории
-            for (File file : files) {
-                // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-                if (file.isDirectory()) {
+        if (files != null) {  // Проверяем, что массив не пустой
+            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
+                if (file.isDirectory()) {    // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
                     walkFileTree(file.getAbsolutePath());
                 } else {
-                    // Проверка валидности файла
-                    if (checkValid.isValidFile(file)) {
+                    if (checkValid.isValidFile(file)) {  // Проверка валидности файла
                         // Если текущий файл не является директорией, добавляем его в карту
                         // Группируем файлы по их размеру
                         filesBySize.computeIfAbsent(file.length(), k -> new HashSet<>()).add(file.toPath());
@@ -84,26 +58,14 @@ public class FileDuplicateFinder {
     }
 
 
-    /*  Находитгруппы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.*/
-    /**
-    * @throws IOException при возникновении ошибки ввода-вывода*/
+    /*  Находит группы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.*/
     public void findDuplicateGroups() throws IOException {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();  // Создаем ExecutorService с виртуальными потоками
+        List<Future<Void>> futures = new ArrayList<>();  // Список задач для параллельного выполнения
 
-        // Создаем ExecutorService с фиксированным пулом потоков
-        //int numThreads = Runtime.getRuntime().availableProcessors();
-        //ExecutorService executor = Executors.newFixedThreadPool(numThreads);
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-
-        // Список задач для параллельного выполнения
-        List<Future<Void>> futures = new ArrayList<>();
-
-        // перебираю ключи (размеры файлов)
-        for (Long size : filesBySize.keySet()) {
-            // Получаю список файлов для текущего размера
-            Set<Path> files = filesBySize.get(size);
-
-            // Отправляем задачу на обработку файлов в пул потоков
-            futures.add(executor.submit(() -> {
+        for (Long size : filesBySize.keySet()) {  // перебираю ключи (размеры файлов)
+            Set<Path> files = filesBySize.get(size);  // Получаю список файлов для текущего размера
+            futures.add(executor.submit(() -> {  // Отправляем задачу на обработку файлов в пул потоков
                 // Находим дубликаты в группе файлов одинакового размера и добавляем их в список дубликатов duplicates
                 findDuplicatesInSameSizeFiles(files);
                 return null;
@@ -121,15 +83,15 @@ public class FileDuplicateFinder {
 
         // Завершаем работу пула потоков - на скорость вроде повлияло
         executor.shutdown();
-        try {
-            // Ждем завершения всех задач в течение 60 секунд
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                executor.shutdownNow(); // Принудительно завершаем все активные задачи
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow(); // Принудительно завершаем все активные задачи
-            Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
-        }
+//        try {
+//            // Ждем завершения всех задач в течение 60 секунд
+//            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                executor.shutdownNow(); // Принудительно завершаем все активные задачи
+//            }
+//        } catch (InterruptedException e) {
+//            executor.shutdownNow(); // Принудительно завершаем все активные задачи
+//            Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+//        }
     }
 
 
@@ -138,43 +100,36 @@ public class FileDuplicateFinder {
      * Находит дубликаты файлов в списке файлов одинакового размера.
      *
      * @param files — список путей к файлам одинакового размера. Из HashMap filesBySize.
-     * @throws IOException при возникновении ошибки ввода-вывода
      */
     public void findDuplicatesInSameSizeFiles(Set<Path> files) throws IOException {
-        if (files.size() < 2) {
+        if (files.size() < 2) {  // Если файлов меньше двух, выходим из метода
             return;
         }
-//        System.out.println("---------------------------------------------------------------");
-//        System.out.println(" Проверяем группу файлов - " + Arrays.toString(files.toArray()));
 
-        // Создаем ExecutorService с виртуальными потоками
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();   // Создаем ExecutorService с виртуальными потоками
 
-        while (files.size() > 1) {
-            // Извлекаем первый файл
-            Iterator<Path> iterator = files.iterator();
+        while (files.size() > 1) {  // Пока в списке файлов одинакового размера есть хотя бы два файла
+            Iterator<Path> iterator = files.iterator();  // Извлекаем первый файл из списка
             Path file = iterator.next();
             iterator.remove();   // Удаляем первый файл из списка
 
-            System.out.println("Проверка файла: " + file);
+            System.out.println(" Поиск дубликатов файла: " + file);
             //List<String> group = Collections.synchronizedList(new ArrayList<>());
             List<Path> group = new CopyOnWriteArrayList<>();   // потокобезопасный список для добавления путей к дубликатам
             group.add(file);   // Добавляем путь к первому файлу в группу дубликатов
 
             List<Path> toRemove = new CopyOnWriteArrayList<>();   // потокобезопасный список для удаления дубликатов из files
 
-            // Список задач для параллельного выполнения
-            List<Future<Boolean>> futures = new ArrayList<>();
+            List<Future<Boolean>> futures = new ArrayList<>();  // Список задач для параллельного выполнения
 
-            // Перебираем оставшиеся файлы в списке
-            for (Path anotherFile : files) {
+            for (Path anotherFile : files) {  // Перебираем оставшиеся файлы в списке
                 if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
                     continue;
                 }
 
                 // Отправляем задачу на сравнение файлов в пул потоков
                 futures.add(executor.submit(() -> {
-                    if (V11.FileComparator.areFilesEqual(file, anotherFile)) {
+                    if (FileComparator.areFilesEqual(file, anotherFile)) {
                             group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
                             toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
                         return true;
@@ -183,8 +138,7 @@ public class FileDuplicateFinder {
                 }));
             }
 
-            // Ожидаем завершения всех задач
-            for (Future<Boolean> future : futures) {
+            for (Future<Boolean> future : futures) { // Ожидаем завершения всех задач
                 try {
                     future.get();
                 } catch (InterruptedException | ExecutionException e) {
@@ -193,21 +147,34 @@ public class FileDuplicateFinder {
             }
 
             files.removeAll(toRemove);  // Удаляем дубликаты из списка файлов одинакового размера
-            // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
-            if (group.size() > 1) {
+
+            if (group.size() > 1) { // Добавляем группу дубликатов в список дубликатов (если группа содержит более одного файла)
                 duplicates.add(group);
             }
         }
 
         // Завершаем работу ExecutorService
         executor.shutdown();
+//        try {
+//            // Ждем завершения всех задач в течение 60 секунд
+//            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                executor.shutdownNow(); // Принудительно завершаем все активные задачи
+//            }
+//        } catch (InterruptedException e) {
+//            executor.shutdownNow(); // Принудительно завершаем все активные задачи
+//            Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+//        }
+    }
+
+
+    // Ожидание завершения работы пула потоков
+    private void awaitTermination(ExecutorService executor) {
         try {
-            // Ждем завершения всех задач в течение 60 секунд
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                executor.shutdownNow(); // Принудительно завершаем все активные задачи
+            if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Принудительное завершение
             }
         } catch (InterruptedException e) {
-            executor.shutdownNow(); // Принудительно завершаем все активные задачи
+            executor.shutdownNow(); // Принудительное завершение
             Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
         }
     }
