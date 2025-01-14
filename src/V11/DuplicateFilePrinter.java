@@ -40,7 +40,7 @@ public class DuplicateFilePrinter {
                 System.out.println("Группа файлов типа: '" + group.get(0).getFileName() + "';     размера: " + size + " байт");
                 System.out.println();
                 for (Path filePath : group) {
-                    System.out.println("                  " + filePath);
+                    System.out.println("     " + filePath);
                 }
                 System.out.println();
                 System.out.println("--------------------");

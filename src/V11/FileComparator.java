@@ -3,10 +3,7 @@ package V11;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -134,6 +131,19 @@ public class FileComparator {
     }
 
 
+    //---------------------------------------------------
+
+    // Предварительное быстрое сравнение файлов по первым  байтам
+    public static boolean quickCompareFiles(Path file1, Path file2) throws IOException {
+        // Если оба файла имеют нулевой размер, они одинаковые
+        if (Files.size(file1) == 0) {
+            return true;
+        }
+
+        return Files.mismatch(file1, file2) == -1; // -1 означает, что файлы идентичны
+    }
+
+
 
     public static void main(String[] args) {
 
@@ -151,15 +161,16 @@ public class FileComparator {
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (пустой).zip");  // Разные файлы
 
             Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
-            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
+            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
+            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
 
             //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
             //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
 
 
-            System.out.println(areFilesEqual(file1, file2));
+            // System.out.println(areFilesEqual(file1, file2));
+            System.out.println(quickCompareFiles(file1, file2));
         } catch (IOException e) {
             e.printStackTrace();
         }
