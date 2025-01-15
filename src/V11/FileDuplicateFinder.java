@@ -10,9 +10,9 @@ public class FileDuplicateFinder {
 
     private final CheckValid checkValid;
     private final Map<Long, Set<Path>> filesBySize;  /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
-    public Map<Long, Set<Path>> getFilesBySize() {return filesBySize;}
+    Map<Long, Set<Path>> getFilesBySize() {return filesBySize;}
     private final List<List<Path>> duplicates;  /* Список для хранения результата - групп дубликатов файлов */
-    public List<List<Path>> getDuplicates() {return duplicates;}
+    List<List<Path>> getDuplicates() {return duplicates;}
 
     /* Конструктор */
     public FileDuplicateFinder() {

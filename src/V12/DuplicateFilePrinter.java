@@ -20,17 +20,19 @@ public class DuplicateFilePrinter {
             List<Set<File>> groups = entry.getValue();
 
             for (Set<File> group : groups) {
-                if (groups.size() < 2) {  // Если в группе меньше 2 файлов, то это не дубликаты, а одиночные файлы
-                    //duplicatesBySize.keySet().remove(entry.getKey());   ??? доделать удаление
-                    continue;
+                if (group.size() < 2) {  // Если в группе меньше 2 файлов, то это не дубликаты, а одиночные файлы
+//                    groups.remove(group);
+//                    if (groups.isEmpty()){break;} // Если группа с группами дубликатов пустая, то прерываем цикл
+                    continue; // Если группа не пустая, то переходим к следующей подгруппе дубликатов
                 }
-                System.out.println("   Группа дубликатов типа :" + group.iterator().next().getName() + " размером " + entry.getKey() + " байт");
-                System.out.println("----------------------------------------");
-                for (File file : group) {
-                    System.out.println(" " + file.getAbsolutePath());
-                }
-                System.out.println();
-                System.out.println("-------------------------------------------------------------");
+                    System.out.println("   Группа дубликатов типа :" + group.iterator().next().getName() + " размером " + entry.getKey() + " байт");
+                    System.out.println("----------------------------------------");
+                    for (File file : group) {
+                        System.out.println(" " + file.getAbsolutePath());
+                    }
+                    System.out.println();
+                    System.out.println("-------------------------------------------------------------");
+
             }
         }
     }

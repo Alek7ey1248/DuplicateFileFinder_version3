@@ -16,7 +16,7 @@ public class FileComparator {
     private static long getLargeFileThreshold() {
         long maxMemory = Runtime.getRuntime().maxMemory(); // Доступная память
         int availableProcessors = Runtime.getRuntime().availableProcessors(); // Количество доступных процессоров
-        return maxMemory / (availableProcessors * 4L); // Возвращаем порог
+        return maxMemory / (availableProcessors * 2L); // Возвращаем порог
     }
 
     // Метод для получения размера блока для поблочного чтения

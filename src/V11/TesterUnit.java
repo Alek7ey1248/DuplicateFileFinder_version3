@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class TesterUnit {
 
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру
-	private FileDuplicateFinder finder;
+	private V11.FileDuplicateFinder finder;
 	private Map<Long, Set<Path>> expectedFilesBySize;
 
 	// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
@@ -39,8 +39,8 @@ public class TesterUnit {
 	private Path file15;
 
 	// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
-	Map<Long, Set<Path>> filesBySize;
-	List<Set<Path>> expectedProcessSameSizeFiles;
+	private Map<Long, Set<Path>> filesBySize;
+	private List<Set<Path>> expectedProcessSameSizeFiles;
 
 	@Before
 	public void setUp() throws Exception {
@@ -268,16 +268,16 @@ public class TesterUnit {
 	@Test
 	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
 		// Проверка на равенство файлов с одинаковым содержимым
-		assertEquals(true, FileComparator.areFilesEqual(file1, file2));
-		assertEquals(true, FileComparator.areFilesEqual(file5, file6));
-		assertEquals(true, FileComparator.areFilesEqual(file7, file8));
-		assertEquals(true, FileComparator.areFilesEqual(file9, file10));
+		assertEquals(true, V11.FileComparator.areFilesEqual(file1, file2));
+		assertEquals(true, V11.FileComparator.areFilesEqual(file5, file6));
+		assertEquals(true, V11.FileComparator.areFilesEqual(file7, file8));
+		assertEquals(true, V11.FileComparator.areFilesEqual(file9, file10));
 		// Проверка на равенство файлов с разным содержимым
-		assertEquals(false, FileComparator.areFilesEqual(file3, file4));
-		assertEquals(false, FileComparator.areFilesEqual(file5, file3));
+		assertEquals(false, V11.FileComparator.areFilesEqual(file3, file4));
+		assertEquals(false, V11.FileComparator.areFilesEqual(file5, file3));
 		// Проверка на равенство файлов нулевого размера
-		assertEquals(true, FileComparator.areFilesEqual(file11, file12));
-		assertEquals(true, FileComparator.areFilesEqual(file13, file11));
+		assertEquals(true, V11.FileComparator.areFilesEqual(file11, file12));
+		assertEquals(true, V11.FileComparator.areFilesEqual(file13, file11));
 		// Проверка на равенство очень больших файлов
 		boolean result = V11.FileComparator.areFilesEqual(file14, file15);
 		assertEquals(true, result);
@@ -329,7 +329,7 @@ public class TesterUnit {
 	// Это вспомогательный метод, который используется в методе findDuplicateGroups.
 	@Test
 	public void testFindDuplicatesInSameSizeFiles() throws IOException {
-		FileDuplicateFinder finder = new FileDuplicateFinder();
+		V11.FileDuplicateFinder finder = new FileDuplicateFinder();
 
 		// Создаем список файлов одинакового размера
 		Set<Path> files = new HashSet<>();
