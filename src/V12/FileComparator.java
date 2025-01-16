@@ -85,7 +85,8 @@ public class FileComparator {
 
     // Вспомогательный метод для сравнения содержимого двух больших файлов
     private static boolean compareLargeFileContents(FileChannel channel1, FileChannel channel2, long size) throws InterruptedException {
-        ExecutorService executor = Executors.newFixedThreadPool((int) (Runtime.getRuntime().availableProcessors() * 1.25));  // Создаем ExecutorService с фиксированным пулом потоков
+        //ExecutorService executor = Executors.newFixedThreadPool((int) (Runtime.getRuntime().availableProcessors() * 1.25));  // Создаем ExecutorService с фиксированным пулом потоков
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
         List<Future<Boolean>> futures = new ArrayList<>(); // Список задач
         long position = 0;
 

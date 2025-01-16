@@ -18,8 +18,10 @@ import static org.junit.Assert.*;
  */
 public class TesterUnit {
 
-	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
 	private V12.FileDuplicateFinder finder;
+	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
+	private Map<Long, Set<Path>> expectedFilesBySize;
+	// Для тестирования метода findDuplicates - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
 	private Map<Long, List<Set<File>>> expectedDuplicatesBySize;
 
 	// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
@@ -39,17 +41,71 @@ public class TesterUnit {
 	private Path file14;
 	private Path file15;
 
-	// Для тестирования метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
-//	Map<Long, Set<Path>> filesBySize;
-//	List<Set<Path>> expectedProcessSameSizeFiles;
-
 	@Before
 	public void setUp() throws Exception {
 
 		// Для тестирования метода walkFileTree класса FileDuplicateFinder
+		// Обходит файловую систему, начиная с указанного пути и группирует файлы по их размеру в HashMap filesBySize
+		// expectedFilesBySize - ожидаемый результат
+		finder = new FileDuplicateFinder();
+		expectedFilesBySize = new HashMap<>();
+
+		expectedFilesBySize.put(32L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
+		));
+		expectedFilesBySize.put(0L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa")
+		));
+		expectedFilesBySize.put(20L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt")
+		));
+		expectedFilesBySize.put(94869L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
+		));
+		expectedFilesBySize.put(23L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt")
+		));
+		expectedFilesBySize.put(136L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt")
+		));
+		expectedFilesBySize.put(3771L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)")
+		));
+		expectedFilesBySize.put(3359325264L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
+		));
+		expectedFilesBySize.put(13L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt")
+		));
+		expectedFilesBySize.put(29L, Set.of(
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt"),
+				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt")
+		));
+
+
+		// Для тестирования метода findDuplicates класса FileDuplicateFinder
 		// Обходит файловую систему, начиная с указанного пути и группирует файлы в duplicatesBySize по их размеру группы списков дубликатов
 		// expectedDuplicatesBySize - ожидаемый результат
-		finder = new FileDuplicateFinder();
+		//finder = new FileDuplicateFinder();
 		expectedDuplicatesBySize = new HashMap<>();
 
 		expectedDuplicatesBySize.put(32L, Arrays.asList(
@@ -159,9 +215,9 @@ public class TesterUnit {
 
 	/**  Тестирования метода walkFileTree класса FileDuplicateFinder */
 	@Test
-	public void testWalkFileTree1() throws IOException {
+	public void findDuplicates1() throws IOException {
 
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
+		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"});
 		Map<Long, List<Set<File>>> duplicatesBySize = finder.getDuplicatesBySize();
 
 			// Сортируем проверяемые и проверочные списки файлов одинакового размера что бы при сравнении у них совпадали порядки
@@ -206,7 +262,7 @@ public class TesterUnit {
 	// из списка файлов одинакового размера находит дубликаты.
 	// Это вспомогательный метод, который используется в методе findDuplicateGroups.
 	@Test
-	public void testWalkFileTree2() throws IOException {
+	public void findDuplicates2() throws IOException {
 		FileDuplicateFinder finder = new FileDuplicateFinder();
 
 		// Ожидаемый результат
@@ -238,7 +294,7 @@ public class TesterUnit {
 		)));
 
 		// Результат работы метода
-		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder");
+		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"});
 		Map<Long, List<Set<File>>> duplicatesBySizeActual = finder.getDuplicatesBySize();
 		List<Set<File>> actual = duplicatesBySizeActual.get(11L);
 
