@@ -13,7 +13,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         // Пример использования
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
+        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
         //String[] paths = {"/home/alek7ey/.cache"};
@@ -21,7 +21,7 @@ public class Main {
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
 
         // Проверка валидности путей
         CheckValid checkValid = new CheckValid();

@@ -27,6 +27,7 @@ public class FileDuplicateFinder {
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
+        removeSingleFiles();  // Удаляем группы с одним файлом и пустые группы
     }
 
 
@@ -85,7 +86,46 @@ public class FileDuplicateFinder {
             duplicatesBySize.put(file.length(), fileList);
         }
     }
-//-----------------------------------------------------------
+
+
+    /* Метод удаления групп Set<File> с одним файлом и пустых списков List<Set<File>>>*/
+		public void removeSingleFiles() {
+            // Итератор для обхода duplicatesBySize
+            Iterator<Map.Entry<Long, List<Set<File>>>> iterator = duplicatesBySize.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Long, List<Set<File>>> entry = iterator.next();
+                List<Set<File>> groups = entry.getValue();
+                Iterator<Set<File>> iterator1 = groups.iterator();
+                while (iterator1.hasNext()) {
+                    Set<File> group = iterator1.next();
+                    if (group.size() < 2) {
+                        iterator1.remove();
+                    }
+                }
+                if (groups.isEmpty()) {
+                    iterator.remove();
+                }
+            }
+
+        }
+
+
+//		for (Map.Entry<Long, List<Set<File>>> entry : duplicatesBySize.entrySet()) {
+//			List<Set<File>> groups = entry.getValue();
+//			Iterator<Set<File>> iterator = groups.iterator();
+//
+//			while (iterator.hasNext()) {
+//				Set<File> group = iterator.next();
+//				if (group.size() < 2) {
+//					iterator.remove(); // Удаляем группу через итератор
+//				}
+//			}
+//
+//			// Если нужно, можно дополнительно проверить, пуст ли список groups
+//			if (groups.isEmpty()) {
+//				duplicatesBySize.remove(entry.getKey());  // Удаляем группу из duplicatesBySize
+//			}
+//		}
 
 
 
