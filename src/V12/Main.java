@@ -20,7 +20,8 @@ public class Main {
         //String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
+        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
 
         // Проверка валидности путей
         CheckValid checkValid = new CheckValid();
