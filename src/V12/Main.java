@@ -14,9 +14,9 @@ public class Main {
 
         // Пример использования
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
-        String[] paths = {"/home/alek7ey"};
+        //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
-        //String[] paths = {"/home/alek7ey/.cache"};
+        String[] paths = {"/home/alek7ey/.cache"};
         //String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
@@ -37,7 +37,7 @@ public class Main {
         finder.findDuplicates(paths);
 
         // выводим отсортированные результаты поиска дубликатов
-        DuplicateFilePrinter.printDuplicates(finder.getDuplicatesBySize());
+        //DuplicateFilePrinter.printDuplicates(finder.getDuplicatesBySize());
 
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);

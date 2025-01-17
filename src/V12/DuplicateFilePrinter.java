@@ -11,57 +11,20 @@ import java.util.stream.Collectors;
 public class DuplicateFilePrinter {
 
     // Метод для вывода групп дубликатов файлов в консоль
-    public static void printDuplicates(Map<Long, List<Set<File>>> duplicatesBySize) {
+    public static void printDuplicates(Map<FileKey, Set<File>> fileMap) {
 
-        // Сортируем duplicatesBySize по размеру ключей по убыванию
-        duplicatesBySize = getSorted(duplicatesBySize);
-
+        Collections.sort(fileMap);
+        // Выводим сгруппированные списки в консоль
         for (Map.Entry<Long, List<Set<File>>> entry : duplicatesBySize.entrySet()) {
-            List<Set<File>> groups = entry.getValue();
+            long size = entry.getKey();
+            List<Set<File>> fileSets = entry.getValue();
 
-            for (Set<File> group : groups) {
-                if (group.size() < 2) {  // Если в группе меньше 2 файлов, то это не дубликаты, а одиночные файлы
-//                    groups.remove(group);
-//                    if (groups.isEmpty()){break;} // Если группа с группами дубликатов пустая, то прерываем цикл
-                    continue; // Если группа не пустая, то переходим к следующей подгруппе дубликатов
-                }
-                    System.out.println("   Группа дубликатов типа :" + group.iterator().next().getName() + " размером " + entry.getKey() + " байт");
-                    System.out.println("----------------------------------------");
-                    for (File file : group) {
-                        System.out.println(" " + file.getAbsolutePath());
-                    }
-                    System.out.println();
-                    System.out.println("-------------------------------------------------------------");
-
+            System.out.println("Размер: " + size + " байт");
+            for (Set<File> fileSet : fileSets) {
+                System.out.println("  Дубликаты: " + fileSet);
             }
         }
     }
-
-    // сортировка duplicatesBySize по размеру ключей по возрастанию
-    public static Map<Long, List<Set<File>>> getSorted(Map<Long, List<Set<File>>> duplicatesBySize) {
-        return duplicatesBySize.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByKey()) // Сортировка по возрастанию ключа
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1, // В случае дубликатов, выбираем первое значение
-                        LinkedHashMap::new // Используем LinkedHashMap для сохранения порядка
-                ));
-    }
-
-    // сортировка duplicatesBySize по размеру ключей по убыванию
-//    public static Map<Long, List<Set<File>>> getSorted(Map<Long, List<Set<File>>> duplicatesBySize) {
-//        return duplicatesBySize.entrySet()
-//                .stream()
-//                .sorted(Map.Entry.<Long, List<Set<File>>>comparingByKey().reversed())
-//                .collect(Collectors.toMap(
-//                        Map.Entry::getKey,
-//                        Map.Entry::getValue,
-//                        (e1, e2) -> e1, // В случае дубликатов, выбираем первое значение
-//                        LinkedHashMap::new // Используем LinkedHashMap для сохранения порядка
-//                ));
-//    }
 
 
 
