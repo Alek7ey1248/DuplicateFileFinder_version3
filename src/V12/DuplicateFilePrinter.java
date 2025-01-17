@@ -11,20 +11,20 @@ import java.util.stream.Collectors;
 public class DuplicateFilePrinter {
 
     // Метод для вывода групп дубликатов файлов в консоль
-    public static void printDuplicates(Map<FileKey, Set<File>> fileMap) {
-
-        Collections.sort(fileMap);
-        // Выводим сгруппированные списки в консоль
-        for (Map.Entry<Long, List<Set<File>>> entry : duplicatesBySize.entrySet()) {
-            long size = entry.getKey();
-            List<Set<File>> fileSets = entry.getValue();
-
-            System.out.println("Размер: " + size + " байт");
-            for (Set<File> fileSet : fileSets) {
-                System.out.println("  Дубликаты: " + fileSet);
-            }
-        }
-    }
+//    public static void printDuplicates(Map<FileKey, Set<File>> filesByKey) {
+//
+//        Collections.sort(filesByKey);
+//        // Выводим сгруппированные списки в консоль
+//        for (Map.Entry<FileKey, Set<File>> entry : filesByKey.entrySet()) {
+//            FileKey key = entry.getKey();
+//            List<Set<File>> fileSets = entry.getValue();
+//
+//            System.out.println("Размер: " + size + " байт");
+//            for (Set<File> fileSet : fileSets) {
+//                System.out.println("  Дубликаты: " + fileSet);
+//            }
+//        }
+//    }
 
 
 

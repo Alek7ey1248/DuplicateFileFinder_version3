@@ -2,7 +2,6 @@ package V12;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -18,7 +17,7 @@ public class FileDuplicateFinder {
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
-        this.filesByKey = new ConcurrentHashMap<>();
+        this.filesByKey = new ConcurrentSkipListMap<>();
     }
 
 
@@ -30,6 +29,10 @@ public class FileDuplicateFinder {
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
+
+        removeSingles();  // Удаляем группы файлов, в которых меньше 2 файлов
+
+        printDuplicateResults();  // Вывод групп дубликатов файлов в консоль
         
     }
 
@@ -64,6 +67,35 @@ public class FileDuplicateFinder {
             }
         }
     }
-    
+
+    // Удаляет группы файлов, в которых меньше 2 файлов
+    private void removeSingles() {
+        filesByKey.entrySet().removeIf(entry -> entry.getValue().size() < 2);
+    }
+
+
+    // выводит группы дубликатов файлов
+    public void printDuplicateResults() {
+        // Проходим по всем записям в TreeMap fileByHash
+        for (Map.Entry<FileKey, Set<File>> entry : filesByKey.entrySet()) {
+            // Получаем ключ (FileKey) и значение (Set<File>) для текущей записи
+            FileKey key = entry.getKey();
+            Set<File> files = entry.getValue();
+            // Проверяем, что в группе есть файлы
+            if (files.size() > 1) {
+                System.out.println();
+                // Выводим информацию о группе дубликатов
+                System.out.println("Группа дубликатов файла: '" + files.iterator().next().getName() + "' размера - " + key.getSize() + " байт -------------------------------");
+                // Проходим по всем файлам в группе и выводим их пути
+                for (File file : files) {
+                    System.out.println(file.getAbsolutePath());
+                }
+                System.out.println();
+                System.out.println("--------------------");
+            }
+        }
+    }
+
+
 
 }

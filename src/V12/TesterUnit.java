@@ -213,27 +213,74 @@ public class TesterUnit {
 
 
 
-	/**  Тестирования метода walkFileTree класса FileDuplicateFinder */
 	@Test
 	public void findDuplicates1() throws IOException {
-
 		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"});
-		Map<Long, List<Set<File>>> duplicatesBySize = finder.getDuplicatesBySize();
+		Map<FileKey, Set<File>> filesByKey = finder.getFilesByKey();
 
-			// Сортируем проверяемые и проверочные списки файлов одинакового размера что бы при сравнении у них совпадали порядки
-		for (Long key : duplicatesBySize.keySet()) {
-			Set<File> actualSet = duplicatesBySize.get(key).iterator().next();  // Получаем первый элемент из списка
-			List<File> actualList = new ArrayList<>(actualSet);
-			Set<File> expectedSet = expectedDuplicatesBySize.get(key).iterator().next(); // Получаем первый элемент из списка
-			List<File> expectedList = new ArrayList<>(expectedSet);
+		// Проверяем, что размеры ожидаемых и фактических групп дубликатов совпадают
+		assertEquals(expectedDuplicatesBySize.size(), filesByKey.size());
 
-			if (actualList != null && expectedList != null) {
-				Collections.sort(actualList);
-				Collections.sort(expectedList);
+		// Создаем список для хранения фактических наборов файлов
+		List<Set<File>> actualSets = new ArrayList<>(filesByKey.values());
+
+		// Сравниваем фактические наборы с ожидаемыми
+		for (List<Set<File>> expectedList : expectedDuplicatesBySize.values()) {
+			for (Set<File> expectedSet : expectedList) {
+				// Проверяем, что фактический набор файлов совпадает с ожидаемым
+				assertTrue(actualSets.remove(expectedSet));
 			}
 		}
-		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
-		assertEquals(expectedDuplicatesBySize, duplicatesBySize);
+
+		// Если остались какие-то фактические наборы, которые не были проверены, это ошибка
+		assertTrue(actualSets.isEmpty());
+	}
+
+	/** Тестирование метода findDuplicates для проверки групп дубликатов */
+	@Test
+	public void findDuplicates2() throws IOException {
+		FileDuplicateFinder finder = new FileDuplicateFinder();
+		// Ожидаемый результат
+		List<Set<File>> expected = new ArrayList<>();
+		expected.add(new HashSet<>(Arrays.asList(
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt")
+		)));
+		expected.add(new HashSet<>(Arrays.asList(
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt")
+		)));
+		expected.add(new HashSet<>(Arrays.asList(
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt")
+		)));
+		expected.add(new HashSet<>(Arrays.asList(
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt")
+		)));
+
+		// Результат работы метода
+		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"});
+		Map<FileKey, Set<File>> filesByKey = finder.getFilesByKey();
+
+		// Проверяем, что размеры ожидаемых и фактических групп дубликатов совпадают
+		assertEquals(expected.size(), filesByKey.size());
+
+		for (Set<File> expectedGroup : expected) {
+			boolean found = false;
+			for (Set<File> actualGroup : filesByKey.values()) {
+				if (actualGroup.equals(expectedGroup)) {
+					found = true;
+					break;
+				}
+			}
+			assertTrue(found);
+		}
 	}
 
 
@@ -254,65 +301,6 @@ public class TesterUnit {
 		// Проверка на равенство очень больших файлов
 		boolean result = V12.FileComparator.areFilesEqual(file14, file15);
 		assertEquals(true, result);
-	}
-
-
-
-	//* Тестирование метода testWalkFileTree класса FileDuplicateFinder -
-	// из списка файлов одинакового размера находит дубликаты.
-	// Это вспомогательный метод, который используется в методе findDuplicateGroups.
-	@Test
-	public void findDuplicates2() throws IOException {
-		FileDuplicateFinder finder = new FileDuplicateFinder();
-
-		// Ожидаемый результат
-		List<Set<File>> expected = new ArrayList<>();
-		expected.add(new HashSet<>(Arrays.asList(
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt")
-		)));
-
-		expected.add(new HashSet<>(Arrays.asList(
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt")
-		)));
-
-		expected.add(new HashSet<>(Arrays.asList(
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt")
-				)
-		));
-
-		expected.add(new HashSet<>(Arrays.asList(
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"),
-				new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt")
-		)));
-
-		// Результат работы метода
-		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"});
-		Map<Long, List<Set<File>>> duplicatesBySizeActual = finder.getDuplicatesBySize();
-		List<Set<File>> actual = duplicatesBySizeActual.get(11L);
-
-		// Проверка результата
-		//assertEquals(expected.size(), actual.size());
-		for (Set<File> expectedGroup : expected) {
-			boolean found = false;
-			Set<File> expectedSet = new HashSet<>(expectedGroup);
-			for (Set<File> actualGroup : actual) {
-				Set<File> actualSet = new HashSet<>(actualGroup);
-				if (actualSet.equals(expectedSet)) {
-					found = true;
-					break;
-				}
-			}
-			assertEquals(true, found);
-
-		}
 	}
 	
 }
