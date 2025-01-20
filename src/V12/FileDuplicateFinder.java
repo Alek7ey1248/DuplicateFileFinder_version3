@@ -112,35 +112,19 @@ public class FileDuplicateFinder {
 //    }
 
     public void addFilesToMap() {
-        // Используем поле класса filesByKey для потокобезопасности
         ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
-
-        // Список для хранения CompletableFuture
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         fileBySize.entrySet().forEach(entry -> {
             if (entry.getValue().size() < 2) {  // Пропускаем списки файлов, которых меньше 2
                 return;
             }
-            entry.getValue().forEach(file -> {
-                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                    try {
-                        FileKey key = new FileKey(file);
-                        filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
-                    } catch (IOException | NoSuchAlgorithmException e) {
-                        System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
-                        e.printStackTrace();
-                    }
-                }, executorService);
-                futures.add(future);
-            });
+            processFilesBySize(entry.getValue(), executorService, futures);
         });
 
-        // Ожидаем завершения всех задач
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allOf.join(); // Блокируем текущий поток до завершения всех задач
 
-        // Завершаем ExecutorService
         executorService.shutdown();
         try {
             if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -152,6 +136,30 @@ public class FileDuplicateFinder {
         }
     }
 
+    // Обработка файлов из fileBySize по размеру
+    private void processFilesBySize(Set<File> files, ExecutorService executorService, List<CompletableFuture<Void>> futures) {
+        long numFiles = files.size();   // Количество файлов в списке
+        long sizeFiles = files.iterator().next().length();  // Размер файлов
+
+
+        filesByHesh( files, executorService, futures);
+    }
+
+
+    private void filesByHesh(Set<File> files, ExecutorService executorService, List<CompletableFuture<Void>> futures) {
+        files.forEach(file -> {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                try {
+                    FileKey key = new FileKey(file);
+                    filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
+                } catch (IOException | NoSuchAlgorithmException e) {
+                    System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
+                    e.printStackTrace();
+                }
+            }, executorService);
+            futures.add(future);
+        });
+    }
 
 
     // Удаление списков по одному файлу
