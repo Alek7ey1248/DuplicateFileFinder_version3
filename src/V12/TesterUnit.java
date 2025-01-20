@@ -239,7 +239,7 @@ public class TesterUnit {
 	/** Тестирование метода findDuplicates для проверки групп дубликатов */
 	@Test
 	public void findDuplicates2() throws IOException {
-		FileDuplicateFinder finder = new FileDuplicateFinder();
+		V12.FileDuplicateFinder finder = new FileDuplicateFinder();
 		// Ожидаемый результат
 		List<Set<File>> expected = new ArrayList<>();
 		expected.add(new HashSet<>(Arrays.asList(

@@ -11,12 +11,15 @@ public class FileDuplicateFinder {
 
     private final CheckValid checkValid;
 
+    private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
+
     private final Map<FileKey, Set<File>> filesByKey;  /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
     Map<FileKey, Set<File>> getFilesByKey() {return filesByKey;}
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
+        this.fileBySize = new HashMap<>();
         this.filesByKey = new ConcurrentSkipListMap<>();
     }
 
@@ -30,7 +33,8 @@ public class FileDuplicateFinder {
             walkFileTree(path);
         }
 
-        removeSingles();  // Удаляем группы файлов, в которых меньше 2 файлов
+        addFilesToMap();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
+        removeSingleFiles();  // Удаляем списки по одному файлу
 
         printDuplicateResults();  // Вывод групп дубликатов файлов в консоль
         
@@ -38,65 +42,91 @@ public class FileDuplicateFinder {
 
 
     /* Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
-     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HasyMap filesBySize.
+     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
-    public void walkFileTree(String path) throws IOException {
-        File directory = new File(path); // Создаем объект File(директория) для указанного пути
-        File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в указанной директории
+    public void walkFileTree(String path) {
 
-        if (files != null) { // Проверяем, что массив не пустой
-            // Создаем ExecutorService для виртуальных потоков
-            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-            List<Future<?>> futures = new ArrayList<>(); // Список для хранения Future объектов
+        if (!checkValid.isValidDirectoryPath(path)) {
+            System.out.println("Невалидная директория: " + path);
+            return;
+        }
 
-            for (File file : files) {
-                // Отправляем задачу на выполнение и сохраняем Future
-                Future<?> future = executor.submit(() -> {
-                    if (file.isDirectory()) { // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-                        try {
-                            walkFileTree(file.getAbsolutePath());
-                        } catch (IOException e) {
-                            System.out.println("Ошибка при обработке директории: " + file.getAbsolutePath());
-                        }
-                    } else {
-                        if (checkValid.isValidFile(file)) { // Проверка валидности файла
-                            // Если текущий файл не является директорией, добавляем его в карту
-                            // Группируем файлы по их ключу - размеру и хешу первых 1024 байт
-                            // Используем computeIfAbsent для добавления файла в список
-                            try {
-                                filesByKey.computeIfAbsent(new FileKey(file), k -> ConcurrentHashMap.newKeySet()).add(file);
-                            } catch (NoSuchAlgorithmException e) {
-                                System.out.println("Ошибка при создании ключа файла: " + file.getAbsolutePath());
-                                throw new RuntimeException(e);
-                            } catch (IOException e) {
-                                System.out.println("Ошибка при создании ключа файла: " + file.getAbsolutePath());
-                                throw new RuntimeException(e);
-                            }
-                        }
+        File directory = new File(path); // Создаем объект File(директорий) для указанного пути
+        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
+
+        if (files != null) {  // Проверяем, что массив не пустой
+            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
+                if (file.isDirectory()) {  // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
+                    walkFileTree(file.getAbsolutePath());
+                } else {
+                    if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
+                        continue;
                     }
-                });
-                futures.add(future); // Добавляем Future в список
-            }
-
-            // Ожидаем завершения всех задач
-            for (Future<?> future : futures) {
-                try {
-                    future.get(); // Блокируемся до завершения задачи
-                } catch (Exception e) {
-                    System.out.println("Ошибка при выполнении задачи: " + e.getMessage());
+                    // Добавляем файл в карту fileBySize по его размеру
+                    long fileSize = file.length();
+                    fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
                 }
             }
-
-            executor.shutdown(); // Завершаем ExecutorService
         }
     }
 
 
-    // Удаляет группы файлов, в которых меньше 2 файлов
-    private void removeSingles() {
-        filesByKey.entrySet().removeIf(entry -> entry.getValue().size() < 2);
+    // Добавляем файлы в Map fileByKey из HashMap fileBySize
+    public void addFilesToMap() {
+        // Используем поле класса filesByKey для потокобезопасности
+        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
+
+        // Список для хранения CompletableFuture
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        fileBySize.entrySet().forEach(entry -> {
+            if (entry.getValue().size() < 2) {  // Пропускаем списки файлов, которых меньше 2
+                return;
+            }
+            entry.getValue().forEach(file -> {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    try {
+                        FileKey key = new FileKey(file);
+                        filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
+                    } catch (IOException | NoSuchAlgorithmException e) {
+                        System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
+                        e.printStackTrace();
+                    }
+                }, executorService);
+                futures.add(future);
+            });
+        });
+
+        // Ожидаем завершения всех задач
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allOf.join(); // Блокируем текущий поток до завершения всех задач
+
+        // Завершаем ExecutorService
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
+
+
+
+    // Удаление списков по одному файлу
+    public void removeSingleFiles() {
+        for (Iterator<Map.Entry<FileKey, Set<File>>> iterator = filesByKey.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<FileKey, Set<File>> entry = iterator.next();
+            if (entry.getValue().size() < 2) {
+                iterator.remove();
+            }
+        }
+    }
+
+
 
 
     // выводит группы дубликатов файлов
