@@ -7,10 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class FileKey implements Comparable<FileKey> {
     private final long size;
@@ -86,78 +83,63 @@ public class FileKey implements Comparable<FileKey> {
     /* Метод для расчета хеша большого файла
      * @param file - файл, для которого нужно рассчитать хеш
      */
+    // Метод для вычисления хеша большого файла
     public static long calculateHashLargeFile(File file) {
         System.out.println("Обработка LargeFile - " + file);
         try {
-            return updateDigestWithLargeFileContent(file);   // Обновляем хеш содержимым файла             // Преобразуем хеш в число
+            return updateDigestWithLargeFileContent(file); // Обновляем хеш содержимым файла
         } catch (IOException | UncheckedIOException e) {
             System.err.println("Ошибка чтения файла " + file + ": " + e.getMessage());
             return -1; // Возвращаем -1 в случае ошибки
         }
     }
 
-
     // Вспомогательный метод для обновления хеша содержимым большого файла
-    private static Long updateDigestWithLargeFileContent(File file) throws IOException {
-        Long heshLong = 0L; // Переменная для хранения хеша
+    private static long updateDigestWithLargeFileContent(File file) throws IOException {
+        long hash = 0L; // Переменная для хранения хеша
         long fileSize = file.length(); // Получаем размер файла
-
-        long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS);  // Размер каждой части файла (округляем в большую сторону)
+        long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS); // Размер каждой части файла
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
-        List<Future<Long>> futures = new ArrayList<>(); // Список для хранения Future
+        List<CompletableFuture<Long>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
 
         for (int i = 0; i < NUM_BLOCKS; i++) {
             long start = i * partSize; // Начало части
-            long end = (i == NUM_BLOCKS - 1) ? fileSize : (i + 1) * partSize; // Конец части
-            Future<Long> future = executor.submit(() -> {
-                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) { // Создаем новый RandomAccessFile для каждого потока
-                    //System.out.println("поток - " + Thread.currentThread());
-                    return processFilePart(raf, start, end); // Обрабатываем часть файла
+            long end = Math.min(start + partSize, fileSize); // Конец части
+            futures.add(CompletableFuture.supplyAsync(() -> {
+                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+                    MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
+                    byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
+                    raf.seek(start); // Переходим к началу части файла
+                    long bytesReadTotal = 0; // Общее количество прочитанных байт
+                    int bytesRead; // Количество байт, прочитанных из файла
+
+                    // Пока есть байты в файле, читаем их и обновляем хеш
+                    while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(BUFFER_SIZE, end - start - bytesReadTotal))) != -1) {
+                        digest.update(buffer, 0, bytesRead); // Обновляем хеш
+                        bytesReadTotal += bytesRead; // Обновляем общее количество прочитанных байт
+                    }
+
+                    return convertHashToLong(digest); // Возвращаем хеш в виде числа
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
-            });
-            futures.add(future); // Добавляем Future в список
+            }, executor));
         }
 
-        //executor.shutdown(); // Завершаем работу пула потоков - !!! некорректно работает с этой строкой
-
-        // Обновляем финальный хеш
-        for (Future<Long> future : futures) {
+        // Ожидаем завершения всех задач и обновляем финальный хеш
+        for (CompletableFuture<Long> future : futures) {
             try {
-                heshLong += future.get(); // Получаем результат задачи и обновляем финальный хеш
-            } catch (InterruptedException e) {
-                System.err.println("Поток был прерван: " + e.getMessage() + " файл - " + file.getAbsolutePath());
-                Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
-                return -1L; // Возвращаем -1 в случае прерывания
-            } catch (Exception e) {
+                hash += future.join(); // Получаем результат задачи и обновляем финальный хеш
+            } catch (CompletionException e) {
                 System.err.println("Ошибка при обновлении хеша: " + e.getMessage());
                 e.printStackTrace(); // Выводим стек вызовов для диагностики
             }
         }
 
-        return heshLong; // Возвращаем хеш в виде числа
+        executor.shutdown();
+        return hash; // Возвращаем хеш в виде числа
     }
-
-
-    // Вспомогательный метод для обработки части файла
-    private static Long processFilePart(RandomAccessFile raf, long start, long end) throws IOException {
-        MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
-        byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
-        raf.seek(start); // Переходим к началу части файла
-        long bytesReadTotal = 0; // Общее количество прочитанных байт
-        int bytesRead; // Количество байт, прочитанных из файла
-
-        // пока есть байты в файле, читаем их и обновляем хеш
-        while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(BUFFER_SIZE, end - start - bytesReadTotal))) != -1) {
-            digest.update(buffer, 0, bytesRead); // Обновляем хеш
-            bytesReadTotal += bytesRead; // Обновляем общее количество прочитанных байт
-        }
-
-        return convertHashToLong(digest); // Возвращаем хеш в виде числа
-    }
-
 
     // Вспомогательный метод для преобразования хеша в число
     private static long convertHashToLong(MessageDigest digest) {
@@ -170,7 +152,6 @@ public class FileKey implements Comparable<FileKey> {
         return hash; // Возвращаем итоговый хеш
     }
 
-
     // Вспомогательный метод для создания объекта MessageDigest
     private static MessageDigest createMessageDigest() {
         try {
@@ -180,35 +161,129 @@ public class FileKey implements Comparable<FileKey> {
             throw new RuntimeException(e);
         }
     }
-
-
-
-    // Метод для вычисления хеша ЧАСТИ содержимого файла
-    private String calculatePartialHash(File file) throws IOException, NoSuchAlgorithmException {
-        System.out.println("Вычисление хеша файла: " + file.getAbsolutePath());
-        byte[] buffer = new byte[1024]; // Размер буфера для чтения файла
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-        try (FileInputStream fis = new FileInputStream(file)) {
-            int bytesRead = fis.read(buffer);
-            if (bytesRead != -1) {
-                // Обновляем хеш с прочитанными байтами
-                digest.update(buffer, 0, bytesRead);
-            }
-        }
-
-        // Получаем хеш в виде байтового массива
-        byte[] hashBytes = digest.digest();
-        StringBuilder hexString = new StringBuilder();
-
-        for (byte b : hashBytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-
-        return hexString.toString();
-    }
+//    public static long calculateHashLargeFile(File file) {
+//        System.out.println("Обработка LargeFile - " + file);
+//        try {
+//            return updateDigestWithLargeFileContent(file);   // Обновляем хеш содержимым файла             // Преобразуем хеш в число
+//        } catch (IOException | UncheckedIOException e) {
+//            System.err.println("Ошибка чтения файла " + file + ": " + e.getMessage());
+//            return -1; // Возвращаем -1 в случае ошибки
+//        }
+//    }
+//
+//
+//    // Вспомогательный метод для обновления хеша содержимым большого файла
+//    private static Long updateDigestWithLargeFileContent(File file) throws IOException {
+//        Long heshLong = 0L; // Переменная для хранения хеша
+//        long fileSize = file.length(); // Получаем размер файла
+//
+//        long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS);  // Размер каждой части файла (округляем в большую сторону)
+//
+//        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
+//        List<Future<Long>> futures = new ArrayList<>(); // Список для хранения Future
+//
+//        for (int i = 0; i < NUM_BLOCKS; i++) {
+//            long start = i * partSize; // Начало части
+//            long end = (i == NUM_BLOCKS - 1) ? fileSize : (i + 1) * partSize; // Конец части
+//            Future<Long> future = executor.submit(() -> {
+//                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) { // Создаем новый RandomAccessFile для каждого потока
+//                    //System.out.println("поток - " + Thread.currentThread());
+//                    return processFilePart(raf, start, end); // Обрабатываем часть файла
+//                } catch (IOException e) {
+//                    throw new UncheckedIOException(e);
+//                }
+//            });
+//            futures.add(future); // Добавляем Future в список
+//        }
+//
+//        //executor.shutdown(); // Завершаем работу пула потоков - !!! некорректно работает с этой строкой
+//
+//        // Обновляем финальный хеш
+//        for (Future<Long> future : futures) {
+//            try {
+//                heshLong += future.get(); // Получаем результат задачи и обновляем финальный хеш
+//            } catch (InterruptedException e) {
+//                System.err.println("Поток был прерван: " + e.getMessage() + " файл - " + file.getAbsolutePath());
+//                Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
+//                return -1L; // Возвращаем -1 в случае прерывания
+//            } catch (Exception e) {
+//                System.err.println("Ошибка при обновлении хеша: " + e.getMessage());
+//                e.printStackTrace(); // Выводим стек вызовов для диагностики
+//            }
+//        }
+//
+//        return heshLong; // Возвращаем хеш в виде числа
+//    }
+//
+//
+//    // Вспомогательный метод для обработки части файла
+//    private static Long processFilePart(RandomAccessFile raf, long start, long end) throws IOException {
+//        MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
+//        byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
+//        raf.seek(start); // Переходим к началу части файла
+//        long bytesReadTotal = 0; // Общее количество прочитанных байт
+//        int bytesRead; // Количество байт, прочитанных из файла
+//
+//        // пока есть байты в файле, читаем их и обновляем хеш
+//        while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(BUFFER_SIZE, end - start - bytesReadTotal))) != -1) {
+//            digest.update(buffer, 0, bytesRead); // Обновляем хеш
+//            bytesReadTotal += bytesRead; // Обновляем общее количество прочитанных байт
+//        }
+//
+//        return convertHashToLong(digest); // Возвращаем хеш в виде числа
+//    }
+//
+//
+//    // Вспомогательный метод для преобразования хеша в число
+//    private static long convertHashToLong(MessageDigest digest) {
+//        byte[] hashBytes = digest.digest(); // Получаем хеш в виде массива байт
+//        long hash = 0L; // Переменная для хранения итогового хеша
+//        // Преобразуем массив байт в число
+//        for (byte b : hashBytes) {
+//            hash = (hash << 8) + (b & 0xff); // Сдвигаем влево и добавляем байт
+//        }
+//        return hash; // Возвращаем итоговый хеш
+//    }
+//
+//
+//    // Вспомогательный метод для создания объекта MessageDigest
+//    private static MessageDigest createMessageDigest() {
+//        try {
+//            return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
+//        } catch (NoSuchAlgorithmException e) {
+//            System.out.println("Алгоритм хеширования SHA-256 не найден");
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//
+//
+//    // Метод для вычисления хеша ЧАСТИ содержимого файла
+//    private String calculatePartialHash(File file) throws IOException, NoSuchAlgorithmException {
+//        System.out.println("Вычисление хеша файла: " + file.getAbsolutePath());
+//        byte[] buffer = new byte[1024]; // Размер буфера для чтения файла
+//        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+//
+//        try (FileInputStream fis = new FileInputStream(file)) {
+//            int bytesRead = fis.read(buffer);
+//            if (bytesRead != -1) {
+//                // Обновляем хеш с прочитанными байтами
+//                digest.update(buffer, 0, bytesRead);
+//            }
+//        }
+//
+//        // Получаем хеш в виде байтового массива
+//        byte[] hashBytes = digest.digest();
+//        StringBuilder hexString = new StringBuilder();
+//
+//        for (byte b : hashBytes) {
+//            String hex = Integer.toHexString(0xff & b);
+//            if (hex.length() == 1) hexString.append('0');
+//            hexString.append(hex);
+//        }
+//
+//        return hexString.toString();
+//    }
 
 
     // Переопределение методов equals и hashCode для корректного сравнения объектов FileKey

@@ -73,6 +73,44 @@ public class FileDuplicateFinder {
 
 
     // Добавляем файлы в Map fileByKey из HashMap fileBySize
+//    public void addFilesToMap() {
+//        // Используем поле класса filesByKey для потокобезопасности
+//        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
+//
+//        // Список для хранения Future
+//        List<Future<Void>> futures = new ArrayList<>();
+//
+//        fileBySize.entrySet().forEach(entry -> {
+//            if (entry.getValue().size() < 2) {  // Пропускаем списки файлов, которых меньше 2
+//                return;
+//            }
+//            entry.getValue().forEach(file -> {
+//                Future<Void> future = executorService.submit(() -> {
+//                    try {
+//                        FileKey key = new FileKey(file);
+//                        filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
+//                    } catch (IOException | NoSuchAlgorithmException e) {
+//                        System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
+//                        e.printStackTrace();
+//                    }
+//                    return null;
+//                });
+//                futures.add(future);
+//            });
+//        });
+//
+//        // Ожидаем завершения всех задач
+//        for (Future<Void> future : futures) {
+//            try {
+//                future.get();
+//            } catch (InterruptedException | ExecutionException e) {
+//                System.out.println("Ошибка при ожидании завершения задачи");
+//                e.printStackTrace();
+//            }
+//        }
+//        executorService.shutdown();
+//    }
+
     public void addFilesToMap() {
         // Используем поле класса filesByKey для потокобезопасности
         ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
