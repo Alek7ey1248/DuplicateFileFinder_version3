@@ -216,13 +216,13 @@ public class TesterUnit {
 	@Test
 	public void findDuplicates1() throws IOException {
 		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"});
-		Map<FileKey, Set<File>> filesByKey = finder.getFilesByKey();
+		Map<String, Set<File>> duplicates = finder.getDuplicates();
 
 		// Проверяем, что размеры ожидаемых и фактических групп дубликатов совпадают
-		assertEquals(expectedDuplicatesBySize.size(), filesByKey.size());
+		assertEquals(expectedDuplicatesBySize.size(), duplicates.size());
 
 		// Создаем список для хранения фактических наборов файлов
-		List<Set<File>> actualSets = new ArrayList<>(filesByKey.values());
+		List<Set<File>> actualSets = new ArrayList<>(duplicates.values());
 
 		// Сравниваем фактические наборы с ожидаемыми
 		for (List<Set<File>> expectedList : expectedDuplicatesBySize.values()) {
@@ -266,14 +266,14 @@ public class TesterUnit {
 
 		// Результат работы метода
 		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"});
-		Map<FileKey, Set<File>> filesByKey = finder.getFilesByKey();
+		Map<String, Set<File>> duplicates = finder.getDuplicates();
 
 		// Проверяем, что размеры ожидаемых и фактических групп дубликатов совпадают
-		assertEquals(expected.size(), filesByKey.size());
+		assertEquals(expected.size(), duplicates.size());
 
 		for (Set<File> expectedGroup : expected) {
 			boolean found = false;
-			for (Set<File> actualGroup : filesByKey.values()) {
+			for (Set<File> actualGroup : duplicates.values()) {
 				if (actualGroup.equals(expectedGroup)) {
 					found = true;
 					break;

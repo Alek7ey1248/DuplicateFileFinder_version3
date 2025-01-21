@@ -1,7 +1,6 @@
 package V12;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-public class FileKey implements Comparable<FileKey> {
+public class FileKeyHash implements Comparable<FileKeyHash> {
     private final long size;
     public long getSize() {
         return size;
@@ -22,7 +21,7 @@ public class FileKey implements Comparable<FileKey> {
 
 
     // Конструктор для создания ключа файла на основе размера и части содержимого
-    public FileKey(File file) throws IOException, NoSuchAlgorithmException {
+    public FileKeyHash(File file) throws IOException, NoSuchAlgorithmException {
         this.size = file.length();
         //this.partialContentHash = calculatePartialHash(file);
         this.fullContentHash = calculateHash(file);
@@ -291,8 +290,8 @@ public class FileKey implements Comparable<FileKey> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FileKey fileKey = (FileKey) o;
-        return size == fileKey.size && fullContentHash.equals(fileKey.fullContentHash);
+        FileKeyHash fileKeyHash = (FileKeyHash) o;
+        return size == fileKeyHash.size && fullContentHash.equals(fileKeyHash.fullContentHash);
     }
 
     // Переопределение метода hashCode для корректного сравнения объектов FileKey
@@ -303,7 +302,7 @@ public class FileKey implements Comparable<FileKey> {
 
     // Переопределение метода compareTo для корректного сравнения объектов FileKey
     @Override
-    public int compareTo(FileKey other) {
+    public int compareTo(FileKeyHash other) {
         int sizeComparison = Long.compare(this.size, other.size);
         if (sizeComparison != 0) {
             return sizeComparison;
