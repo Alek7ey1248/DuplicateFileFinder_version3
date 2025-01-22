@@ -12,7 +12,14 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder {
 
+    private static final int NUM_PROCESSORS = Runtime.getRuntime().availableProcessors();  // Количество процессоров
+
+    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize(); // порог для больших файлов
+
     private final CheckValid checkValid;
+
+    // класс для проверки схожести имен файлов
+    private FileNameSimilarityChecker fileNameSimilarityChecker;
 
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
 
@@ -21,17 +28,17 @@ public class FileDuplicateFinder {
 
     private final Map<String, Set<File>> filesByContent;  /* HashMap filesBySize - для хранения файлов, сгруппированных по одинаковому контенту */
 
-    // Создаем TreeMap для хранения групп файлов, отсортированных по размеру
-    private final Map<String, Set<File>> duplicates;
-    Map<String, Set<File>> getDuplicates() {return duplicates;}
+    private final List<Set<File>> duplicates;
+    List<Set<File>> getDuplicates() {return duplicates;}
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
+        this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
         this.fileBySize = new HashMap<>();
         this.filesByKey = new ConcurrentSkipListMap<>();
         this.filesByContent = new ConcurrentSkipListMap<>();
-        this.duplicates = new TreeMap<>();
+        this.duplicates = new ArrayList<>();
     }
 
 
@@ -131,7 +138,7 @@ public class FileDuplicateFinder {
             if (entry.getValue().size() < 2) {  // Пропускаем списки файлов, которых меньше 2
                 return;
             }
-            processGroupFiles(entry.getValue());
+            processGroupFiles(entry.getValue(), entry.getKey());
         });
 
 //        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -149,25 +156,31 @@ public class FileDuplicateFinder {
     }
 
 
-    // Обработка файлов из fileBySize по размеру
-    private void processGroupFiles(Set<File> files) {
+    // Обработка файлов из fileBySize по размеру - группировка файлов по хешу или содержимому
+    private void processGroupFiles(Set<File> files, long size) {
         long numFiles = files.size();   // Количество файлов в списке
-        long sizeFiles = files.iterator().next().length();  // Размер файлов
 
-        if (false) {   // если ...
-            // группировка дубликатов по хешу в filesByKey
-            groupByHesh(files);
-        }  else {
-            // Группировка дубликатов по содержимому в filesByKey
-            try {
-                groupByContent(files);
-            } catch (IOException e) {
-                System.err.println("Ошибка при группировке файлов по содержимому");
-                throw new RuntimeException(e);
+        // Условия для выбора метода группировки
+        // Если размер файла меньше половины оптимального размера большого файла и количество файлов больше чем количество процессоров
+        // или размер файла меньше оптимального размера большого файла и количество файлов больше чем количество процессоров
+        if ((size < LARGE_FILE_SIZE / 2 && numFiles > (NUM_PROCESSORS * 2)) ||
+                (size < LARGE_FILE_SIZE && numFiles > NUM_PROCESSORS)) {
+            groupByHesh(files);  // Группировка файлов по хешу
+        } else {
+            boolean areNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files); // Проверяем схожесть названий файлов на 60% и более (порог схожести)
+            // Если размер файла больше оптимального размера большого файла и названия файлов схожи или количество файлов больше чем количество процессоров и названия файлов восновном схожи
+            // или размер файла больше оптимального размера большого файла и названия файлов не схожи и количество файлов больше чем количество процессоров в два раза и названия файлов восновном не схожи
+            if (size > LARGE_FILE_SIZE && areNamesSimilar) {
+                   // || (size > LARGE_FILE_SIZE && !areNamesSimilar && numFiles > (NUM_PROCESSORS / 2))) {
+                groupByHesh(files);  // Группировка файлов по хешу
+            } else {  // В остальных случаях группируем файлы по содержимому
+                try {
+                    groupByContent(files); // Группировка файлов по содержимому
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-
-
     }
 
     // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
@@ -229,11 +242,11 @@ public class FileDuplicateFinder {
 
             if (group.size() > 1) { // Добавляем группу дубликатов в список дубликатов по ключу (если группа содержит более одного файла)
                 filesByContent.put(key, group);
-                System.out.println(" группа дубликатов : ----------" );
-                for (File f : group) {
-                    System.out.println(f.getAbsolutePath() + "    ");
-                }
-                System.out.println("----------" );
+//                System.out.println(" группа дубликатов : ----------" );
+//                for (File f : group) {
+//                    System.out.println(f.getAbsolutePath() + "    ");
+//                }
+//                System.out.println("----------" );
             }
         }
     }
@@ -253,44 +266,29 @@ public class FileDuplicateFinder {
 
     public void printSortedFileGroups() {
 
-        // Добавляем все Set<File> из filesByKey с уникальными ключами
-        int keyIndex = 0;
+        // Добавляем все Set<File> из filesByKey
         for (Set<File> fileSet : filesByKey.values()) {
-            addFileSetToMap(fileSet, "key_", keyIndex++);
+            duplicates.add(fileSet);
         }
 
-        // Добавляем все Set<File> из filesByContent с уникальными ключами
-        int contentIndex = 0;
+        // Добавляем все Set<File> из filesByContent
         for (Set<File> fileSet : filesByContent.values()) {
-            addFileSetToMap(fileSet, "content_", contentIndex++);
+            duplicates.add(fileSet);
         }
+
+        // Сортируем список по размеру первого файла в каждом Set<File>
+        duplicates.sort(Comparator.comparingLong(set -> set.iterator().next().length()));
 
         // Выводим отсортированные группы в консоль
-        for (Map.Entry<String, Set<File>> entry : duplicates.entrySet()) {
-            String key = entry.getKey();
-            Set<File> fileSet = entry.getValue();
-
+        for (Set<File> fileSet : duplicates) {
             // Извлекаем размер первого файла для вывода
             File firstFile = fileSet.iterator().next();
             System.out.println("-------------------------------------------------");
-            System.out.println("Группа дубликатов (" + key + ") размером: " + firstFile.length() + " байт");
+            System.out.println("Группа дубликатов размером: " + firstFile.length() + " байт");
             for (File file : fileSet) {
                 System.out.println("    " + file.getAbsolutePath());
             }
             System.out.println("-------------------------------------------------");
-        }
-    }
-
-    // Вспомогательный метод для добавления Set<File> в TreeMap
-    private void addFileSetToMap(Set<File> fileSet, String prefix, int index) {
-        // Получаем первый файл из Set<File>
-        File firstFile = fileSet.stream().findFirst().orElse(null);
-        if (firstFile != null) {
-            long size = firstFile.length();
-            // Создаем уникальный ключ с префиксом, размером и индексом
-            String key = prefix + size + "_" + index;
-            // Добавляем в TreeMap
-            duplicates.computeIfAbsent(key, k -> new HashSet<>()).addAll(fileSet);
         }
     }
 
@@ -315,6 +313,20 @@ public class FileDuplicateFinder {
             }
         }
     }
+
+    /* Метод для определения оптимального размера большого файла для многопоточного хеширования
+     * Оптимальный размер файла - это 1/4 от максимальной п��мяти, деленной на количество процессоров
+     */
+    private static int getOptimalLargeFileSize() {
+        // Получаем максимальное количество доступной памяти
+        long maxMemory = Runtime.getRuntime().maxMemory();
+        // Получаем количество доступных процессоров
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        // Устанавливаем оптимальный размер файла как 1/4 от максимальной памяти, деленной на количество процессоров
+        return (int) (maxMemory / (availableProcessors));
+    }
+
 
 
 

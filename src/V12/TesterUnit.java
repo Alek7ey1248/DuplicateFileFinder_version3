@@ -211,18 +211,17 @@ public class TesterUnit {
 
 	}
 
-
-
+	/** Тестирование метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в */
 	@Test
 	public void findDuplicates1() throws IOException {
 		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"});
-		Map<String, Set<File>> duplicates = finder.getDuplicates();
+		List<Set<File>> duplicates = finder.getDuplicates();
 
 		// Проверяем, что размеры ожидаемых и фактических групп дубликатов совпадают
 		assertEquals(expectedDuplicatesBySize.size(), duplicates.size());
 
 		// Создаем список для хранения фактических наборов файлов
-		List<Set<File>> actualSets = new ArrayList<>(duplicates.values());
+		List<Set<File>> actualSets = new ArrayList<>(duplicates);
 
 		// Сравниваем фактические наборы с ожидаемыми
 		for (List<Set<File>> expectedList : expectedDuplicatesBySize.values()) {
@@ -266,14 +265,14 @@ public class TesterUnit {
 
 		// Результат работы метода
 		finder.findDuplicates(new String[]{"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"});
-		Map<String, Set<File>> duplicates = finder.getDuplicates();
+		List<Set<File>> duplicates = finder.getDuplicates();
 
 		// Проверяем, что размеры ожидаемых и фактических групп дубликатов совпадают
 		assertEquals(expected.size(), duplicates.size());
 
 		for (Set<File> expectedGroup : expected) {
 			boolean found = false;
-			for (Set<File> actualGroup : duplicates.values()) {
+			for (Set<File> actualGroup : duplicates) {
 				if (actualGroup.equals(expectedGroup)) {
 					found = true;
 					break;
