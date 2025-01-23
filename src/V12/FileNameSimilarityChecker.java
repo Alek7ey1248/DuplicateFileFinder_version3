@@ -3,6 +3,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -10,7 +11,7 @@ import java.util.stream.Collectors;
 public class FileNameSimilarityChecker {
 
     // Порог схожести
-    private static final double SIMILARITY_THRESHOLD = 0.6; // 60%
+    private static final double SIMILARITY_THRESHOLD = 0.1; // 50%
 
     // Метод для проверки схожести имен файлов - больше 50% пар имеют схожесть 60% или более
     public boolean areFileNamesSimilar(Set<File> files) {
@@ -24,6 +25,7 @@ public class FileNameSimilarityChecker {
         for (int i = 0; i < fileNames.size(); i++) {
             for (int j = i + 1; j < fileNames.size(); j++) {
                 totalPairs++;
+                //System.out.println("Сравниваем: " + fileNames.get(i) + " и " + fileNames.get(j) + " --- " + getSimilarityPercentage(fileNames.get(i), fileNames.get(j)));
                 if (getSimilarityPercentage(fileNames.get(i), fileNames.get(j)) >= SIMILARITY_THRESHOLD) {
                     similarCount++;
                 }
@@ -46,5 +48,37 @@ public class FileNameSimilarityChecker {
         }
 
         return (1.0 - (double) distance / maxLength);
+    }
+
+
+    public static void main(String[] args) {
+        FileNameSimilarityChecker checker = new FileNameSimilarityChecker();
+
+        FileDuplicateFinder finder = new FileDuplicateFinder();
+        finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы");
+
+        Map<Long, Set<File>> duplicatesBySize = finder.getFileBySize();
+
+        for (Map.Entry<Long, Set<File>> entry : duplicatesBySize.entrySet()) {
+            Set<File> files = entry.getValue();
+            Boolean similar = checker.areFileNamesSimilar(files);
+
+            System.out.println("------------------------------------------");
+            System.out.print(" файлы - ");
+            for (File file : files) {
+                System.out.print(file.getName() + "         ");
+            }
+            if (similar) {
+                System.out.println("       СХОЖИЕ");
+            } else {
+                System.out.println("              РАЗНЫЕ");
+            }
+        }
+
+        System.out.println("------------------------------------------");
+        System.out.println("                                         ");
+        String str1 = "videoplayback (середина изменена).mp4";
+        String str2 = "videoplayback .mp4";
+        System.out.println("Схожесть: " + str1 + " и " + str2 + " --- " + checker.getSimilarityPercentage(str1, str2));
     }
 }

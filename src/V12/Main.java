@@ -13,13 +13,13 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         // Пример использования
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
-        //String[] paths = {"/home/alek7ey"};
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
-        //String[] paths = {"/home/alek7ey/.cache"};
-        //String[] paths = {"/home/alek7ey/snap"};
-        //String[] paths = {"/home/alek7ey"};
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
+        String[] paths = {"/home/alek7ey"};           // 81,       сравн - очень долго,  хеш - 72 - 75 - 88
+        //String[] paths = {"/home/alek7ey/.local"};  // 1 - 1,6,   сравн - 1 - 1,5,     хеш - 0,9 - 1,6
+        //String[] paths = {"/home/alek7ey/.cache"};  // 6.6 - 9,   сравн - очень долго,    хеш - 6 - 14
+        //String[] paths = {"/home/alek7ey/snap"};    // 11,8,     сравн - 22 - 24,      хеш - 9,6 - 11,6
+        //String[] paths = {"/home/alek7ey/Android"}; // 3 - 4,   сравн - 2,5 - 3,9,       хеш - 2,4 - 2,6
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"}; // 24 - 27,  сравн - 24,  хеш - 26 - 30
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
 

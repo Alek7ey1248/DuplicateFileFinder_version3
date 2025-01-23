@@ -75,6 +75,7 @@ public class FileComparator {
             long bytesToRead = Math.min(8192, remaining); // Читаем блоки данных
             ByteBuffer buffer1 = readFileBlock(channel1, position, bytesToRead); // Читаем из первого канала
             ByteBuffer buffer2 = readFileBlock(channel2, position, bytesToRead); // Читаем из второго канала
+
             if (!compareBuffers(buffer1, buffer2, bytesToRead)) {
                 return false; // Возвращаем false при несовпадении
             }
@@ -123,8 +124,19 @@ public class FileComparator {
 
     // Вспомогательный метод для сравнения содержимого двух буферов
     static boolean compareBuffers(ByteBuffer buffer1, ByteBuffer buffer2, long bytesToRead) {
+//        for (int i = 0; i < bytesToRead; i++) {
+//            if (buffer1.get() != buffer2.get()) {
+//                return false; // Возвращаем false при несовпадении
+//            }
+//        }
+//        return true; // Буферы идентичны
+        // Убедитесь, что оба буфера имеют достаточный размер
+        if (buffer1.remaining() < bytesToRead || buffer2.remaining() < bytesToRead) {
+            return false; // Один из буферов слишком мал
+        }
+
         for (int i = 0; i < bytesToRead; i++) {
-            if (buffer1.get(i) != buffer2.get(i)) {
+            if (buffer1.get() != buffer2.get()) {
                 return false; // Возвращаем false при несовпадении
             }
         }

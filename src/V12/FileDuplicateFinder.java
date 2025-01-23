@@ -19,9 +19,10 @@ public class FileDuplicateFinder {
     private final CheckValid checkValid;
 
     // класс для проверки схожести имен файлов
-    private FileNameSimilarityChecker fileNameSimilarityChecker;
+    private final FileNameSimilarityChecker fileNameSimilarityChecker;
 
     private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
+    Map<Long, Set<File>> getFileBySize() {return fileBySize;}
 
     private final Map<FileKeyHash, Set<File>> filesByKey;  /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
     //Map<FileKeyHash, Set<File>> getFilesByKey() {return filesByKey;}
@@ -157,21 +158,21 @@ public class FileDuplicateFinder {
 
 
     // Обработка файлов из fileBySize по размеру - группировка файлов по хешу или содержимому
-    private void processGroupFiles(Set<File> files, long size) {
+    private void processGroupFiles(Set<File> files, long sizeFile) {
         long numFiles = files.size();   // Количество файлов в списке
 
         // Условия для выбора метода группировки
         // Если размер файла меньше половины оптимального размера большого файла и количество файлов больше чем количество процессоров
         // или размер файла меньше оптимального размера большого файла и количество файлов больше чем количество процессоров
-        if ((size < LARGE_FILE_SIZE / 2 && numFiles > (NUM_PROCESSORS * 2)) ||
-                (size < LARGE_FILE_SIZE && numFiles > NUM_PROCESSORS)) {
+        if ((sizeFile < (LARGE_FILE_SIZE / 2) && numFiles > NUM_PROCESSORS) ||
+                (sizeFile > (LARGE_FILE_SIZE / 2) && sizeFile < LARGE_FILE_SIZE && numFiles > NUM_PROCESSORS/1.5)) {
             groupByHesh(files);  // Группировка файлов по хешу
         } else {
             boolean areNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files); // Проверяем схожесть названий файлов на 60% и более (порог схожести)
             // Если размер файла больше оптимального размера большого файла и названия файлов схожи или количество файлов больше чем количество процессоров и названия файлов восновном схожи
             // или размер файла больше оптимального размера большого файла и названия файлов не схожи и количество файлов больше чем количество процессоров в два раза и названия файлов восновном не схожи
-            if (size > LARGE_FILE_SIZE && areNamesSimilar) {
-                   // || (size > LARGE_FILE_SIZE && !areNamesSimilar && numFiles > (NUM_PROCESSORS / 2))) {
+            if (sizeFile > LARGE_FILE_SIZE && areNamesSimilar) {
+                   // || (sizeFile > LARGE_FILE_SIZE && !areNamesSimilar && numFiles > (NUM_PROCESSORS / 3))) {
                 groupByHesh(files);  // Группировка файлов по хешу
             } else {  // В остальных случаях группируем файлы по содержимому
                 try {
