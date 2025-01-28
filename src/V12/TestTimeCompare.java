@@ -6,13 +6,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TestTime {
+public class TestTimeCompare {
 
     File file1;
     File file2;
 
     // конструктор
-    public TestTime(File file1, File file2) {
+    public TestTimeCompare(File file1, File file2) {
         this.file1 = file1;
         this.file2 = file2;
     }
@@ -77,25 +77,6 @@ public class TestTime {
     }
 
 
-
-
-    // размер меньше LARGE_FILE_THRESHOLD
-    //-  меньше чем  кол-во процессоров
-    private void test1() {
-        Set<File> files = new HashSet<>();
-        //files.add();
-        long size = 1000000;
-
-        long startTime = System.currentTimeMillis();
-        FileDuplicateFinder finder = new FileDuplicateFinder();
-
-        finder.processGroupFiles(files, size);
-        long endTime = System.currentTimeMillis();
-        long duration = (long) (endTime - startTime);
-        System.out.println("Размер файлов меньше LARGE_FILE_THRESHOLD/2, файлов меньше чем  кол-во процессоров  " + duration + " ms       ");
-    }
-
-
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
 
         // одинаковые файлы для сравнения размер - 49460288 байт compareFiles - 146370 ms, compareLargeFiles -  17752 ms, хеш - 73238 ms
@@ -121,8 +102,8 @@ public class TestTime {
 //        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/9A/373CD675761B");
 
         // разные файлы для сравнения размер - 1048772 байт  - compareFiles - 62 ms, compareLargeFiles - 421 ms, FileKeyHash - 1897 ms
-//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/9A/373CD675761B");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/7E931D2FB771");
+        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/9A/373CD675761B");
+        File file2 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/7E931D2FB771");
         // ---------------------------------------------------------------------------
 
         // одинаковые файлы для сравнения размер - 524452 байт  - compareFiles - 1712 ms, compareLargeFiles - 524 ms, FileKeyHash - 1056 ms
@@ -130,8 +111,8 @@ public class TestTime {
 //        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/5BCD56E45FBA");
 
         // разные файлы для сравнения размер - 524452 байт  - compareFiles - 76 ms, compareLargeFiles - 272 ms, FileKeyHash - 1140 ms
-        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/5BCD56E45FBA");
-        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/63/3FC93CE2F9A3");
+//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/5BCD56E45FBA");
+//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/63/3FC93CE2F9A3");
 
 
 
@@ -143,7 +124,7 @@ public class TestTime {
 
 
 
-        TestTime testTime = new TestTime(file1, file2);
+        TestTimeCompare testTime = new TestTimeCompare(file1, file2);
         //testTime.testWalkFileTree();
         testTime.testCompareFiles();
         testTime.testcompareLargeFiles();

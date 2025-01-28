@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class FileNameSimilarityChecker {
 
     // Порог схожести
-    private static final double SIMILARITY_THRESHOLD = 0.6; // 50%
+    private static final double SIMILARITY_THRESHOLD = 0.1; // 40%
 
     // Метод для проверки схожести имен файлов - больше 50% пар имеют схожесть 60% или более
     public boolean areFileNamesSimilar(Set<File> files) {
