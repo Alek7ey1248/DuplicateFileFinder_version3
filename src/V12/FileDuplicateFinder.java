@@ -92,45 +92,8 @@ public class FileDuplicateFinder {
     }
 
 
-    // Добавляем файлы в Map fileByKey из HashMap fileBySize
-//    public void addFilesToMap() {
-//        // Используем поле класса filesByKey для потокобезопасности
-//        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
-//
-//        // Список для хранения Future
-//        List<Future<Void>> futures = new ArrayList<>();
-//
-//        fileBySize.entrySet().forEach(entry -> {
-//            if (entry.getValue().size() < 2) {  // Пропускаем списки файлов, которых меньше 2
-//                return;
-//            }
-//            entry.getValue().forEach(file -> {
-//                Future<Void> future = executorService.submit(() -> {
-//                    try {
-//                        FileKey key = new FileKey(file);
-//                        filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
-//                    } catch (IOException | NoSuchAlgorithmException e) {
-//                        System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
-//                        e.printStackTrace();
-//                    }
-//                    return null;
-//                });
-//                futures.add(future);
-//            });
-//        });
-//
-//        // Ожидаем завершения всех задач
-//        for (Future<Void> future : futures) {
-//            try {
-//                future.get();
-//            } catch (InterruptedException | ExecutionException e) {
-//                System.out.println("Ошибка при ожидании завершения задачи");
-//                e.printStackTrace();
-//            }
-//        }
-//        executorService.shutdown();
-//    }
-
+    // Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
+    // Перед этим смотрим если файлов меньше 2, то пропускаем
     public void addFilesToMap() {
 //        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
 //        List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -157,37 +120,41 @@ public class FileDuplicateFinder {
     }
 
 
-    // Обработка файлов из fileBySize по размеру - группировка файлов по хешу или содержимому
-    private void processGroupFiles(Set<File> files, long sizeFile) {
+    // Обработка файлов из fileBySize по размеру - группировка файлов по хешу или содержимому в filesByKey или filesByContent
+    void processGroupFiles(Set<File> files, long sizeFile) {
         long numFiles = files.size();   // Количество файлов в списке
 
+        groupByHesh(files);
         // Условия для выбора метода группировки
         // Если размер файла меньше половины оптимального размера большого файла и количество файлов больше чем количество процессоров
         // или размер файла меньше оптимального размера большого файла и количество файлов больше чем количество процессоров
-        if ((sizeFile < (LARGE_FILE_SIZE / 2) && numFiles > NUM_PROCESSORS) ||
-                (sizeFile > (LARGE_FILE_SIZE / 2) && sizeFile < LARGE_FILE_SIZE && numFiles > NUM_PROCESSORS/1.5)) {
-            groupByHesh(files);  // Группировка файлов по хешу
-        } else {
-            boolean areNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files); // Проверяем схожесть названий файлов на 60% и более (порог схожести)
-            // Если размер файла больше оптимального размера большого файла и названия файлов схожи или количество файлов больше чем количество процессоров и названия файлов восновном схожи
-            // или размер файла больше оптимального размера большого файла и названия файлов не схожи и количество файлов больше чем количество процессоров в два раза и названия файлов восновном не схожи
-            if (sizeFile > LARGE_FILE_SIZE && areNamesSimilar) {
-                   // || (sizeFile > LARGE_FILE_SIZE && !areNamesSimilar && numFiles > (NUM_PROCESSORS / 3))) {
-                groupByHesh(files);  // Группировка файлов по хешу
-            } else {  // В остальных случаях группируем файлы по содержимому
-                try {
-                    groupByContent(files); // Группировка файлов по содержимому
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
+//        if ((sizeFile < (LARGE_FILE_SIZE / 2) && numFiles > NUM_PROCESSORS) ||
+//                (sizeFile > (LARGE_FILE_SIZE / 2) && sizeFile < LARGE_FILE_SIZE && numFiles > NUM_PROCESSORS/1.5)) {
+//            groupByHesh(files);  // Группировка файлов по хешу
+//        } else {
+//            boolean areNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files); // Проверяем схожесть названий файлов на 60% и более (порог схожести)
+//            // Если размер файла больше оптимального размера большого файла и названия файлов схожи или количество файлов больше чем количество процессоров и названия файлов восновном схожи
+//            // или размер файла больше оптимального размера большого файла и названия файлов не схожи и количество файлов больше чем количество процессоров в два раза и названия файлов восновном не схожи
+//            if (sizeFile > LARGE_FILE_SIZE && areNamesSimilar) {
+//                   // || (sizeFile > LARGE_FILE_SIZE && !areNamesSimilar && numFiles > (NUM_PROCESSORS / 3))) {
+//                groupByHesh(files);  // Группировка файлов по хешу
+//            } else {  // В остальных случаях группируем файлы по содержимому
+//                try {
+//                    groupByContent(files); // Группировка файлов по содержимому
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        }
     }
 
     // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
     private void groupByHesh(Set<File> files) {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
         files.forEach(file -> {
-            //CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
                     FileKeyHash key = new FileKeyHash(file);
                     filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
@@ -195,9 +162,22 @@ public class FileDuplicateFinder {
                     System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
                     e.printStackTrace();
                 }
-//            }, executor);
-//            futures.add(future);
+            }, executor);
+            futures.add(future);
         });
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allOf.join(); // Блокируем текущий поток до завершения всех задач
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
 
@@ -291,6 +271,7 @@ public class FileDuplicateFinder {
             }
             System.out.println("-------------------------------------------------");
         }
+        System.out.println("-  LARGE_FILE_SIZE = " + LARGE_FILE_SIZE);
     }
 
     // выводит группы дубликатов файлов
