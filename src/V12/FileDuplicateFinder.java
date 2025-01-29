@@ -3,10 +3,7 @@ package V12;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 public class FileDuplicateFinder {
@@ -32,7 +29,8 @@ public class FileDuplicateFinder {
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
-        this.fileBySize = new HashMap<>();
+        //this.fileBySize = new HashMap<>();
+        this.fileBySize = new ConcurrentHashMap<>();
         this.fileGrouper = new FileGrouper();
         this.duplicates = new ArrayList<>();
     }
@@ -58,29 +56,71 @@ public class FileDuplicateFinder {
      * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
+//    public void walkFileTree(String path) {
+//
+//        if (!checkValid.isValidDirectoryPath(path)) {
+//            System.out.println("Невалидная директория: " + path);
+//            return;
+//        }
+//
+//        File directory = new File(path); // Создаем объект File(директорий) для указанного пути
+//        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
+//
+//        if (files != null) {  // Проверяем, что массив не пустой
+//            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
+//                if (file.isDirectory()) {  // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
+//                    walkFileTree(file.getAbsolutePath());
+//                } else {
+//                    if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
+//                        continue;
+//                    }
+//                    // Добавляем файл в карту fileBySize по его размеру
+//                    long fileSize = file.length();
+//                    fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
+//                }
+//            }
+//        }
+//    }
     public void walkFileTree(String path) {
-
         if (!checkValid.isValidDirectoryPath(path)) {
             System.out.println("Невалидная директория: " + path);
             return;
         }
 
-        File directory = new File(path); // Создаем объект File(директорий) для указанного пути
-        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
+        File directory = new File(path);
+        File[] files = directory.listFiles();
 
-        if (files != null) {  // Проверяем, что массив не пустой
-            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
-                if (file.isDirectory()) {  // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
-                    walkFileTree(file.getAbsolutePath());
-                } else {
-                    if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
-                        continue;
+        if (files != null) {
+            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+            for (File file : files) {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    if (file.isDirectory()) {
+                        walkFileTree(file.getAbsolutePath());
+                    } else {
+                        if (!checkValid.isValidFile(file)) {
+                            return;
+                        }
+                        long fileSize = file.length();
+                        fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
                     }
-                    // Добавляем файл в карту fileBySize по его размеру
-                    long fileSize = file.length();
-                    fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
-                }
+                }, executor);
+                futures.add(future);
             }
+
+            CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            allOf.join(); // Блокируем текущий поток до завершения всех задач
+
+            executor.shutdown();
+//            try {
+//                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+//                    executor.shutdownNow();
+//                }
+//            } catch (InterruptedException e) {
+//                executor.shutdownNow();
+//                Thread.currentThread().interrupt();
+//            }
         }
     }
 
@@ -109,15 +149,22 @@ public class FileDuplicateFinder {
                         (sizeFile > LARGE_FILE_SIZE && areFileNamesSimilar)
                 ) {
                     // Обработка файлов с использованием хеширования
-                    //fileGrouper.groupByHeshParallel(files);
-                    fileGrouper.groupByHesh(files);
-                } else {
-                    // Обработка файлов по содержимому
-                    try {
-                        //fileGrouper.groupByContentParallel(files);
-                        fileGrouper.groupByContent(files);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    if (sizeFile < LARGE_FILE_SIZE/10) {fileGrouper.groupByHesh(files);}
+                    else {fileGrouper.groupByHeshParallel(files);}
+
+                } else { // Обработка файлов по содержимому
+                    if (sizeFile < LARGE_FILE_SIZE/10) {
+                        try {
+                            fileGrouper.groupByContent(files);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        try {
+                            fileGrouper.groupByContentParallel(files);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             }, executor);

@@ -119,6 +119,8 @@ public class FileGrouper {
     // и добавление в filesByContent - группы дубликатов
     // (Ускоренный потоками)
     void groupByContentParallel(Set<File> files) throws IOException {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
+
         while (files.size() > 1) {  // Пока в списке файлов одинакового размера есть хотя бы два файла
             Iterator<File> iterator = files.iterator();  // Извлекаем первый файл из списка
             File file = iterator.next();
@@ -130,7 +132,6 @@ public class FileGrouper {
             String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
             Set<File> toRemove = ConcurrentHashMap.newKeySet();   // Список для удаления дубликатов из files
 
-            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
             List<CompletableFuture<Void>> fileComparisons = new ArrayList<>(); // Список для хранения CompletableFuture
 
             for (File anotherFile : files) {  // Перебираем оставшиеся файлы в списке
@@ -163,6 +164,7 @@ public class FileGrouper {
                 filesByContent.put(key, group);
             }
         }
+        executor.shutdown();
     }
 
 }
