@@ -22,8 +22,9 @@ public class FileGrouper {
 
     // Конструктор
     public FileGrouper() {
-        filesByKey = new ConcurrentHashMap<>();
-        filesByContent = new ConcurrentHashMap<>();
+        this.filesByKey = new ConcurrentHashMap<>();
+        this.filesByContent = new ConcurrentHashMap<>();
+
     }
 
 

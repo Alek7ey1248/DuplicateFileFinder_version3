@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class FileNameSimilarityChecker {
 
     // Порог схожести
-    private static final double SIMILARITY_THRESHOLD = 0.1; // 40%
+    private static final double SIMILARITY_THRESHOLD = 0.5; // 50%
 
     // Метод для проверки схожести имен файлов - больше 50% пар имеют схожесть 60% или более
     public boolean areFileNamesSimilar(Set<File> files) {
@@ -19,24 +19,27 @@ public class FileNameSimilarityChecker {
                 .map(File::getName)
                 .collect(Collectors.toList());
 
-        int similarCount = 0;
-        int totalPairs = 0;
+        int similarCount = 0;  // Количество пар файлов с схожими именами (схожесть >= SIMILARITY_THRESHOLD = 50%)
+        int totalPairs = 0;    // Общее количество пар файлов
 
         for (int i = 0; i < fileNames.size(); i++) {
             for (int j = i + 1; j < fileNames.size(); j++) {
                 totalPairs++;
-                //System.out.println("Сравниваем: " + fileNames.get(i) + " и " + fileNames.get(j) + " --- " + getSimilarityPercentage(fileNames.get(i), fileNames.get(j)));
-                if (getSimilarityPercentage(fileNames.get(i), fileNames.get(j)) >= SIMILARITY_THRESHOLD) {
+                // если схожесть >= SIMILARITY_THRESHOLD = 50% или длина имен файлов равна
+                if ((getSimilarityPercentage(fileNames.get(i), fileNames.get(j)) >= SIMILARITY_THRESHOLD) ||
+                    (fileNames.get(i).length() == fileNames.get(j).length())) {
                     similarCount++;
                 }
+                if (totalPairs>3) break; // Ограничение на количество сравнений - не более 4 - для ускорения
             }
         }
 
-        // Проверяем, если больше 50% пар имеют схожесть 60% или более
-        return (totalPairs > 0 && (similarCount * 100) / totalPairs > 50);
+        // Проверяем, если больше 50% пар имеют схожесть % или более
+        return (totalPairs > 0 && (similarCount * 100) / totalPairs > 30);
     }
 
-    // Метод для вычисления процента схожести между двумя строками
+
+    // Метод для вычисления процента схожести между двумя строками (от 0 до 1)
     private double getSimilarityPercentage(String str1, String str2) {
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         int distance = levenshteinDistance.apply(str1, str2);
@@ -47,7 +50,7 @@ public class FileNameSimilarityChecker {
             return 100.0; // Если обе строки пустые, считаем их идентичными
         }
 
-        return (1.0 - (double) distance / maxLength);
+        return (1.0 - (double) distance / maxLength);  // Процент схожести = 1 - (расстояние Левенштейна / максимальная длина строки)
     }
 
 
@@ -77,8 +80,12 @@ public class FileNameSimilarityChecker {
 
         System.out.println("------------------------------------------");
         System.out.println("                                         ");
-        String str1 = "videoplayback (середина изменена).mp4";
-        String str2 = "videoplayback .mp4";
+//        String str1 = "videoplayback (середина изменена).mp4";
+//        String str2 = "videoplayback .mp4";
+
+        String str1 = "b26ff187d0882ba3_0";
+        String str2 = "e27c1010ce632398_0";
+
         System.out.println("Схожесть: " + str1 + " и " + str2 + " --- " + checker.getSimilarityPercentage(str1, str2));
     }
 }
