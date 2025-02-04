@@ -17,7 +17,7 @@ public class FileDuplicateFinder {
     // класс для проверки схожести имен файлов
     private final FileNameSimilarityChecker fileNameSimilarityChecker;
 
-    private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
+    private final ConcurrentHashMap<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
     Map<Long, Set<File>> getFileBySize() {return fileBySize;}
 
     private final FileGrouper fileGrouper;
@@ -96,18 +96,24 @@ public class FileDuplicateFinder {
             CompletableFuture[] futures = new CompletableFuture[files.length]; // Массив для хранения CompletableFuture
 
             for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
-                File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
+                final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
                 futures[i] = CompletableFuture.runAsync(() -> {
-                    if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-                        walkFileTree(file.getAbsolutePath());
-                    } else {
-                        if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
-                            return;
+//                    try {
+                        if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
+                            walkFileTree(file.getAbsolutePath());
+                        } else {
+                            if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
+                                return;
+                            }
+                            // Добавляем файл в карту fileBySize по его размеру
+                            long fileSize = file.length();
+                            //fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
+                            fileBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
                         }
-                        // Добавляем файл в карту fileBySize по его размеру
-                        long fileSize = file.length();
-                        fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
-                    }
+//                    } catch (Exception e) {
+//                        System.out.println("Ошибка при обработке файла в методе walkFileTree скорее всего из за некорректной директории : " + file.getAbsolutePath());
+//                        e.printStackTrace();
+//                    }
                 }, executor);
             }
 
@@ -158,15 +164,15 @@ public class FileDuplicateFinder {
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
         allOf.join(); // Блокируем текущий поток до завершения всех задач
 
-//        executor.shutdown();
-//        try {
-//            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-//                executor.shutdownNow();
-//            }
-//        } catch (InterruptedException e) {
-//            executor.shutdownNow();
-//            Thread.currentThread().interrupt();
-//        }
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 
 
@@ -175,6 +181,7 @@ public class FileDuplicateFinder {
         for (Iterator<Map.Entry<FileKeyHash, Set<File>>> iterator = fileGrouper.getFilesByKey().entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<FileKeyHash, Set<File>> entry = iterator.next();
             if (entry.getValue().size() < 2) {
+//            if (entry.getValue().isEmpty()) {
                 iterator.remove();
             }
         }
