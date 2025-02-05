@@ -46,6 +46,7 @@ public class FileGrouper {
     // Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
     // (Ускоренный потоками)
     void groupByHeshParallel(Set<File> files) {
+
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 

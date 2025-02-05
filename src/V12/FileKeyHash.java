@@ -47,7 +47,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 
     // метод для вычисления хеша файла
     public static String calculateHashSmallFile(String filePath) {
-        System.out.println("Вычисление хеша файла: " + filePath);
+        System.out.println("вычисление хеша  - " + filePath);
+        System.out.println(filePath);
 
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -84,7 +85,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
      */
     // Метод для вычисления хеша большого файла
     public static long calculateHashLargeFile(File file) {
-        System.out.println("Обработка LargeFile - " + file);
+        System.out.println("вычисление хеща LargeFile - " + file);
         try {
             return updateDigestWithLargeFileContent(file); // Обновляем хеш содержимым файла
         } catch (IOException | UncheckedIOException e) {
