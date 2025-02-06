@@ -1,5 +1,6 @@
 package V12;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -29,15 +30,15 @@ public class FileComparator {
     }
 
     // Основной метод для сравнения файлов
-    public static boolean areFilesEqual(Path file1, Path file2) throws IOException {
-        long size = Files.size(file1); // Получаем размеры файлов
+    public static boolean areFilesEqual(File file1, File file2) throws IOException {
+        long size = file1.length(); // Получаем размеры файлов
         if (size == 0) return true; // Если размер файлов равен нулю, файлы равны
 
         try {
             if (size < LARGE_FILE_THRESHOLD) {
-                return compareFiles(file1, file2); // Сравнение для небольших файлов
+                return compareFiles(file1, file2, size); // Сравнение для небольших файлов
             } else {
-                return compareLargeFiles(file1, file2); // Сравнение для больших файлов
+                return compareLargeFiles(file1, file2, size); // Сравнение для больших файлов
             }
         } catch (FileSystemException e) {
             System.err.println("Не удалось открыть файл. Скорее всего нет прав доступа: " + e.getFile());
@@ -50,20 +51,18 @@ public class FileComparator {
     }
 
     // Метод для побайтного сравнения содержимого двух файлов
-    static boolean compareFiles(Path file1, Path file2) throws IOException {
-        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
-             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
-            long size = Files.size(file1); // Получаем размер файлов
-            return compareFileContents(channel1, channel2, size); // Сравниваем содержимое
+    static boolean compareFiles(File file1, File file2, long fileSize) throws IOException {
+        try (FileChannel channel1 = FileChannel.open(file1.toPath(), StandardOpenOption.READ);
+             FileChannel channel2 = FileChannel.open(file2.toPath(), StandardOpenOption.READ)) {
+            return compareFileContents(channel1, channel2, fileSize); // Сравниваем содержимое
         }
     }
 
     // Метод для побайтного сравнения больших файлов
-    static boolean compareLargeFiles(Path file1, Path file2) throws IOException, InterruptedException {
-        try (FileChannel channel1 = FileChannel.open(file1, StandardOpenOption.READ);
-             FileChannel channel2 = FileChannel.open(file2, StandardOpenOption.READ)) {
-            long size = Files.size(file1); // Получаем размер файлов
-            return compareLargeFileContents(channel1, channel2, size); // Сравниваем содержимое
+    static boolean compareLargeFiles(File file1, File file2, long fileSize) throws IOException, InterruptedException {
+        try (FileChannel channel1 = FileChannel.open(file1.toPath(), StandardOpenOption.READ);
+             FileChannel channel2 = FileChannel.open(file2.toPath(), StandardOpenOption.READ)) {
+            return compareLargeFileContents(channel1, channel2, fileSize); // Сравниваем содержимое
         }
     }
 
@@ -147,13 +146,13 @@ public class FileComparator {
     //---------------------------------------------------
 
     // Предварительное быстрое сравнение файлов по первым  байтам
-    public static boolean quickCompareFiles(Path file1, Path file2) throws IOException {
+    public static boolean quickCompareFiles(File file1, File file2) throws IOException {
         // Если оба файла имеют нулевой размер, они одинаковые
-        if (Files.size(file1) == 0) {
+        if (file1.length() == 0) {
             return true;
         }
 
-        return Files.mismatch(file1, file2) == -1; // -1 означает, что файлы идентичны
+        return Files.mismatch(file1.toPath(), file2.toPath()) == -1; // -1 означает, что файлы идентичны
     }
 
 
@@ -163,29 +162,24 @@ public class FileComparator {
         long startTime = System.currentTimeMillis();
 
         try {
-//            Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
-//            Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
+    // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt");
+    // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (пустой).zip");  // Разные файлы
+    // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
+    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
+            File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
+            File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
+    // File file1 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
+    // File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
+    // System.out.println(areFilesEqual(file1, file2));
 
-
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (пустой).zip");  // Разные файлы
-
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
-
-            //Path file1 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
-            //Path file2 = Path.of("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
-
-            Path file1 = Path.of("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
-            Path file2 = Path.of("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
-
-            // System.out.println(areFilesEqual(file1, file2));
-            System.out.println(quickCompareFiles(file1, file2));
+           System.out.println(quickCompareFiles(file1, file2));
         } catch (IOException e) {
             e.printStackTrace();
         }
