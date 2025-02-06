@@ -287,18 +287,18 @@ public class TesterUnit {
 	@Test
 	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
 		// Проверка на равенство файлов с одинаковым содержимым
-		assertEquals(true, V12.FileComparator.areFilesEqual(file1, file2));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file5, file6));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file7, file8));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file9, file10));
+		assertEquals(true, V12.FileComparator.areFilesEqual(file1.toFile(), file2.toFile()));
+		assertEquals(true, V12.FileComparator.areFilesEqual(file5.toFile(), file6.toFile()));
+		assertEquals(true, V12.FileComparator.areFilesEqual(file7.toFile(), file8.toFile()));
+		assertEquals(true, V12.FileComparator.areFilesEqual(file9.toFile(), file10.toFile()));
 		// Проверка на равенство файлов с разным содержимым
-		assertEquals(false, V12.FileComparator.areFilesEqual(file3, file4));
-		assertEquals(false, V12.FileComparator.areFilesEqual(file5, file3));
+		assertEquals(false, V12.FileComparator.areFilesEqual(file3.toFile(), file4.toFile()));
+		assertEquals(false, V12.FileComparator.areFilesEqual(file5.toFile(), file3.toFile()));
 		// Проверка на равенство файлов нулевого размера
-		assertEquals(true, V12.FileComparator.areFilesEqual(file11, file12));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file13, file11));
+		assertEquals(true, V12.FileComparator.areFilesEqual(file11.toFile(), file12.toFile()));
+		assertEquals(true, V12.FileComparator.areFilesEqual(file13.toFile(), file11.toFile()));
 		// Проверка на равенство очень больших файлов
-		boolean result = V12.FileComparator.areFilesEqual(file14, file15);
+		boolean result = V12.FileComparator.areFilesEqual(file14.toFile(), file15.toFile());
 		assertEquals(true, result);
 	}
 	
