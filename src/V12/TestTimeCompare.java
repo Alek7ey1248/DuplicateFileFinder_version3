@@ -3,7 +3,6 @@ package V12;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
 import java.util.Set;
 
 public class TestTimeCompare {
@@ -34,9 +33,9 @@ public class TestTimeCompare {
 
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
-            FileComparator.compareFiles(file1.toPath(), file2.toPath());
+            FileComparator.compareFiles(file1, file2, file1.length());
         }
-        boolean result = FileComparator.compareFiles(file1.toPath(), file2.toPath());
+        boolean result = FileComparator.compareFiles(file1, file2, file1.length());
         System.out.println(result);
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);
@@ -49,9 +48,9 @@ public class TestTimeCompare {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 1000; i++) {
-            FileComparator.compareLargeFiles(file1.toPath(), file2.toPath());
+            FileComparator.compareLargeFiles(file1, file2, file1.length());
         }
-        boolean result = FileComparator.compareLargeFiles(file1.toPath(), file2.toPath());
+        boolean result = FileComparator.compareLargeFiles(file1, file2, file1.length());
         System.out.println(result);
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);

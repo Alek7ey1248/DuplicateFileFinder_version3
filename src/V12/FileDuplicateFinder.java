@@ -82,6 +82,10 @@ public class FileDuplicateFinder {
 //        }
 //    }
 
+    /* Ускореный метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
+     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
+     * @param path - путь к директории, с которой начинается обход файловой системы
+     */
     public void walkFileTree(String path) {
         if (!checkValid.isValidDirectoryPath(path)) {
             System.out.println("Невалидная директория: " + path);

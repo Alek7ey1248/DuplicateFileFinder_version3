@@ -1,5 +1,4 @@
 package V12;
-import V11.FileComparator;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,7 +96,7 @@ public class FileGrouper {
                     continue;
                 }
                 try {
-                    if (FileComparator.areFilesEqual(file.toPath(), anotherFile.toPath())) {
+                    if (FileComparator.areFilesEqual(file, anotherFile)) {
                         //synchronized (group) { // Синхронизация при добавлении в группу
                         group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
                         //}
@@ -143,7 +142,7 @@ public class FileGrouper {
                 // Отправляем задачу на сравнение файлов в пул потоков
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
-                    if (FileComparator.areFilesEqual(file.toPath(), anotherFile.toPath())) {
+                    if (FileComparator.areFilesEqual(file, anotherFile)) {
                         //synchronized (group) { // Синхронизация при добавлении в группу
                         group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
                         //}
