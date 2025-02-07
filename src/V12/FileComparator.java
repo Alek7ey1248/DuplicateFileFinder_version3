@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class FileComparator {
-    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/1L; // Порог для больших файлов
+    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/1000L; // Порог для больших файлов
     private static final int BLOCK_SIZE = getBlockSize(); // Размер блока для поблочного чтения больших файлов
 
     // Метод для получения порога для больших файлов
