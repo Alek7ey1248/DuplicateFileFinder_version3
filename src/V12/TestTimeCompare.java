@@ -1,10 +1,19 @@
 package V12;
 
+import helperClasses.InsertZerosInMiddle;
+import helperClasses.LargeFileCreator;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
+// Тестирование времени сравнения 2 файлов методами compareFiles, compareLargeFiles, хеширования
 public class TestTimeCompare {
 
     File file1;
@@ -29,105 +38,176 @@ public class TestTimeCompare {
 
 
     // тест времени сравнения 2 файлов методом compareFiles
-    private void testCompareFiles() throws IOException {
-
+    private String testCompareFiles() throws IOException {
+        System.out.println(" Тестируем метод compareFiles");
         long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 20; i++) {
             FileComparator.compareFiles(file1, file2, file1.length());
         }
         boolean result = FileComparator.compareFiles(file1, file2, file1.length());
         System.out.println(result);
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);
+        if (result) {
+            System.out.println("файлы одинаковы");
+        } else {
+            System.out.println("файлы разные");
+        }
         System.out.println("Время выполнения сравнения 2 файлов методом compareFiles - " + duration + " ms       ");
+        return " compareFiles - " + duration + " ms";
     }
 
     // тест времени сравнения 2 файлов методом compareLargeFiles
-    private void testcompareLargeFiles() throws IOException, InterruptedException {
-
+    private String testcompareLargeFiles() throws IOException, InterruptedException {
+        System.out.println(" Тестируем метод compareLargeFiles");
         long startTime = System.currentTimeMillis();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 20; i++) {
             FileComparator.compareLargeFiles(file1, file2, file1.length());
         }
         boolean result = FileComparator.compareLargeFiles(file1, file2, file1.length());
         System.out.println(result);
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);
+        if (result) {
+            System.out.println("файлы одинаковы");
+        } else {
+            System.out.println("файлы разные");
+        }
         System.out.println("Время выполнения сравнения 2 файлов методом compareLargeFiles - " + duration + " ms       ");
+        return " compareLargeFiles - " + duration + " ms";
     }
 
-    // тест времени сравнения 2 файлов методом хеширования
-    private void testHashFiles() throws IOException, NoSuchAlgorithmException {
-
+    // тест времени сравнения 2 небольших файлов методом хеширования
+    private String testHashSmallFiles() throws IOException, NoSuchAlgorithmException {
+        System.out.println(" Тестируем метод хеширования calculateHashSmallFile");
         long startTime = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++) {
-            FileKeyHash fileKeyHash1 = new FileKeyHash(file1);
-            FileKeyHash fileKeyHash2 = new FileKeyHash(file2);
-        }
-        if (new FileKeyHash(file1).equals(new FileKeyHash(file2))) {
-            System.out.println("true");
-        } else {
-            System.out.println("false");
+        for (int i = 0; i < 20; i++) {  // одновременно запускаем 2 потока
+            // Создаем CompletableFuture для асинхронного выполнения
+            CompletableFuture<String> hashFuture1 = CompletableFuture.supplyAsync(() -> {
+                return FileKeyHash.calculateHashSmallFile(file1);
+            });
+
+            CompletableFuture<String> hashFuture2 = CompletableFuture.supplyAsync(() -> {
+                return FileKeyHash.calculateHashSmallFile(file2);
+            });
+
+            // Ожидаем завершения обоих вычислений
+            String hash1 = hashFuture1.join();
+            String hash2 = hashFuture2.join();
         }
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);
-        System.out.println("Время выполнения сравнения 2 файлов методом хеширования FileKeyHash - " + duration + " ms       ");
+        if (new FileKeyHash(file1).equals(new FileKeyHash(file2))) {
+            System.out.println("файлы одинаковы");
+        } else {
+            System.out.println("файлы разные");
+        }
+        System.out.println("Время выполнения сравнения 2 файлов методом хеширования calculateHashSmallFile - " + duration + " ms       ");
+        return " calculateHashSmallFile - " + duration + " ms";
+    }
+
+    // тест времени сравнения 2 больших файлов методом хеширования
+    private String testHashLardeFiles() throws IOException, NoSuchAlgorithmException {
+        System.out.println(" Тестируем метод хеширования calculateHashLargeFile");
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < 20; i++) { // одновременно запускаем 2 потока
+            // Создаем CompletableFuture для асинхронного выполнения
+            CompletableFuture<String> hashFuture1 = CompletableFuture.supplyAsync(() -> {
+                return FileKeyHash.calculateHashLargeFile(file1);
+            });
+
+            CompletableFuture<String> hashFuture2 = CompletableFuture.supplyAsync(() -> {
+                return FileKeyHash.calculateHashLargeFile(file2);
+            });
+
+            // Ожидаем завершения обоих вычислений
+            String hash1 = hashFuture1.join();
+            String hash2 = hashFuture2.join();        }
+        long endTime = System.currentTimeMillis();
+        long duration = (long) (endTime - startTime);
+        if (new FileKeyHash(file1).equals(new FileKeyHash(file2))) {
+            System.out.println("файлы одинаковы");
+        } else {
+            System.out.println("файлы разные");
+        }
+        System.out.println("Время выполнения сравнения 2 файлов методом хеширования calculateHashLargeFile - " + duration + " ms       ");
+        return " calculateHashLargeFile - " + duration + " ms";
     }
 
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
 
-        // одинаковые файлы для сравнения размер - 49460288 байт compareFiles - 146370 ms, compareLargeFiles -  17752 ms, хеш - 73238 ms
-//        File file1 = new File("/home/alek7ey/snap/flutter/common/flutter/bin/cache/artifacts/engine/linux-x64/frontend_server.dart.snapshot");
-//        File file2 = new File("/home/alek7ey/snap/flutter/common/flutter/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snapshot");
+        // класс для создания файлов
+        LargeFileCreator largeFileCreator = new LargeFileCreator();
+        // Класс для вставки в середину файла нулей
+        InsertZerosInMiddle insertZerosInMiddle = new InsertZerosInMiddle();
 
-        // разные файлы для сравнения размер - 49460288 байт compareFiles - 69 ms, compareLargeFiles - 7127  ms, хеш -   43903 ms
-//        File file1 = new File("/home/alek7ey/snap/flutter/common/flutter/bin/cache/dart-sdk/bin/snapshots/frontend_server.dart.snapshot");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
-        // ---------------------------------------------------------------------------
+        // Список для хранения результатов тестов сравнения одинаковых файлов
+        List<String> resultsID = new ArrayList<>();
+        // Список для хранения результатов тестов сравнения разных файлов
+        List<String> resultsDif = new ArrayList<>();
 
-        // одинаковые файлы для сравнения размер - 8388724 байт  - compareFiles - 23441 ms, compareLargeFiles - 2848 ms, FileKeyHash - 12278 ms
-//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/E8/707358D8E54B");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/E8/707358D8E54B");
+        Long[] sizes = new Long[10]; // Размеры файлов для тестирования
+        sizes[0] = 1024L; // 1 КБ
+        sizes[1] = 102400L; // 100 КБ
+        sizes[2] = 1048576L; // 1 МБ = 1024 КБ
+        sizes[3] = 10485760L; // 10 МБ
+        sizes[4] = 104857600L; // 100 МБ
+        sizes[5] = 314572800L; // 300 МБ
+        sizes[6] = 524288000L; // 500 МБ
+        sizes[7] = 734003200L; // 700 МБ
+        sizes[8] = 943718400L; // 900 МБ
+        sizes[9] = 1073741824L; // 1 ГБ
 
-        // разные файлы для сравнения размер - 8388724 байт  - compareFiles - 80 ms, compareLargeFiles - 1737 ms, FileKeyHash - 12211 ms
-//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/E8/707358D8E54B");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/A6/44381DBC74F1");
-        // ---------------------------------------------------------------------------
+// тестирование времени сравнения 2 одинаковых файлов  - делаем их разных размеров
+        for (int i = 0; i < 10; i++) {
+            long size = sizes[i];
+            // создаем 2 одинаковых файла размером sizes[i]
+            System.out.println("------------------  Создаем 2 одинаковых файла размером - " + size + " байт ------------------");
+            String directoryPath = "/home/alek7ey/Рабочий стол/";
+            String fileName1 = "file1.txt";
+            String fileName2 = "file2.txt";
+            largeFileCreator.createTwoFiles(directoryPath, fileName1, fileName2, size);
+            File file1 = new File(directoryPath + fileName1);
+            File file2 = new File(directoryPath + fileName2);
 
-        // одинаковые файлы для сравнения размер - 1048772 байт  - compareFiles - 3155 ms, compareLargeFiles - 602 ms, FileKeyHash - 1869 ms
-//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/9A/373CD675761B");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/9A/373CD675761B");
+            // тестируем время сравнения 2 файлов всеми методами
+            TestTimeCompare testTimeCompare = new TestTimeCompare(file1, file2);
+            resultsID.add("---------------------------------------------------------");
+            resultsID.add(" ОДИНАКОВЫЕ 2 файла размер - " + sizes[i]);
+            resultsID.add("  - " + testTimeCompare.testCompareFiles());
+            resultsID.add("  - " + testTimeCompare.testcompareLargeFiles());
+            resultsID.add("  - " + testTimeCompare.testHashSmallFiles());
+            resultsID.add("  - " +  testTimeCompare.testHashLardeFiles());
+            resultsID.add("---------------------------------------------------------");
 
-        // разные файлы для сравнения размер - 1048772 байт  - compareFiles - 62 ms, compareLargeFiles - 421 ms, FileKeyHash - 1897 ms
-        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/9A/373CD675761B");
-        File file2 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/7E931D2FB771");
-        // ---------------------------------------------------------------------------
+            // удаляем созданные файлы
+            System.out.println("Удаляем созданные файлы");
+            try {
+                if (Files.deleteIfExists(file1.toPath())) {
+                    System.out.println("Файл " + file1.getName() + " успешно удален.");
+                } else {
+                    System.out.println("Файл " + file1.getName() + " не существует.");
+                }
 
-        // одинаковые файлы для сравнения размер - 524452 байт  - compareFiles - 1712 ms, compareLargeFiles - 524 ms, FileKeyHash - 1056 ms
-//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/5BCD56E45FBA");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/5BCD56E45FBA");
+                if (Files.deleteIfExists(file2.toPath())) {
+                    System.out.println("Файл " + file2.getName() + " успешно удален.");
+                } else {
+                    System.out.println("Файл " + file2.getName() + " не существует.");
+                }
+            } catch (IOException e) {
+                System.err.println("Ошибка при удалении файла: " + e.getMessage());
+                e.printStackTrace(); // Выводим стек вызовов для диагностики
+            }
+        }
 
-        // разные файлы для сравнения размер - 524452 байт  - compareFiles - 76 ms, compareLargeFiles - 272 ms, FileKeyHash - 1140 ms
-//        File file1 = new File("/home/alek7ey/snap/telegram-desktop/6495/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/43/5BCD56E45FBA");
-//        File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/63/3FC93CE2F9A3");
-
-
-
-        // одинаковые файлы для сравнения размер - 35288 байт  -   все методы сравнения одинаково по времени +-
-//    File file1 = new File("/home/alek7ey/snap/mysql-workbench-community/13/.local/share/icons/Adwaita/256x256/legacy/security-medium.png");
-//    File file2 = new File("/home/alek7ey/snap/mysql-workbench-community/current/.local/share/icons/Adwaita/256x256/legacy/security-medium.png");
-
-
-
-
-
-        TestTimeCompare testTime = new TestTimeCompare(file1, file2);
-        //testTime.testWalkFileTree();
-        testTime.testCompareFiles();
-        testTime.testcompareLargeFiles();
-        testTime.testHashFiles();
+        // Результаты тестирования сравнения одинаковых файлов
+        System.out.println();
+        System.out.println("  Результаты тестирования сравнения одинаковых файлов:");
+        for (String result : resultsID) {
+            System.out.println(result);
+        }
 
     }
 

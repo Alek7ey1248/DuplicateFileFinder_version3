@@ -29,10 +29,12 @@ public class FileGrouper {
 
     // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
     void groupByHesh(Set<File> files) {
+        System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
 
         files.forEach(file -> {
                 try {
                     FileKeyHash key = new FileKeyHash(file);
+                    System.out.println(" вычислениеа хеш - " + file.getAbsolutePath());
                     filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
                 } catch (IOException | NoSuchAlgorithmException e) {
                     System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
@@ -45,6 +47,7 @@ public class FileGrouper {
     // Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
     // (Ускоренный потоками)
     void groupByHeshParallel(Set<File> files) {
+        System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -166,6 +169,33 @@ public class FileGrouper {
             }
         }
         executor.shutdown();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        FileGrouper fileGrouper = new FileGrouper();
+        Set<File> files = new HashSet<>();
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена) (Копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (Копия 2)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip"));
+
+        System.out.println("размер первого файла: " + files.iterator().next().length());
+        long startTime = System.currentTimeMillis();
+        fileGrouper.groupByContentParallel(files);
+        long endTime = System.currentTimeMillis();
+        long duration = (long) (endTime - startTime);
+        System.out.println("Время выполнения поиска дубликатов файлов в директории --- " + duration + " ms       ");
     }
 
 }
