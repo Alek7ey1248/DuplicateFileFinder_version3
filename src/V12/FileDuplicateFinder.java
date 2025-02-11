@@ -146,10 +146,18 @@ public class FileDuplicateFinder {
                     return;
                 }
 
+                if (numFiles < NUM_PROCESSORS/1.1) {  // Если файлов меньше чем половина от количества процессоров, то обрабатываем файлы по содержимому
+                    try {
+                        fileGrouper.groupByContent(files);
+                        return;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
                 if (areFileNamesSimilar) {   // Если имена файлов схожи, то обрабатываем файлы с использованием хеширования
-                    fileGrouper.groupByHeshParallel(files);
-                    // fileGrouper.groupByHesh(files);
+                    //fileGrouper.groupByHeshParallel(files);
+                     fileGrouper.groupByHesh(files);
                 } else {
                     // если имена файлов НЕ схожи - обработка файлов по содержимому
                     try {

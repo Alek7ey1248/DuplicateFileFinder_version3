@@ -10,7 +10,10 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class FileComparator {
-    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/1000L; // Порог для больших файлов
+    // При тестировании на скорость - До размера 512000L(500Кб) - 1048576L(10МБ) - compareFiles быстрее или равно compareLargeFiles,
+    //значит В классе FileComparator - LARGE_FILE_THRESHOLD надо делить на 120 - 60. - НО ЭТО ДЛЯ 2 файлов
+    //  Для моего компа подобрал - 30
+    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/1L; // Порог для больших файлов
     private static final int BLOCK_SIZE = getBlockSize(); // Размер блока для поблочного чтения больших файлов
 
     // Метод для получения порога для больших файлов
@@ -108,7 +111,7 @@ public class FileComparator {
             System.err.println("Ошибка при выполнении задачи: " + e.getCause());
             return false; // Возвращаем false в случае ошибки выполнения
         } finally {
-            executor.shutdown(); // Завершаем работу пула потоков
+            executor.shutdown(); // Завершаем работу потоков
         }
         return true; // Возвращаем true, если все блоки совпадают
     }
@@ -157,7 +160,7 @@ public class FileComparator {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         long startTime = System.currentTimeMillis();
 
@@ -173,13 +176,14 @@ public class FileComparator {
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
-            File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
-            File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
-    // File file1 = new File("/home/alek7ey/snap/telegram-desktop/6504/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
-    // File file2 = new File("/home/alek7ey/snap/telegram-desktop/current/.local/share/TelegramDesktop/tdata/user_data/media_cache/0/40/2BC5EBB40B2C");
+           // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
+           // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
+     File file1 = new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt");
+     File file2 = new File("/home/alek7ey/Рабочий стол/largeFile.txt");
     // System.out.println(areFilesEqual(file1, file2));
 
-           System.out.println(quickCompareFiles(file1, file2));
+//           System.out.println(quickCompareFiles(file1, file2));
+            System.out.println(compareLargeFiles(file1, file2, file1.length()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -210,8 +214,6 @@ class TaskCompareFileContents implements Callable {
     public Boolean call() {
         try {
             //System.out.println("Запущен поток: " + Thread.currentThread());
-
-
             ByteBuffer buffer1 = FileComparator.readFileBlock(channel1, position, bytesToRead);
             ByteBuffer buffer2 = FileComparator.readFileBlock(channel2, position, bytesToRead);
             if (!FileComparator.compareBuffers(buffer1, buffer2, bytesToRead)) {

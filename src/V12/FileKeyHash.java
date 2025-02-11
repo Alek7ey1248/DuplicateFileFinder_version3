@@ -3,6 +3,7 @@ package V12;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,23 +16,20 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         return size;
     }
     //private final String partialContentHash;   // Хеш первых 1024 байт файла
-    //private final String fullContentHash;      // Хеш всего файла
     private final byte[] fullContentHash;      // Хеш всего файла
-    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1; // порог для больших файлов
+    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1; // порог для больших файлов - после тестирований скорее всего так и оставлю
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
     private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
 
     // конструктор по умолчанию
     public FileKeyHash() {
         this.size = 0;
-        //this.fullContentHash = "";
         this.fullContentHash = new byte[0];
     }
 
     // Конструктор для создания ключа файла на основе размера и части содержимого
     public FileKeyHash(File file) throws IOException, NoSuchAlgorithmException {
         this.size = file.length();
-        //this.partialContentHash = calculatePartialHash(file);
         this.fullContentHash = calculateHash(file);
     }
 
@@ -59,7 +57,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         //System.out.println("вычисление хеша  - " + file.getAbsolutePath());
 
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            //MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для финального хеширования
             FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
             byte[] byteArray = new byte[8192];
             int bytesCount;
@@ -70,18 +69,10 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
             }
             fis.close();
 
-            // Получение хеша в виде байтового массива
-            byte[] bytes = digest.digest();
-
-            // Преобразование байтов в шестнадцатеричную строку
-//            StringBuilder sb = new StringBuilder();
-//            for (byte b : bytes) {
-//                sb.append(String.format("%02x", b));
-//            }
-//
-//            return sb.toString();
-            return bytes;
-        } catch (NoSuchAlgorithmException | IOException e) {
+            // возвращаем хеш в виде байтового массива
+            return digest.digest();
+        } catch (IOException e) {
+            System.out.println("Ошибка при вычислении хеша файла " + file + ": " + e.getMessage());
             e.printStackTrace();
             return null;
         }
@@ -103,9 +94,10 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         }
     }
 
+
     // Вспомогательный метод для обновления хеша содержимым большого файла
     private static byte[] updateDigestWithLargeFileContent(File file) throws IOException {
-        //long hash = 0L; // Переменная для хранения хеша
+
         MessageDigest finalDigest = createMessageDigest(); // Создаем объект MessageDigest для финального хеширования
         long fileSize = file.length(); // Получаем размер файла
         long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS); // Размер каждой части файла
@@ -117,6 +109,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
             long start = i * partSize; // Начало части
             long end = Math.min(start + partSize, fileSize); // Конец части
             futures.add(CompletableFuture.supplyAsync(() -> {
+                //System.out.println("-------------------------start = " + start + "  end = " + end);
                 try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
                     MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
                     byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
@@ -151,36 +144,16 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         }
 
         executor.shutdown();
-        // Получение финального хеша в виде строки
-        //return convertHashToString(finalDigest);
+        // Получение финального хеша
         return finalDigest.digest();
     }
 
-    // Вспомогательный метод для преобразования хеша в строку
-    private static String convertHashToString(MessageDigest digest) {
-        byte[] bytes = digest.digest(); // Получение хеша в виде байтового массива
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b)); // Преобразование байтов в шестнадцатеричную строку
-        }
-        return sb.toString();
-    }
-
-    // Вспомогательный метод для преобразования хеша в число
-    private static long convertHashToLong(MessageDigest digest) {
-        byte[] hashBytes = digest.digest(); // Получаем хеш в виде массива байт
-        long hash = 0L; // Переменная для хранения итогового хеша
-        // Преобразуем массив байт в число
-        for (byte b : hashBytes) {
-            hash = (hash << 8) + (b & 0xff); // Сдвигаем влево и добавляем байт
-        }
-        return hash; // Возвращаем итоговый хеш
-    }
 
     // Вспомогательный метод для создания объекта MessageDigest
     private static MessageDigest createMessageDigest() {
         try {
-            return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
+//            return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
+            return MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Алгоритм хеширования SHA-256 не найден");
             throw new RuntimeException(e);
@@ -200,17 +173,10 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     // Переопределение метода hashCode для корректного сравнения объектов FileKey
     @Override
     public int hashCode() {
-        return Objects.hash(size) + Arrays.hashCode(fullContentHash);
+        return Objects.hash(size) ^ Arrays.hashCode(fullContentHash); // Вычисляем хеш объекта FileKey на основе размера и хеша содержимого
     }
+    
     // Переопределение метода compareTo для корректного сравнения объектов FileKey
-//    @Override
-//    public int compareTo(FileKeyHash other) {
-//        int sizeComparison = Long.compare(this.size, other.size);
-//        if (sizeComparison != 0) {
-//            return sizeComparison;
-//        }
-//        return this.fullContentHash.compareTo(other.fullContentHash);
-//    }
     @Override
     public int compareTo(FileKeyHash other) {
         int sizeComparison = Long.compare(this.size, other.size);
@@ -256,7 +222,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     public static void main(String[] args)  {
 
         System.out.println(" LARGE_FILE_SIZE = " + LARGE_FILE_SIZE);
-
+        System.out.println(" BUFFER_SIZE = " + BUFFER_SIZE);
         long startTime = System.currentTimeMillis();
 
         File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");

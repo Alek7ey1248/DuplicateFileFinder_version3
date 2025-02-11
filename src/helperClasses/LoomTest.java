@@ -1,3 +1,5 @@
+package helperClasses;
+
 import static java.lang.Thread.startVirtualThread;
 
 public class LoomTest {
