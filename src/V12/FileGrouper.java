@@ -23,18 +23,18 @@ public class FileGrouper {
     public FileGrouper() {
         this.filesByKey = new ConcurrentHashMap<>();
         this.filesByContent = new ConcurrentHashMap<>();
-
     }
 
 
     // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
     void groupByHesh(Set<File> files) {
-        System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
+        //System.out.println(" вычислениеа хеша списка файлов типа - " + files.iterator().next().getAbsolutePath());
+        System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
 
         files.forEach(file -> {
                 try {
                     FileKeyHash key = new FileKeyHash(file);
-                    System.out.println(" вычислениеа хеш - " + file.getAbsolutePath());
+                    //System.out.println(" вычислениеа хеш - " + file.getAbsolutePath());
                     filesByKey.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(file);
                 } catch (IOException | NoSuchAlgorithmException e) {
                     System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
@@ -47,7 +47,8 @@ public class FileGrouper {
     // Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
     // (Ускоренный потоками)
     void groupByHeshParallel(Set<File> files) {
-        System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
+       //System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
+        System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -183,25 +184,34 @@ public class FileGrouper {
         FileGrouper fileGrouper = new FileGrouper();
         Set<File> files = new HashSet<>();
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена) (Копия)"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена) (Копия)"));
 
         files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
-        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (Копия 2)"));
-        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
+
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/largeFile.txt"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/largeFile.txt"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt"));
+
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4"));
 
         System.out.println("размер первого файла: " + files.iterator().next().length());
         long startTime = System.currentTimeMillis();
 
         //fileGrouper.groupByHesh(files);
-        //fileGrouper.groupByHeshParallel(files);
+        fileGrouper.groupByHeshParallel(files);
         //fileGrouper.groupByContent(files);
-        fileGrouper.groupByContentParallel(files);
+        //fileGrouper.groupByContentParallel(files);
 
         //Thread.currentThread().interrupt();
 

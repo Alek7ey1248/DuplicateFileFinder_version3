@@ -10,10 +10,13 @@ import java.util.List;
 import java.util.concurrent.*;
 
 public class FileComparator {
-    // При тестировании на скорость - До размера 512000L(500Кб) - 1048576L(10МБ) - compareFiles быстрее или равно compareLargeFiles,
+    // (Мой ноут)При тестировании на скорость - До размера 512000L(500Кб) - 1048576L(10МБ) - compareFiles быстрее или равно compareLargeFiles,
     //значит В классе FileComparator - LARGE_FILE_THRESHOLD надо делить на 120 - 60. - НО ЭТО ДЛЯ 2 файлов
-    //  Для моего компа подобрал - 30
-    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/1L; // Порог для больших файлов
+    //  Для моего компа подобрал - 30, но вырубается - перегружается
+    // (Большой комп) - compareFiles быстрее чем compareLargeFiles до 307200(300Кб) на одинаковых ф
+    //                                                                307200(300Кб) - 512000(500Кб) на разных
+    // Значит LARGE_FILE_THRESHOLD(131203072) надо делить на 256 - 428
+    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/428L; // Порог для больших файлов
     private static final int BLOCK_SIZE = getBlockSize(); // Размер блока для поблочного чтения больших файлов
 
     // Метод для получения порога для больших файлов

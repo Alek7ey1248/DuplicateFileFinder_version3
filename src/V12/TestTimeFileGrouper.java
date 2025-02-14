@@ -245,71 +245,69 @@ public class TestTimeFileGrouper {
 
 
 
-        FileGrouper fileGrouper = new FileGrouper();
-
         // Список для хранения результатов тестов
         List<String> results = new ArrayList<>();
 
         // ТЕСТ РАЗНЫХ ФАЙЛОВ ==============================================================================================
         // Тестирование методов с наборами по 2 файлов каждого размера
         results.add("Testing Small Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles2Di, results);
+        testFileGroup(smallFiles2Di, results);
         results.add("Testing Medium Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles2Di, results);
+        testFileGroup(mediumFiles2Di, results);
         results.add("Testing Large Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles2Di, results);
+        testFileGroup(largeFiles2Di, results);
         results.add("Testing Huge Files 2 -РАЗНЫЕ ФАЙЛЫ-----------------------");
-        testFileGroup(fileGrouper, hugeFiles2Di, results);
+        testFileGroup(hugeFiles2Di, results);
         results.add("Testing Gigantic Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles2Di, results);
+        testFileGroup(giganticFiles2Di, results);
 
         // Тестирование методов с наборами по 4 файлов каждого размера
         results.add("Testing Small Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles4Di, results);
+        testFileGroup(smallFiles4Di, results);
         results.add("Testing Medium Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles4Di, results);
+        testFileGroup(mediumFiles4Di, results);
         results.add("Testing Large Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles4Di, results);
+        testFileGroup(largeFiles4Di, results);
         results.add("Testing Huge Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles4Di, results);
+        testFileGroup(hugeFiles4Di, results);
         results.add("Testing Gigantic Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles4Di, results);
+        testFileGroup(giganticFiles4Di, results);
 
         // Тестирование методов с наборами по 8 файлов каждого размера
         results.add("Testing Small Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles8Di, results);
+        testFileGroup(smallFiles8Di, results);
         results.add("Testing Medium Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles8Di, results);
+        testFileGroup(mediumFiles8Di, results);
         results.add("Testing Large Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles8Di, results);
+        testFileGroup(largeFiles8Di, results);
         results.add("Testing Huge Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles8Di, results);
+        testFileGroup(hugeFiles8Di, results);
         results.add("Testing Gigantic Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles8Di, results);
+        testFileGroup(giganticFiles8Di, results);
 
         // Тестирование методов с наборами по 16 файлов каждого размера
         results.add("Testing Small Files 16 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles16Di, results);
+        testFileGroup(smallFiles16Di, results);
         results.add("Testing Medium Files 16 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles16Di, results);
+        testFileGroup(mediumFiles16Di, results);
         results.add("Testing Large Files 16 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles16Di, results);
+        testFileGroup(largeFiles16Di, results);
         results.add("Testing Huge Files 16 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles16Di, results);
+        testFileGroup(hugeFiles16Di, results);
         results.add("Testing Gigantic Files 16 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles16Di, results);
+        testFileGroup(giganticFiles16Di, results);
 
         // Тестирование методов с наборами по 32 файлов каждого размера
         results.add("Testing Small Files 32 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles32Di, results);
+        testFileGroup(smallFiles32Di, results);
         results.add("Testing Medium Files 32 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles32Di, results);
+        testFileGroup(mediumFiles32Di, results);
         results.add("Testing Large Files 32 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles32Di, results);
+        testFileGroup(largeFiles32Di, results);
         results.add("Testing Huge Files 32 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles32Di, results);
+        testFileGroup(hugeFiles32Di, results);
         results.add("Testing Gigantic Files 32 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles32Di, results);
+        testFileGroup(giganticFiles32Di, results);
 
 
 
@@ -317,63 +315,63 @@ public class TestTimeFileGrouper {
         // ТЕСТ ОДИНАКОВЫХ ФАЙЛОВ =======================================================================================
         // Тестирование методов с наборами по 2 файлов каждого размера
         results.add("Testing Small Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles2Id, results);
+        testFileGroup(smallFiles2Id, results);
         results.add("Testing Medium Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles2Id, results);
+        testFileGroup(mediumFiles2Id, results);
         results.add("Testing Large Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles2Id, results);
+        testFileGroup(largeFiles2Id, results);
         results.add("Testing Huge Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles2Id, results);
+        testFileGroup(hugeFiles2Id, results);
         results.add("Testing Gigantic Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles2Id, results);
+        testFileGroup(giganticFiles2Id, results);
 
         // Тестирование методов с наборами по 4 файлов каждого размера
         results.add("Testing Small Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles4Id, results);
+        testFileGroup(smallFiles4Id, results);
         results.add("Testing Medium Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles4Id, results);
+        testFileGroup(mediumFiles4Id, results);
         results.add("Testing Large Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles4Id, results);
+        testFileGroup(largeFiles4Id, results);
         results.add("Testing Huge Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles4Id, results);
+        testFileGroup(hugeFiles4Id, results);
         results.add("Testing Gigantic Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles4Id, results);
+        testFileGroup(giganticFiles4Id, results);
 
         // Тестирование методов с наборами по 8 файлов каждого размера
         results.add("Testing Small Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles8Id, results);
+        testFileGroup(smallFiles8Id, results);
         results.add("Testing Medium Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles8Id, results);
+        testFileGroup(mediumFiles8Id, results);
         results.add("Testing Large Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles8Id, results);
+        testFileGroup(largeFiles8Id, results);
         results.add("Testing Huge Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles8Id, results);
+        testFileGroup(hugeFiles8Id, results);
         results.add("Testing Gigantic Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles8Id, results);
+        testFileGroup(giganticFiles8Id, results);
 
         // Тестирование методов с наборами по 16 файлов каждого размера
         results.add("Testing Small Files 16 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles16Id, results);
+        testFileGroup(smallFiles16Id, results);
         results.add("Testing Medium Files 16 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles16Id, results);
+        testFileGroup(mediumFiles16Id, results);
         results.add("Testing Large Files 16 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles16Id, results);
+        testFileGroup(largeFiles16Id, results);
         results.add("Testing Huge Files 16 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles16Id, results);
+        testFileGroup(hugeFiles16Id, results);
         results.add("Testing Gigantic Files 16 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles16Id, results);
+        testFileGroup(giganticFiles16Id, results);
 
         // Тестирование методов с наборами по 32 файлов каждого размера
         results.add("Testing Small Files 32 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, smallFiles32Id, results);
+        testFileGroup(smallFiles32Id, results);
         results.add("Testing Medium Files 32 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, mediumFiles32Id, results);
+        testFileGroup(mediumFiles32Id, results);
         results.add("Testing Large Files 32 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, largeFiles32Id, results);
+        testFileGroup(largeFiles32Id, results);
         results.add("Testing Huge Files 32 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, hugeFiles32Id, results);
+        testFileGroup(hugeFiles32Id, results);
         results.add("Testing Gigantic Files 32 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(fileGrouper, giganticFiles32Id, results);
+        testFileGroup(giganticFiles32Id, results);
 
 
 
@@ -436,46 +434,50 @@ public class TestTimeFileGrouper {
 
 
     // Тестирование методов класса FileGrouper на наборе файлов и запись результатов в список
-    private static void testFileGroup(FileGrouper fileGrouper, Set<File> files, List<String> results) {
-        long startTime = System.nanoTime();
-        for (int i = 0; i < 10; i++) {
-            fileGrouper.groupByHesh(files);    // Тестирование времени выполнения метода `groupByHesh`
+    private static void testFileGroup(Set<File> files, List<String> results) {
+        long startTime1 = System.nanoTime();
+        for (int i = 0; i < 30; i++) {
+            Set<File> copyFiles = new HashSet<>(files);
+            new FileGrouper().groupByHesh(copyFiles);    // Тестирование времени выполнения метода `groupByHesh`
         }
-        long endTime = System.nanoTime();
-        long duration = endTime - startTime;
-        results.add("groupByHesh executed in " + duration/1000000 + " ms");
+        long endTime1 = System.nanoTime();
+        long duration1 = endTime1 - startTime1;
+        results.add("groupByHesh executed in " + duration1/1000000 + " ms");
 
-        startTime = System.nanoTime();
-        for (int i = 0; i < 10; i++) {
-            fileGrouper.groupByHeshParallel(files);   // Тестирование времени выполнения метода `groupByHeshParallel`
+        long startTime2 = System.nanoTime();
+        for (int i = 0; i < 30; i++) {
+            Set<File> copyFiles = new HashSet<>(files);
+            new FileGrouper().groupByHeshParallel(copyFiles);   // Тестирование времени выполнения метода `groupByHeshParallel`
         }
-        endTime = System.nanoTime();
-        duration = endTime - startTime;
-        results.add("groupByHeshParallel executed in " + duration/1000000 + " ms");
+        long endTime2 = System.nanoTime();
+        long duration2 = endTime2 - startTime2;
+        results.add("groupByHeshParallel executed in " + duration2/1000000 + " ms");
 
-        startTime = System.nanoTime();
-        for (int i = 0; i < 10; i++) {
+        long startTime3 = System.nanoTime();
+        for (int i = 0; i < 30; i++) {
             try {
-                fileGrouper.groupByContent(files);    // Тестирование времени выполнения метода `groupByContent`
+                Set<File> copyFiles = new HashSet<>(files);
+                new FileGrouper().groupByContent(copyFiles);    // Тестирование времени выполнения метода `groupByContent`
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        endTime = System.nanoTime();
-        duration = endTime - startTime;
-        results.add("groupByContent executed in " + duration/1000000 + " ms");
+        long endTime3 = System.nanoTime();
+        long duration3 = endTime3 - startTime3;
+        results.add("groupByContent executed in " + duration3/1000000 + " ms");
 
-        startTime = System.nanoTime();
-        for (int i = 0; i < 10; i++) {
+        long startTime4 = System.nanoTime();
+        for (int i = 0; i < 30; i++) {
             try {
-                fileGrouper.groupByContentParallel(files);     // Тестирование времени выполнения метода `groupByContentParallel`
+                Set<File> copyFiles = new HashSet<>(files);
+                new FileGrouper().groupByContentParallel(copyFiles);     // Тестирование времени выполнения метода `groupByContentParallel`
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        endTime = System.nanoTime();
-        duration = endTime - startTime;
-        results.add("groupByContentParallel executed in " + duration/1000000 + " ms");
+        long endTime4 = System.nanoTime();
+        long duration4 = endTime4 - startTime4;
+        results.add("groupByContentParallel executed in " + duration4/1000000 + " ms");
 
 //        testMethodExecutionTime("groupByHesh", () -> fileGrouper.groupByHesh(files), results);
 //        testMethodExecutionTime("groupByHeshParallel", () -> fileGrouper.groupByHeshParallel(files), results);

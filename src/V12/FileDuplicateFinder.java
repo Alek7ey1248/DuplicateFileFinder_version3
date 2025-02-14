@@ -146,7 +146,7 @@ public class FileDuplicateFinder {
                     return;
                 }
 
-                if (numFiles < NUM_PROCESSORS/1.1) {  // Если файлов меньше чем половина от количества процессоров, то обрабатываем файлы по содержимому
+                if (numFiles <= NUM_PROCESSORS/2) {  // Если файлов меньше чем половина от количества процессоров, то обрабатываем файлы по содержимому
                     try {
                         fileGrouper.groupByContent(files);
                         return;

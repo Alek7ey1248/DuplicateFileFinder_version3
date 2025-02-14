@@ -17,7 +17,9 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
     //private final String partialContentHash;   // Хеш первых 1024 байт файла
     private final byte[] fullContentHash;      // Хеш всего файла
-    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1; // порог для больших файлов - после тестирований скорее всего так и оставлю
+    // (На больш компе) - calculateHashLargeFile становиться быстрее calculateHashSmallFile на 512000(500Кб)
+    // Значит порог для больших файлов - LARGE_FILE_SIZE = 524812288 надо делить на 1025
+    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1025; // порог для больших файлов - после тестирований скорее всего так и оставлю
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
     private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
 
