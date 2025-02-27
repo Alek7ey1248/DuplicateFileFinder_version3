@@ -141,33 +141,53 @@ public class FileDuplicateFinder {
 
                 long sizeFile = entry.getKey();     // Размер файла
                 Set<File> files = entry.getValue();  // Список файлов одинакового размера
-                int numFiles = files.size();       // Количество файлов одинакового размера
+                long numFiles = files.size();       // Количество файлов одинакового размера
                 if (numFiles < 2) {  // Пропускаем списки файлов, которых меньше 2
                     return;
                 }
 
-                if (numFiles <= NUM_PROCESSORS/2) {  // Если файлов меньше чем половина от количества процессоров, то обрабатываем файлы по содержимому
-                    try {
-                        fileGrouper.groupByContent(files);
-                        return;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                //----------------------------------------------------------------------------------
+                switch ((numFiles <= NUM_PROCESSORS / 2 ? 0 :
+                        ((numFiles > NUM_PROCESSORS / 2 && numFiles <= NUM_PROCESSORS) ? 1 :
+                       ((numFiles > NUM_PROCESSORS && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3)))) {
+
+                    case 0: // 0 - 8 файлов  - <= NUM_PROCESSORS / 2
+//                        if (sizeFile <= 300_000_000) {
+                        if (sizeFile <= 1_000_000) {
+                            fileGrouper.groupByContent(files);
+                        } else {
+                            fileGrouper.groupByHeshParallel(files);
+//                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
+//                            if (areFileNamesSimilar) {
+//                                fileGrouper.groupByHeshParallel(files);
+//                            } else {
+//                                fileGrouper.groupByContentParallel(files);
+//                            }
+                        }
+                        break;
+
+                    case 1: // 8 - 16 файлов  - <= NUM_PROCESSORS
+//                        if (sizeFile <= 10_000) {
+//                            fileGrouper.groupByContent(files);
+//                        } else {
+                            fileGrouper.groupByHeshParallel(files);
+//                        }
+                        break;
+
+                    case 2: // 16 - 30 файлов
+                        fileGrouper.groupByHeshParallel(files);
+                        break;
+
+                    case 3: // 30+ файлов
+                        if (sizeFile <= 1_000_000_000) {
+                            fileGrouper.groupByHeshParallel(files);
+                        } else {
+                                fileGrouper.groupByContentParallel(files);
+                        }
+                        break;
                 }
-                boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
-                if (areFileNamesSimilar) {   // Если имена файлов схожи, то обрабатываем файлы с использованием хеширования
-                    //fileGrouper.groupByHeshParallel(files);
-                     fileGrouper.groupByHesh(files);
-                } else {
-                    // если имена файлов НЕ схожи - обработка файлов по содержимому
-                    try {
-                        fileGrouper.groupByContentParallel(files);
-                        //fileGrouper.groupByContent(files);
-                    } catch (IOException e) {
-                        System.out.println("Ошибка при обработке файлов по содержимому: " + e.getMessage());
-                        throw new RuntimeException(e);
-                    }
-                }
+//-----------------------------------------------------------------------------------
+
             }, executor);
             futures.add(future);
         });
@@ -200,6 +220,7 @@ public class FileDuplicateFinder {
     }
 
 
+    // Вывод групп дубликатов файлов в консоль
     public void printSortedFileGroups() {
 
         // Добавляем все Set<File> из filesByKey
@@ -227,7 +248,9 @@ public class FileDuplicateFinder {
             System.out.println("-------------------------------------------------");
         }
         System.out.println("-  LARGE_FILE_SIZE = " + LARGE_FILE_SIZE);
+
     }
+
 
 
     /* Метод для определения оптимального размера большого файла для многопоточного хеширования
