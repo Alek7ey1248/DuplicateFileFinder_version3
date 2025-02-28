@@ -147,28 +147,27 @@ public class FileDuplicateFinder {
                 }
 
                 //----------------------------------------------------------------------------------
-                switch ((numFiles <= NUM_PROCESSORS / 2 ? 0 :
-                        ((numFiles > NUM_PROCESSORS / 2 && numFiles <= NUM_PROCESSORS) ? 1 :
+                switch ((numFiles < NUM_PROCESSORS / 2.5 ? 0 :
+                        ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS) ? 1 :
                        ((numFiles > NUM_PROCESSORS && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3)))) {
 
                     case 0: // 0 - 8 файлов  - <= NUM_PROCESSORS / 2
 //                        if (sizeFile <= 300_000_000) {
                         if (sizeFile <= 1_000_000) {
-                            fileGrouper.groupByContent(files);
+                            fileGrouper.groupByContentParallel(files);
                         } else {
-                            fileGrouper.groupByHeshParallel(files);
-//                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
-//                            if (areFileNamesSimilar) {
-//                                fileGrouper.groupByHeshParallel(files);
-//                            } else {
-//                                fileGrouper.groupByContentParallel(files);
-//                            }
+                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
+                            if (areFileNamesSimilar) {
+                                fileGrouper.groupByHeshParallel(files);
+                            } else {
+                                fileGrouper.groupByContentParallel(files);
+                            }
                         }
                         break;
 
                     case 1: // 8 - 16 файлов  - <= NUM_PROCESSORS
 //                        if (sizeFile <= 10_000) {
-//                            fileGrouper.groupByContent(files);
+//                            fileGrouper.groupByContentParallel(files);
 //                        } else {
                             fileGrouper.groupByHeshParallel(files);
 //                        }
@@ -179,7 +178,7 @@ public class FileDuplicateFinder {
                         break;
 
                     case 3: // 30+ файлов
-                        if (sizeFile <= 1_000_000_000) {
+                        if (sizeFile < 10_000_000) {
                             fileGrouper.groupByHeshParallel(files);
                         } else {
                                 fileGrouper.groupByContentParallel(files);

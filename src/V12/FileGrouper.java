@@ -183,40 +183,42 @@ public class FileGrouper {
     public static void main(String[] args) throws IOException {
         FileGrouper fileGrouper = new FileGrouper();
         Set<File> files = new HashSet<>();
-        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена) (Копия)"));
 
         files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 2)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 3)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 4)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 5)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 6)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 7)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 8)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 9)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 10)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 2)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 3)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 4)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 5)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 6)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 7)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 8)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 9)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 10)"));
 
 
-        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip"));
 
-        //files.add(new File("/home/alek7ey/Рабочий стол/largeFile.txt"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt"));
 
         //files.add(new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt"));
 
         files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4"));
+
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4"));
         files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt"));
 
         System.out.println("размер первого файла: " + files.iterator().next().length());
@@ -224,8 +226,8 @@ public class FileGrouper {
 
         //fileGrouper.groupByHesh(files);
         //fileGrouper.groupByHeshParallel(files);
-        fileGrouper.groupByContent(files);
-        //fileGrouper.groupByContentParallel(files);
+        //fileGrouper.groupByContent(files);
+        fileGrouper.groupByContentParallel(files);
 
         //Thread.currentThread().interrupt();
 

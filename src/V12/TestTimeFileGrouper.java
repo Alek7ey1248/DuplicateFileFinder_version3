@@ -403,7 +403,7 @@ public class TestTimeFileGrouper {
     }
 
     // Генерация набора одинаковых файлов заданного размера и количества
-    private static Set<File> generateIdenticalFiles(int fileSize, int numberOfFiles) {
+    public static Set<File> generateIdenticalFiles(int fileSize, int numberOfFiles) {
         Set<File> fileSet = new HashSet<>();
         String content = generateRandomString(fileSize); // Генерируем строку для содержимого
 
@@ -413,7 +413,7 @@ public class TestTimeFileGrouper {
                 Path tempFile = Files.createTempFile("identicalFile" + i + "_", ".txt");
                 // Записываем содержимое в файл
                 Files.write(tempFile, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
-                fileSet.add(tempFile.toFile());
+                fileSet.add(tempFile.toFile());   // Добавляем файл в набор
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -423,7 +423,7 @@ public class TestTimeFileGrouper {
 
 
     // Генерация набора разных файлов заданного размера и количества
-    private static Set<File> generateDifferentFiles(int fileSize, int numberOfFiles) {
+    public static Set<File> generateDifferentFiles(int fileSize, int numberOfFiles) {
         Set<File> fileSet = new HashSet<>();
 
         for (int i = 0; i < numberOfFiles; i++) {

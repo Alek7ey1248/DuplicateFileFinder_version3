@@ -45,17 +45,17 @@ public class CheckValid {
     public boolean isValidFile(File file) {
 
         if (!file.exists()) {
-            System.err.println(" File " + file.getAbsolutePath() + " не существует");
+            //System.err.println(" File " + file.getAbsolutePath() + " не существует");
             return false;
         }
 
         if (!file.isFile()) {
-            System.err.println(" File " + file.getAbsolutePath() + " это не файл");
+            //System.err.println(" File " + file.getAbsolutePath() + " это не файл");
             return false;
         }
 
         if (!file.canRead()) {
-            System.err.println(" File " + file.getAbsolutePath() + " поврежден или нет прав на чтение");
+            //System.err.println(" File " + file.getAbsolutePath() + " поврежден или нет прав на чтение");
             return false;
         }
 
