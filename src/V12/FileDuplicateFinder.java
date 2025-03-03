@@ -147,13 +147,12 @@ public class FileDuplicateFinder {
                 }
 
                 //----------------------------------------------------------------------------------
-                switch ((numFiles < NUM_PROCESSORS / 2.5 ? 0 :
-                        ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS) ? 1 :
-                       ((numFiles > NUM_PROCESSORS && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3)))) {
+                switch ((numFiles < NUM_PROCESSORS / 2.5 ? 1 :
+                       ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3))) {
 
-                    case 0: // 0 - 8 файлов  - <= NUM_PROCESSORS / 2
+                    case 1: // 0 - 8 файлов  - <= NUM_PROCESSORS / 2
 //                        if (sizeFile <= 300_000_000) {
-                        if (sizeFile <= 1_000_000) {
+                        if (sizeFile <= 300_000) {
                             fileGrouper.groupByContentParallel(files);
                         } else {
                             boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
@@ -165,16 +164,12 @@ public class FileDuplicateFinder {
                         }
                         break;
 
-                    case 1: // 8 - 16 файлов  - <= NUM_PROCESSORS
+                    case 2: // 8 - 16 файлов  - <= NUM_PROCESSORS и // 16 - 30 файлов
 //                        if (sizeFile <= 10_000) {
 //                            fileGrouper.groupByContentParallel(files);
 //                        } else {
                             fileGrouper.groupByHeshParallel(files);
 //                        }
-                        break;
-
-                    case 2: // 16 - 30 файлов
-                        fileGrouper.groupByHeshParallel(files);
                         break;
 
                     case 3: // 30+ файлов
@@ -228,7 +223,7 @@ public class FileDuplicateFinder {
         }
 
         // Добавляем все Set<File> из filesByContent
-        for (Set<File> fileSet : fileGrouper.getFilesByContent().values()) {
+        for (Set<File> fileSet : fileGrouper.getFilesByContent()) {
             duplicates.add(fileSet);
         }
 

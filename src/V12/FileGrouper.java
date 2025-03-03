@@ -14,15 +14,20 @@ public class FileGrouper {
     }
 
     // Хранит группы файлов по содержимому
-    private final Map<String, Set<File>> filesByContent;
-    public Map<String, Set<File>> getFilesByContent() {
+//    private final Map<String, Set<File>> filesByContent;
+//    public Map<String, Set<File>> getFilesByContent() {
+//        return filesByContent;
+//    }
+    private final List<Set<File>> filesByContent;
+    public List<Set<File>> getFilesByContent() {
         return filesByContent;
     }
 
     // Конструктор
     public FileGrouper() {
         this.filesByKey = new ConcurrentHashMap<>();
-        this.filesByContent = new ConcurrentHashMap<>();
+//        this.filesByContent = new ConcurrentHashMap<>();
+        this.filesByContent = new CopyOnWriteArrayList<>();
     }
 
 
@@ -50,7 +55,7 @@ public class FileGrouper {
        //System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
         System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
 
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальныепотоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         files.forEach(file -> {
@@ -92,7 +97,7 @@ public class FileGrouper {
 
             Set<File> group = new HashSet<>();
             group.add(file);   // Добавляем первый файл в группу дубликатов
-            String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
+            //String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
             Set<File> toRemove = ConcurrentHashMap.newKeySet();   // Список для удаления дубликатов из files
 
             for (File anotherFile : files) {  // Перебираем оставшиеся файлы в списке
@@ -114,7 +119,8 @@ public class FileGrouper {
             files.removeAll(toRemove);  // Удаляем дубликаты из списка файлов одинакового размера
 
             if (group.size() > 1) { // Добавляем группу дубликатов в список дубликатов по ключу (если группа содержит более одного файла)
-                filesByContent.put(key, group);
+//                filesByContent.put(key, group);
+                filesByContent.add(group);
             }
         }
     }
@@ -134,7 +140,7 @@ public class FileGrouper {
 
             Set<File> group = new HashSet<>();
             group.add(file);   // Добавляем первый файл в группу дубликатов
-            String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
+            //String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
             Set<File> toRemove = ConcurrentHashMap.newKeySet();   // Список для удаления дубликатов из files
 
             List<CompletableFuture<Void>> fileComparisons = new ArrayList<>(); // Список для хранения CompletableFuture
@@ -166,7 +172,8 @@ public class FileGrouper {
             files.removeAll(toRemove);  // Удаляем дубликаты из списка файлов одинакового размера
 
             if (group.size() > 1) { // Добавляем группу дубликатов в список дубликатов по ключу (если группа содержит более одного файла)
-                filesByContent.put(key, group);
+//                filesByContent.put(key, group);
+                filesByContent.add(group);
             }
         }
         executor.shutdown();
