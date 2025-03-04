@@ -33,7 +33,6 @@ public class FileGrouper {
 
     // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
     void groupByHesh(Set<File> files) {
-        //System.out.println(" вычислениеа хеша списка файлов типа - " + files.iterator().next().getAbsolutePath());
         System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
 
         files.forEach(file -> {
@@ -52,8 +51,7 @@ public class FileGrouper {
     // Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
     // (Ускоренный потоками)
     void groupByHeshParallel(Set<File> files) {
-       //System.out.println(" вычислениеа хеша списка файдов типа - " + files.iterator().next().getAbsolutePath());
-        System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
+        System.out.println(" вычислениеа хеша списка файлов - " + Arrays.toString(files.toArray()));
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальныепотоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -96,19 +94,19 @@ public class FileGrouper {
             System.out.println(" Поиск дубликатов файла: " + file.getAbsolutePath());
 
             Set<File> group = new HashSet<>();
+            //Set<File> group = ConcurrentHashMap.newKeySet();
             group.add(file);   // Добавляем первый файл в группу дубликатов
             //String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
-            Set<File> toRemove = ConcurrentHashMap.newKeySet();   // Список для удаления дубликатов из files
+            //Set<File> toRemove = ConcurrentHashMap.newKeySet();   // Список для удаления дубликатов из files
+            Set<File> toRemove = new HashSet<>();
 
             for (File anotherFile : files) {  // Перебираем оставшиеся файлы в списке
-                if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
-                    continue;
-                }
+//                if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
+//                    continue;
+//                }
                 try {
                     if (FileComparator.areFilesEqual(file, anotherFile)) {
-                        //synchronized (group) { // Синхронизация при добавлении в группу
                         group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
-                        //}
                         toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
                     }
                 } catch (IOException e) {
@@ -138,7 +136,8 @@ public class FileGrouper {
             iterator.remove();   // Удаляем первый файл из списка
             System.out.println(" Поиск дубликатов файла: " + file.getAbsolutePath());
 
-            Set<File> group = new HashSet<>();
+            //Set<File> group = new HashSet<>();
+            Set<File> group = ConcurrentHashMap.newKeySet();
             group.add(file);   // Добавляем первый файл в группу дубликатов
             //String key = file.getAbsolutePath();  // Ключ для группы дубликатов по содержимому - путь к файлу
             Set<File> toRemove = ConcurrentHashMap.newKeySet();   // Список для удаления дубликатов из files
@@ -146,16 +145,14 @@ public class FileGrouper {
             List<CompletableFuture<Void>> fileComparisons = new ArrayList<>(); // Список для хранения CompletableFuture
 
             for (File anotherFile : files) {  // Перебираем оставшиеся файлы в списке
-                if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
-                    continue;
-                }
+//                if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
+//                    continue;
+//                }
                 // Отправляем задачу на сравнение файлов в пул потоков
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
                     if (FileComparator.areFilesEqual(file, anotherFile)) {
-                        //synchronized (group) { // Синхронизация при добавлении в группу
                         group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
-                        //}
                         toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
                     }
                 } catch (IOException e) {

@@ -10,7 +10,7 @@ public class FileDuplicateFinder {
 
     private static final int NUM_PROCESSORS = Runtime.getRuntime().availableProcessors();  // Количество процессоров
 
-    private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1; // порог для больших файлов
+    private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/428L; // Порог для больших файлов; // порог для больших файлов
 
     private final CheckValid checkValid;
 
@@ -29,7 +29,6 @@ public class FileDuplicateFinder {
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
-//        this.fileBySize = new HashMap<>();
         this.fileBySize = new ConcurrentHashMap<>();
         this.fileGrouper = new FileGrouper();
         this.duplicates = new ArrayList<>();
@@ -46,41 +45,13 @@ public class FileDuplicateFinder {
         }
 
         processGroupFiles();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
+
         removeSingleFiles();  // Удаляем списки по одному файлу из filesByKey
 
         printSortedFileGroups();  // Вывод групп дубликатов файлов в консоль
     }
 
 
-    /* Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
-     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
-     * @param path - путь к директории, с которой начинается обход файловой системы
-     */
-//    public void walkFileTree(String path) {
-//
-//        if (!checkValid.isValidDirectoryPath(path)) {
-//            System.out.println("Невалидная директория: " + path);
-//            return;
-//        }
-//
-//        File directory = new File(path); // Создаем объект File(директорий) для указанного пути
-//        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
-//
-//        if (files != null) {  // Проверяем, что массив не пустой
-//            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
-//                if (file.isDirectory()) {  // Если текущий файл является директорией, создаем новый поток для рекурсивного вызова walkFileTree
-//                    walkFileTree(file.getAbsolutePath());
-//                } else {
-//                    if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
-//                        continue;
-//                    }
-//                    // Добавляем файл в карту fileBySize по его размеру
-//                    long fileSize = file.length();
-//                    fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
-//                }
-//            }
-//        }
-//    }
 
     /* Ускореный метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
      * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
@@ -97,7 +68,8 @@ public class FileDuplicateFinder {
 
         if (files != null) {  // Проверяем, что массив не пустой
             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
-            CompletableFuture[] futures = new CompletableFuture[files.length]; // Массив для хранения CompletableFuture
+            //CompletableFuture[] futures = new CompletableFuture[files.length]; // Массив для хранения CompletableFuture
+            var futures = new CompletableFuture[files.length];
 
             for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
                 final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
@@ -111,13 +83,8 @@ public class FileDuplicateFinder {
                             }
                             // Добавляем файл в карту fileBySize по его размеру
                             long fileSize = file.length();
-                            //fileBySize.computeIfAbsent(fileSize, k -> new HashSet<>()).add(file);
                             fileBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
                         }
-//                    } catch (Exception e) {
-//                        System.out.println("Ошибка при обработке файла в методе walkFileTree скорее всего из за некорректной директории : " + file.getAbsolutePath());
-//                        e.printStackTrace();
-//                    }
                 }, executor);
             }
 
@@ -135,24 +102,26 @@ public class FileDuplicateFinder {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        fileBySize.entrySet().forEach(entry -> {
+        // Список файлов одинакового размера
+//        fileBySize.entrySet().forEach(entry -> {
+        fileBySize.forEach((key, files) -> {
 
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 
-                long sizeFile = entry.getKey();     // Размер файла
-                Set<File> files = entry.getValue();  // Список файлов одинакового размера
+                long sizeFile = key;     // Размер файла
                 long numFiles = files.size();       // Количество файлов одинакового размера
                 if (numFiles < 2) {  // Пропускаем списки файлов, которых меньше 2
                     return;
                 }
 
                 //----------------------------------------------------------------------------------
-                switch ((numFiles < NUM_PROCESSORS / 2.5 ? 1 :
-                       ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3))) {
+                switch ((numFiles == 2 || numFiles < NUM_PROCESSORS / 2.5  ? 1 :
+                        ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3))) {
 
-                    case 1: // 0 - 8 файлов  - <= NUM_PROCESSORS / 2
-//                        if (sizeFile <= 300_000_000) {
-                        if (sizeFile <= 300_000) {
+                    case 1: // 2 - 6 файлов на большом компе  - numFiles >= 2 && numFiles < NUM_PROCESSORS / 2.5
+                            // 2 - 4 на среднем(12 процессоров)
+                            // 2 - на маленьком ноуте
+                        if (sizeFile <= LARGE_FILE_THRESHOLD) {     // на большом до 300_000 байт = LARGE_FILE_THRESHOLD = 306549
                             fileGrouper.groupByContentParallel(files);
                         } else {
                             boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
@@ -164,19 +133,17 @@ public class FileDuplicateFinder {
                         }
                         break;
 
-                    case 2: // 8 - 16 файлов  - <= NUM_PROCESSORS и // 16 - 30 файлов
-//                        if (sizeFile <= 10_000) {
-//                            fileGrouper.groupByContentParallel(files);
-//                        } else {
-                            fileGrouper.groupByHeshParallel(files);
-//                        }
+                    case 2: // 8 - 30 файлов на большом компе - (numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8)
+                            // 5 - 21 на среднем(12 процессоров)
+                            // 2 - 7 на маленьком ноуте
+                        fileGrouper.groupByHeshParallel(files);
                         break;
 
-                    case 3: // 30+ файлов
-                        if (sizeFile < 10_000_000) {
+                    case 3: // 30+ файлов на большом компе
+                        if (sizeFile < LARGE_FILE_THRESHOLD*30) {     // на большом до 9_196_470 байт(почти 10_000_000) = LARGE_FILE_THRESHOLD = 306549
                             fileGrouper.groupByHeshParallel(files);
                         } else {
-                                fileGrouper.groupByContentParallel(files);
+                            fileGrouper.groupByContentParallel(files);
                         }
                         break;
                 }
@@ -218,14 +185,16 @@ public class FileDuplicateFinder {
     public void printSortedFileGroups() {
 
         // Добавляем все Set<File> из filesByKey
-        for (Set<File> fileSet : fileGrouper.getFilesByKey().values()) {
-            duplicates.add(fileSet);
-        }
+//        for (Set<File> fileSet : fileGrouper.getFilesByKey().values()) {
+//            duplicates.add(fileSet);
+//        }
+        duplicates.addAll(fileGrouper.getFilesByKey().values());
 
         // Добавляем все Set<File> из filesByContent
-        for (Set<File> fileSet : fileGrouper.getFilesByContent()) {
-            duplicates.add(fileSet);
-        }
+//        for (Set<File> fileSet : fileGrouper.getFilesByContent()) {
+//            duplicates.add(fileSet);
+//        }
+        duplicates.addAll(fileGrouper.getFilesByContent());
 
         // Сортируем список по размеру первого файла в каждом Set<File>
         duplicates.sort(Comparator.comparingLong(set -> set.iterator().next().length()));
@@ -241,19 +210,18 @@ public class FileDuplicateFinder {
             }
             System.out.println("-------------------------------------------------");
         }
-        System.out.println("-  LARGE_FILE_SIZE = " + LARGE_FILE_SIZE);
+        System.out.println("-  LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
 
     }
 
 
-
-    /* Метод для определения оптимального размера большого файла для многопоточного хеширования
-     * Оптимальный размер файла - это 1/4 от максимальной п��мяти, деленной на количество процессоров
+    /* Метод для получения порога для больших файлов
+        * @return порог для больших файлов
      */
-    private static int getOptimalLargeFileSize() {
+    private static long getLargeFileThreshold() {
         long maxMemory = Runtime.getRuntime().maxMemory(); // Доступная память
         int availableProcessors = Runtime.getRuntime().availableProcessors(); // Количество доступных процессоров
-        return (int) (maxMemory / (availableProcessors * 4L));
+        return maxMemory / (availableProcessors * 4L); // Возвращаем порог
     }
 
 }
