@@ -1,4 +1,4 @@
-package V12;
+package V12_ready;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.File;

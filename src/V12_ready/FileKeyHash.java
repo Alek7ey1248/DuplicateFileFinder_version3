@@ -1,9 +1,8 @@
-package V12;
+package V12_ready;
 
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -104,7 +103,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         long fileSize = file.length(); // Получаем размер файла
         long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS); // Размер каждой части файла
 
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
+        //ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
+        ExecutorService executor = Executors.newFixedThreadPool(NUM_BLOCKS); // Создаем пул потоков
         List<CompletableFuture<MessageDigest>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
 
         for (int i = 0; i < NUM_BLOCKS; i++) {
@@ -220,6 +220,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         int minBufferSize = 1024 * availableProcessors / 2 ;
         return Math.max(bs, minBufferSize);
     }
+
 
     public static void main(String[] args)  {
 

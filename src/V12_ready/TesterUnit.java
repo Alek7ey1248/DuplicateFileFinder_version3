@@ -1,4 +1,4 @@
-package V12;
+package V12_ready;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
  */
 public class TesterUnit {
 
-	private V12.FileDuplicateFinder finder;
+	private V12_ready.FileDuplicateFinder finder;
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
 	private Map<Long, Set<Path>> expectedFilesBySize;
 	// Для тестирования метода findDuplicates - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
@@ -238,7 +238,7 @@ public class TesterUnit {
 	/** Тестирование метода findDuplicates для проверки групп дубликатов */
 	@Test
 	public void findDuplicates2() throws IOException {
-		V12.FileDuplicateFinder finder = new FileDuplicateFinder();
+		V12_ready.FileDuplicateFinder finder = new FileDuplicateFinder();
 		// Ожидаемый результат
 		List<Set<File>> expected = new ArrayList<>();
 		expected.add(new HashSet<>(Arrays.asList(
@@ -287,18 +287,18 @@ public class TesterUnit {
 	@Test
 	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
 		// Проверка на равенство файлов с одинаковым содержимым
-		assertEquals(true, V12.FileComparator.areFilesEqual(file1.toFile(), file2.toFile()));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file5.toFile(), file6.toFile()));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file7.toFile(), file8.toFile()));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file9.toFile(), file10.toFile()));
+		assertEquals(true, V12_ready.FileComparator.areFilesEqual(file1.toFile(), file2.toFile()));
+		assertEquals(true, V12_ready.FileComparator.areFilesEqual(file5.toFile(), file6.toFile()));
+		assertEquals(true, V12_ready.FileComparator.areFilesEqual(file7.toFile(), file8.toFile()));
+		assertEquals(true, V12_ready.FileComparator.areFilesEqual(file9.toFile(), file10.toFile()));
 		// Проверка на равенство файлов с разным содержимым
-		assertEquals(false, V12.FileComparator.areFilesEqual(file3.toFile(), file4.toFile()));
-		assertEquals(false, V12.FileComparator.areFilesEqual(file5.toFile(), file3.toFile()));
+		assertEquals(false, V12_ready.FileComparator.areFilesEqual(file3.toFile(), file4.toFile()));
+		assertEquals(false, V12_ready.FileComparator.areFilesEqual(file5.toFile(), file3.toFile()));
 		// Проверка на равенство файлов нулевого размера
-		assertEquals(true, V12.FileComparator.areFilesEqual(file11.toFile(), file12.toFile()));
-		assertEquals(true, V12.FileComparator.areFilesEqual(file13.toFile(), file11.toFile()));
+		assertEquals(true, V12_ready.FileComparator.areFilesEqual(file11.toFile(), file12.toFile()));
+		assertEquals(true, V12_ready.FileComparator.areFilesEqual(file13.toFile(), file11.toFile()));
 		// Проверка на равенство очень больших файлов
-		boolean result = V12.FileComparator.areFilesEqual(file14.toFile(), file15.toFile());
+		boolean result = V12_ready.FileComparator.areFilesEqual(file14.toFile(), file15.toFile());
 		assertEquals(true, result);
 	}
 	
