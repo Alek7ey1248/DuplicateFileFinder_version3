@@ -112,7 +112,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
             long end = Math.min(start + partSize, fileSize); // Конец части
             futures.add(CompletableFuture.supplyAsync(() -> {
                 //System.out.println("-------------------------start = " + start + "  end = " + end);
-                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {  // Открываем файл для чтения
                     MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
                     byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
                     raf.seek(start); // Переходим к началу части файла
@@ -127,6 +127,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 
                     return digest; // Возвращаем объект MessageDigest
                 } catch (IOException e) {
+                    System.err.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
                     throw new UncheckedIOException(e);
                 }
             }, executor));
@@ -230,6 +231,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 
         File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
         File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
+
+        System.out.println("  размер файла - " + file1.length());
 
 //        String hf1 = calculateHashSmallFile(file1);
 //        String hf2 = calculateHashLargeFile(file2);

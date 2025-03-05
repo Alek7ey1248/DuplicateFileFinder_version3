@@ -60,7 +60,7 @@ public class FileDuplicateFinder {
      */
     public void walkFileTree(String path) {
         if (!checkValid.isValidDirectoryPath(path)) {
-            System.out.println("Невалидная директория: " + path);
+            //System.err.println("Невалидная директория: " + path);
             return;
         }
 
@@ -124,6 +124,7 @@ public class FileDuplicateFinder {
                             // 2 - 4 на среднем(12 процессоров)
                             // 2 - на маленьком ноуте
                         if (sizeFile <= LARGE_FILE_THRESHOLD) {     // на большом до 300_000 байт = LARGE_FILE_THRESHOLD = 306549
+                                                                    // на среднем на 12 процессоров до  205591 байт = LARGE_FILE_THRESHOLD =  205591
                                                                     // на маленьком ноуте до 140_000 байт = LARGE_FILE_THRESHOLD = 141790
                             fileGrouper.groupByContentParallel(files);
                         } else {
@@ -160,6 +161,7 @@ public class FileDuplicateFinder {
 
                     case 3: // 30+ файлов на большом компе
                         if (sizeFile < LARGE_FILE_THRESHOLD*30) {     // на большом до 9_196_470 байт(почти 10_000_000) = LARGE_FILE_THRESHOLD = 306549
+                                                                    // на среднем на 12 процессоров до  6_167_730 байт = LARGE_FILE_THRESHOLD =   205591
                                                                     // на маленьком ноуте до 4_253_700 байт = LARGE_FILE_THRESHOLD = 141790
                             try {
                                 fileGrouper.groupByHeshParallel(files);

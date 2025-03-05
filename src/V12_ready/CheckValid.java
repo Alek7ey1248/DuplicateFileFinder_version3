@@ -1,6 +1,8 @@
 package V12_ready;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class CheckValid {
 
@@ -34,7 +36,7 @@ public class CheckValid {
             return false;
         }
         if (directory.listFiles() == null) {
-            System.err.println("Directory '" + directory.getAbsolutePath() + "'   -  недоступен для чтения");
+            System.err.println("Directory '" + directory.getAbsolutePath() + "'   -  недостна для чтения");
             return false;
         }
         return true;
@@ -56,6 +58,14 @@ public class CheckValid {
 
         if (!file.canRead()) {
             System.err.println(" File " + file.getAbsolutePath() + " поврежден или нет прав на чтение");
+            return false;
+        }
+
+        // Проверка на доступность для хеширования
+        try (FileInputStream fis = new FileInputStream(file)) {
+            // Если удалось открыть файл, значит он доступен
+        } catch (IOException e) {
+            System.err.println(" File " + file.getAbsolutePath() + "- используется другим процессом или поврежден");
             return false;
         }
 
