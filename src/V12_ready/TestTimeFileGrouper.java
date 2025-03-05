@@ -6,12 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 // FileGrouperTestTime: Класс для тестирования времени выполнения методов класса FileGrouper.
 // Генерирует наборы файлов разного размера и тестирует методы класса FileGrouper на них.
 public class TestTimeFileGrouper {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 
    // ОДИНАКОВЫЕ ФАЙЛЫ------------------------------------------------
         // Генерация тестовых данных c 2 файлами каждого размера
@@ -455,7 +456,7 @@ public class TestTimeFileGrouper {
 
 
     // Тестирование методов класса FileGrouper на наборе файлов и запись результатов в список
-    private static void testFileGroup(Set<File> files, List<String> results) {
+    private static void testFileGroup(Set<File> files, List<String> results) throws IOException, NoSuchAlgorithmException {
         long startTime1 = System.nanoTime();
         for (int i = 0; i < 30; i++) {
             Set<File> copyFiles = new HashSet<>(files);
