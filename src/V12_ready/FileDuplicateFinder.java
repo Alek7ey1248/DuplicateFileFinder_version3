@@ -47,9 +47,10 @@ public class FileDuplicateFinder {
 
         processGroupFiles();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
 
-        removeSingleFiles();  // Удаляем списки по одному файлу из filesByKey
+        //removeSingleFiles();  // Удаляем списки по одному файлу из filesByKey
 
         printSortedFileGroups();  // Вывод групп дубликатов файлов в консоль
+
     }
 
 
@@ -116,68 +117,102 @@ public class FileDuplicateFinder {
                     return;
                 }
 
+                // Для среднего компа - 12 процессоров
                 //----------------------------------------------------------------------------------
-                switch ((numFiles == 2 || numFiles < NUM_PROCESSORS / 2.5  ? 1 :
-                        ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3))) {
+                switch (numFiles == 2 || numFiles < NUM_PROCESSORS / 2.5  ? 1 : 2) {
 
-                    case 1: // 2 - 6 файлов на большом компе  - numFiles >= 2 && numFiles < NUM_PROCESSORS / 2.5
-                            // 2 - 4 на среднем(12 процессоров)
-                            // 2 - на маленьком ноуте
-                        if (sizeFile <= LARGE_FILE_THRESHOLD) {     // на большом до 300_000 байт = LARGE_FILE_THRESHOLD = 306549
-                                                                    // на среднем на 12 процессоров до  205591 байт = LARGE_FILE_THRESHOLD =  205591
-                                                                    // на маленьком ноуте до 140_000 байт = LARGE_FILE_THRESHOLD = 141790
+                    case 1:
+                        if (sizeFile <= LARGE_FILE_THRESHOLD) {  // на среднем на 12 процессоров до  205591 байт = LARGE_FILE_THRESHOLD =  205591
                             fileGrouper.groupByContentParallel(files);
                         } else {
                             boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
                             if (areFileNamesSimilar) {
-                                try {
                                     fileGrouper.groupByHeshParallel(files);
-                                } catch (IOException e) {
-                                    System.out.println("Ошибка при хешировании файла типа : " + files.iterator().next().getAbsolutePath() + e.getMessage());
-                                    throw new RuntimeException(e);
-                                } catch (NoSuchAlgorithmException e) {
-                                    System.out.println("Алгоритм хеширования не найден: " + files.iterator().next().getAbsolutePath() + e.getMessage());
-                                    throw new RuntimeException(e);
-                                }
                             } else {
                                 fileGrouper.groupByContentParallel(files);
                             }
                         }
                         break;
 
-                    case 2: // 8 - 30 файлов на большом компе - (numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8)
-                            // 5 - 21 на среднем(12 процессоров)
-                            // 2 - 7 на маленьком ноуте
-                        try {
-                            fileGrouper.groupByHeshParallel(files);
-                        } catch (IOException e) {
-                            System.out.println("Ошибка при хешировании файла типа: " + files.iterator().next().getAbsolutePath() + e.getMessage());
-                            throw new RuntimeException(e);
-                        } catch (NoSuchAlgorithmException e) {
-                            System.out.println("Алгоритм хеширования не найден: " + files.iterator().next().getAbsolutePath() + e.getMessage());
-                            throw new RuntimeException(e);
-                        }
-                        break;
-
-                    case 3: // 30+ файлов на большом компе
-                        if (sizeFile < LARGE_FILE_THRESHOLD*30) {     // на большом до 9_196_470 байт(почти 10_000_000) = LARGE_FILE_THRESHOLD = 306549
-                                                                    // на среднем на 12 процессоров до  6_167_730 байт = LARGE_FILE_THRESHOLD =   205591
-                                                                    // на маленьком ноуте до 4_253_700 байт = LARGE_FILE_THRESHOLD = 141790
-                            try {
+                    case 2: // 5 -  на среднем(12 процессоров)
+                        if (sizeFile < LARGE_FILE_THRESHOLD) {
                                 fileGrouper.groupByHeshParallel(files);
-                            } catch (IOException e) {
-                                System.out.println("Ошибка при хешировании файла типа: " + files.iterator().next().getAbsolutePath() + e.getMessage());
-                                throw new RuntimeException(e);
-                            } catch (NoSuchAlgorithmException e) {
-                                System.out.println("Алгоритм хеширования не найден: " + files.iterator().next().getAbsolutePath() + e.getMessage());
-                                throw new RuntimeException(e);
-                            }
                         } else {
-                            fileGrouper.groupByContentParallel(files);
+                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
+                            if (areFileNamesSimilar) {
+                                    fileGrouper.groupByHeshParallel(files);
+                            } else {
+                                fileGrouper.groupByContentParallel(files);
+                            }
                         }
                         break;
                 }
 //-----------------------------------------------------------------------------------
+
+
+                // это для большого компа - 16 процессоров
+//                //----------------------------------------------------------------------------------
+//                switch ((numFiles == 2 || numFiles < NUM_PROCESSORS / 2.5  ? 1 :
+//                        ((numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8) ? 2 : 3))) {
+//
+//                    case 1: // 2 - 6 файлов на большом компе  - numFiles >= 2 && numFiles < NUM_PROCESSORS / 2.5
+//                            // 2 - 4 на среднем(12 процессоров)
+//                            // 2 - на маленьком ноуте
+//                        if (sizeFile <= LARGE_FILE_THRESHOLD) {     // на большом до 300_000 байт = LARGE_FILE_THRESHOLD = 306549
+//                                                                    // на среднем на 12 процессоров до  205591 байт = LARGE_FILE_THRESHOLD =  205591
+//                                                                    // на маленьком ноуте до 140_000 байт = LARGE_FILE_THRESHOLD = 141790
+//                            fileGrouper.groupByContentParallel(files);
+//                        } else {
+//                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
+//                            if (areFileNamesSimilar) {
+//                                try {
+//                                    fileGrouper.groupByHeshParallel(files);
+//                                } catch (IOException e) {
+//                                    System.out.println("Ошибка при хешировании файла типа : " + files.iterator().next().getAbsolutePath() + e.getMessage());
+//                                    throw new RuntimeException(e);
+//                                } catch (NoSuchAlgorithmException e) {
+//                                    System.out.println("Алгоритм хеширования не найден: " + files.iterator().next().getAbsolutePath() + e.getMessage());
+//                                    throw new RuntimeException(e);
+//                                }
+//                            } else {
+//                                fileGrouper.groupByContentParallel(files);
+//                            }
+//                        }
+//                        break;
+//
+//                    case 2: // 8 - 30 файлов на большом компе - (numFiles > NUM_PROCESSORS / 2.5 && numFiles <= NUM_PROCESSORS * 1.8)
+//                            // 5 - 21 на среднем(12 процессоров)
+//                            // 2 - 7 на маленьком ноуте
+//                        try {
+//                            fileGrouper.groupByHeshParallel(files);
+//                        } catch (IOException e) {
+//                            System.out.println("Ошибка при хешировании файла типа: " + files.iterator().next().getAbsolutePath() + e.getMessage());
+//                            throw new RuntimeException(e);
+//                        } catch (NoSuchAlgorithmException e) {
+//                            System.out.println("Алгоритм хеширования не найден: " + files.iterator().next().getAbsolutePath() + e.getMessage());
+//                            throw new RuntimeException(e);
+//                        }
+//                        break;
+//
+//                    case 3: // 30+ файлов на большом компе
+//                        if (sizeFile < LARGE_FILE_THRESHOLD*30) {     // на большом до 9_196_470 байт(почти 10_000_000) = LARGE_FILE_THRESHOLD = 306549
+//                                                                    // на среднем на 12 процессоров до  6_167_730 байт = LARGE_FILE_THRESHOLD =   205591
+//                                                                    // на маленьком ноуте до 4_253_700 байт = LARGE_FILE_THRESHOLD = 141790
+//                            try {
+//                                fileGrouper.groupByHeshParallel(files);
+//                            } catch (IOException e) {
+//                                System.out.println("Ошибка при хешировании файла типа: " + files.iterator().next().getAbsolutePath() + e.getMessage());
+//                                throw new RuntimeException(e);
+//                            } catch (NoSuchAlgorithmException e) {
+//                                System.out.println("Алгоритм хеширования не найден: " + files.iterator().next().getAbsolutePath() + e.getMessage());
+//                                throw new RuntimeException(e);
+//                            }
+//                        } else {
+//                            fileGrouper.groupByContentParallel(files);
+//                        }
+//                        break;
+//                }
+////-----------------------------------------------------------------------------------
 
             }, executor);
             futures.add(future);
@@ -214,11 +249,14 @@ public class FileDuplicateFinder {
     // Вывод групп дубликатов файлов в консоль
     public void printSortedFileGroups() {
 
+        long startTime = System.currentTimeMillis();
         // Добавляем все Set<File> из filesByKey
-//        for (Set<File> fileSet : fileGrouper.getFilesByKey().values()) {
-//            duplicates.add(fileSet);
-//        }
-        duplicates.addAll(fileGrouper.getFilesByKey().values());
+        for (Set<File> fileSet : fileGrouper.getFilesByKey().values()) {
+            if (fileSet.size() > 1) {
+                duplicates.add(fileSet);
+            }
+        }
+        //duplicates.addAll(fileGrouper.getFilesByKey().values());
 
         // Добавляем все Set<File> из filesByContent
 //        for (Set<File> fileSet : fileGrouper.getFilesByContent()) {
@@ -241,7 +279,9 @@ public class FileDuplicateFinder {
             System.out.println("-------------------------------------------------");
         }
         System.out.println("-  LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
-
+        long endTime = System.currentTimeMillis();
+        long duration = (long) (endTime - startTime);
+        System.out.println("Время выполнения printSortedFileGroups  --- " + duration + " ms       ");
     }
 
 

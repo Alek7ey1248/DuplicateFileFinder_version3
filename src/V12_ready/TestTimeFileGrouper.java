@@ -16,52 +16,52 @@ public class TestTimeFileGrouper {
 
    // ОДИНАКОВЫЕ ФАЙЛЫ------------------------------------------------
         // Генерация тестовых данных c 2 файлами каждого размера
-//        Set<File> smallFiles2Id = generateIdenticalFiles(2, 2); // Файлы почти 0 байт
-//        Set<File> mediumFiles2Id = generateIdenticalFiles(10, 2); // Файлыдо 10 байт
-//        Set<File> largeFiles2Id = generateIdenticalFiles(1000, 2); // Файлы до 1 Кб
-//        Set<File> hugeFiles2Id = generateIdenticalFiles(10000, 2); // Файлы до 100 Кб
-//        Set<File> giganticFiles2Id = generateIdenticalFiles(300000000, 2); // Файлы до 300 Мб
-//        Set<File> oneMbFiles2Id = generateIdenticalFiles(1000000000, 2); // Файлы - 1 Гб примерно
+        Set<File> smallFiles2Id = generateIdenticalFiles(2, 2); // Файлы почти 0 байт
+        Set<File> mediumFiles2Id = generateIdenticalFiles(10, 2); // Файлыдо 10 байт
+        Set<File> largeFiles2Id = generateIdenticalFiles(1000, 2); // Файлы до 1 Кб
+        Set<File> hugeFiles2Id = generateIdenticalFiles(10000, 2); // Файлы до 100 Кб
+        Set<File> giganticFiles2Id = generateIdenticalFiles(300000000, 2); // Файлы до 300 Мб
+        Set<File> oneMbFiles2Id = generateIdenticalFiles(1000000000, 2); // Файлы - 1 Гб примерно
 
-//        // Генерация тестовых данных c 4 файлами каждого размера
-//        Set<File> smallFiles4Id = generateIdenticalFiles(2, 4); // Файлы почти 0 байт
-//        Set<File> mediumFiles4Id = generateIdenticalFiles(10, 4); // Файлыдо 10 байт
-//        Set<File> largeFiles4Id = generateIdenticalFiles(1000, 4); // Файлы до 1 Кб
-//        Set<File> hugeFiles4Id = generateIdenticalFiles(10000, 4); // Файлы до 100 Кб
-//        Set<File> giganticFiles4Id = generateIdenticalFiles(300000000, 4); // Файлы до 300 Мб
-//        Set<File> oneMbFiles4Id = generateIdenticalFiles(1000000000, 4); // Файлы - 1 Гб примерно
+        // Генерация тестовых данных c 4 файлами каждого размера
+        Set<File> smallFiles4Id = generateIdenticalFiles(2, 4); // Файлы почти 0 байт
+        Set<File> mediumFiles4Id = generateIdenticalFiles(10, 4); // Файлыдо 10 байт
+        Set<File> largeFiles4Id = generateIdenticalFiles(1000, 4); // Файлы до 1 Кб
+        Set<File> hugeFiles4Id = generateIdenticalFiles(10000, 4); // Файлы до 100 Кб
+        Set<File> giganticFiles4Id = generateIdenticalFiles(300000000, 4); // Файлы до 300 Мб
+        Set<File> oneMbFiles4Id = generateIdenticalFiles(1000000000, 4); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 8 файлами каждого размера
-//        Set<File> smallFiles8Id = generateIdenticalFiles(2, 8); // Файлы почти 0 байт
-//        Set<File> mediumFiles8Id = generateIdenticalFiles(10, 8); // Файлыдо 10 байт
-//        Set<File> largeFiles8Id = generateIdenticalFiles(1000, 8); // Файлы до 1 Кб
-//        Set<File> hugeFiles8Id = generateIdenticalFiles(10000, 8); // Файлы до 100 Кб
-//        Set<File> giganticFiles8Id = generateIdenticalFiles(300000000, 8); // Файлы до 300 Мб
-//        Set<File> oneMbFiles8Id = generateIdenticalFiles(1000000000, 8); // Файлы - 1 Гб примерно
+        Set<File> smallFiles8Id = generateIdenticalFiles(2, 8); // Файлы почти 0 байт
+        Set<File> mediumFiles8Id = generateIdenticalFiles(10, 8); // Файлыдо 10 байт
+        Set<File> largeFiles8Id = generateIdenticalFiles(1000, 8); // Файлы до 1 Кб
+        Set<File> hugeFiles8Id = generateIdenticalFiles(10000, 8); // Файлы до 100 Кб
+        Set<File> giganticFiles8Id = generateIdenticalFiles(300000000, 8); // Файлы до 300 Мб
+        Set<File> oneMbFiles8Id = generateIdenticalFiles(1000000000, 8); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 10 файлами каждого размера
-        Set<File> smallFiles20Id = generateIdenticalFiles(2, 20); // Файлы почти 0 байт
-        Set<File> mediumFiles20Id = generateIdenticalFiles(10, 20); // Файлыдо 10 байт
-        Set<File> largeFiles20Id = generateIdenticalFiles(1000, 20); // Файлы до 1 Кб
-        Set<File> hugeFiles20Id = generateIdenticalFiles(10000, 20); // Файлы до 100 Кб
-        Set<File> giganticFiles20Id = generateIdenticalFiles(300000000, 20); // Файлы до 300 Мб
-        Set<File> oneMbFiles20Id = generateIdenticalFiles(1000000000, 20); // Файлы - 1 Гб примерно
+//        Set<File> smallFiles20Id = generateIdenticalFiles(2, 20); // Файлы почти 0 байт
+//        Set<File> mediumFiles20Id = generateIdenticalFiles(10, 20); // Файлыдо 10 байт
+//        Set<File> largeFiles20Id = generateIdenticalFiles(1000, 20); // Файлы до 1 Кб
+//        Set<File> hugeFiles20Id = generateIdenticalFiles(10000, 20); // Файлы до 100 Кб
+//        Set<File> giganticFiles20Id = generateIdenticalFiles(300000000, 20); // Файлы до 300 Мб
+//        Set<File> oneMbFiles20Id = generateIdenticalFiles(1000000000, 20); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 12 файлами каждого размера
-        Set<File> smallFiles25Id = generateIdenticalFiles(2, 25); // Файлы почти 0 байт
-        Set<File> mediumFiles25Id = generateIdenticalFiles(10, 25); // Файлыдо 10 байт
-        Set<File> largeFiles25Id = generateIdenticalFiles(1000, 25); // Файлы до 1 Кб
-        Set<File> hugeFiles25Id = generateIdenticalFiles(10000, 25); // Файлы до 100 Кб
-        Set<File> giganticFiles25Id = generateIdenticalFiles(300000000, 25); // Файлы до 300 Мб
-        Set<File> oneMbFiles25Id = generateIdenticalFiles(1000000000, 25); // Файлы - 1 Гб примерно
+        Set<File> smallFiles12Id = generateIdenticalFiles(2, 12); // Файлы почти 0 байт
+        Set<File> mediumFiles12Id = generateIdenticalFiles(10, 12); // Файлыдо 10 байт
+        Set<File> largeFiles12Id = generateIdenticalFiles(1000, 12); // Файлы до 1 Кб
+        Set<File> hugeFiles12Id = generateIdenticalFiles(10000, 12); // Файлы до 100 Кб
+        Set<File> giganticFiles12Id = generateIdenticalFiles(300000000, 12); // Файлы до 300 Мб
+        Set<File> oneMbFiles12Id = generateIdenticalFiles(1000000000, 12); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 14 файлами каждого размера
-        Set<File> smallFiles30Id = generateIdenticalFiles(2, 30); // Файлы почти 0 байт
-        Set<File> mediumFiles30Id = generateIdenticalFiles(10, 30); // Файлыдо 10 байт
-        Set<File> largeFiles30Id = generateIdenticalFiles(1000, 30); // Файлы до 1 Кб
-        Set<File> hugeFiles30Id = generateIdenticalFiles(10000, 30); // Файлы до 100 Кб
-        Set<File> giganticFiles30Id = generateIdenticalFiles(300000000, 30); // Файлы до 300 Мб
-        Set<File> oneMbFiles30Id = generateIdenticalFiles(1000000000, 30); // Файлы - 1 Гб примерно
+        Set<File> smallFiles14Id = generateIdenticalFiles(2, 14); // Файлы почти 0 байт
+        Set<File> mediumFiles14Id = generateIdenticalFiles(10, 14); // Файлыдо 10 байт
+        Set<File> largeFiles14Id = generateIdenticalFiles(1000, 14); // Файлы до 1 Кб
+        Set<File> hugeFiles14Id = generateIdenticalFiles(10000, 14); // Файлы до 100 Кб
+        Set<File> giganticFile14Id = generateIdenticalFiles(300000000, 14); // Файлы до 300 Мб
+        Set<File> oneMbFiles14Id = generateIdenticalFiles(1000000000, 14); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 16 файлами каждого размера
 //        Set<File> smallFiles16Id = generateIdenticalFiles(2, 16); // Файлы почти 0 байт
@@ -83,53 +83,53 @@ public class TestTimeFileGrouper {
 
         // РАЗНЫЕ ФАЙЛЫ------------------------------------------------
         // Генерация тестовых данных c 2 файлами каждого размера
-//        Set<File> smallFiles2Di = generateDifferentFiles(2, 2); // Файлы почти 0 байт
-//        Set<File> mediumFiles2Di = generateDifferentFiles(10, 2); // Файлыдо 10 байт
-//        Set<File> largeFiles2Di = generateDifferentFiles(1000, 2); // Файлы до 1 Кб
-//        Set<File> hugeFiles2Di = generateDifferentFiles(10000, 2); // Файлы до 100 Кб
-//        Set<File> giganticFiles2Di = generateDifferentFiles(300000000, 2); // Файлы до 300 Мб
-//        Set<File> oneMbFiles2Di = generateDifferentFiles(1000000000, 2); // Файлы - 1 Гб примерно
+        Set<File> smallFiles2Di = generateDifferentFiles(2, 2); // Файлы почти 0 байт
+        Set<File> mediumFiles2Di = generateDifferentFiles(10, 2); // Файлыдо 10 байт
+        Set<File> largeFiles2Di = generateDifferentFiles(1000, 2); // Файлы до 1 Кб
+        Set<File> hugeFiles2Di = generateDifferentFiles(10000, 2); // Файлы до 100 Кб
+        Set<File> giganticFiles2Di = generateDifferentFiles(300000000, 2); // Файлы до 300 Мб
+        Set<File> oneMbFiles2Di = generateDifferentFiles(1000000000, 2); // Файлы - 1 Гб примерно
 
 
         // Генерация тестовых данных c 4 файлами каждого размера
-//        Set<File> smallFiles4Di = generateDifferentFiles(2, 4); // Файлы почти 0 байт
-//        Set<File> mediumFiles4Di = generateDifferentFiles(10, 4); // Файлыдо 10 байт
-//        Set<File> largeFiles4Di = generateDifferentFiles(1000, 4); // Файлы до 1 Кб
-//        Set<File> hugeFiles4Di = generateDifferentFiles(10000, 4); // Файлы до 100 Кб
-//        Set<File> giganticFiles4Di = generateDifferentFiles(300000000, 4); // Файлы до 300 Мб
-//        Set<File> oneMbFiles4Di = generateDifferentFiles(1000000000, 4); // Файлы - 1 Гб примерно
+        Set<File> smallFiles4Di = generateDifferentFiles(2, 4); // Файлы почти 0 байт
+        Set<File> mediumFiles4Di = generateDifferentFiles(10, 4); // Файлыдо 10 байт
+        Set<File> largeFiles4Di = generateDifferentFiles(1000, 4); // Файлы до 1 Кб
+        Set<File> hugeFiles4Di = generateDifferentFiles(10000, 4); // Файлы до 100 Кб
+        Set<File> giganticFiles4Di = generateDifferentFiles(300000000, 4); // Файлы до 300 Мб
+        Set<File> oneMbFiles4Di = generateDifferentFiles(1000000000, 4); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 8 файлами каждого размера
-//        Set<File> smallFiles8Di = generateDifferentFiles(2, 8); // Файлы почти 0 байт
-//        Set<File> mediumFiles8Di = generateDifferentFiles(10, 8); // Файлыдо 10 байт
-//        Set<File> largeFiles8Di = generateDifferentFiles(1000, 8); // Файлы до 1 Кб
-//        Set<File> hugeFiles8Di = generateDifferentFiles(10000, 8); // Файлы до 100 Кб
-//        Set<File> giganticFiles8Di = generateDifferentFiles(300000000, 8); // Файлы до 300 Мб
-//        Set<File> oneMbFiles8Di = generateDifferentFiles(1000000000, 8); // Файлы - 1 Гб примерно
+        Set<File> smallFiles8Di = generateDifferentFiles(2, 8); // Файлы почти 0 байт
+        Set<File> mediumFiles8Di = generateDifferentFiles(10, 8); // Файлыдо 10 байт
+        Set<File> largeFiles8Di = generateDifferentFiles(1000, 8); // Файлы до 1 Кб
+        Set<File> hugeFiles8Di = generateDifferentFiles(10000, 8); // Файлы до 100 Кб
+        Set<File> giganticFiles8Di = generateDifferentFiles(300000000, 8); // Файлы до 300 Мб
+        Set<File> oneMbFiles8Di = generateDifferentFiles(1000000000, 8); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 10 файлами каждого размера
-        Set<File> smallFiles20Di = generateDifferentFiles(2, 20); // Файлы почти 0 байт
-        Set<File> mediumFiles20Di = generateDifferentFiles(10, 20); // Файлыдо 10 байт
-        Set<File> largeFiles20Di = generateDifferentFiles(1000, 20); // Файлы до 1 Кб
-        Set<File> hugeFiles20Di = generateDifferentFiles(10000, 20); // Файлы до 100 Кб
-        Set<File> giganticFiles20Di = generateDifferentFiles(300000000, 20); // Файлы до 300 Мб
-        Set<File> oneMbFiles20Di = generateDifferentFiles(1000000000, 20); // Файлы - 1 Гб примерно
+//        Set<File> smallFiles20Di = generateDifferentFiles(2, 20); // Файлы почти 0 байт
+//        Set<File> mediumFiles20Di = generateDifferentFiles(10, 20); // Файлыдо 10 байт
+//        Set<File> largeFiles20Di = generateDifferentFiles(1000, 20); // Файлы до 1 Кб
+//        Set<File> hugeFiles20Di = generateDifferentFiles(10000, 20); // Файлы до 100 Кб
+//        Set<File> giganticFiles20Di = generateDifferentFiles(300000000, 20); // Файлы до 300 Мб
+//        Set<File> oneMbFiles20Di = generateDifferentFiles(1000000000, 20); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 12 файлами каждого размера
-        Set<File> smallFiles25Di = generateDifferentFiles(2, 25); // Файлы почти 0 байт
-        Set<File> mediumFiles25Di = generateDifferentFiles(10, 25); // Файлыдо 10 байт
-        Set<File> largeFiles25Di = generateDifferentFiles(1000, 25); // Файлы до 1 Кб
-        Set<File> hugeFiles25Di = generateDifferentFiles(10000, 25); // Файлы до 100 Кб
-        Set<File> giganticFiles25Di = generateDifferentFiles(300000000, 25); // Файлы до 300 Мб
-        Set<File> oneMbFiles25Di = generateDifferentFiles(1000000000, 25); // Файлы - 1 Гб примерно
+        Set<File> smallFiles12Di = generateDifferentFiles(2, 12); // Файлы почти 0 байт
+        Set<File> mediumFiles12Di = generateDifferentFiles(10, 12); // Файлыдо 10 байт
+        Set<File> largeFiles12Di = generateDifferentFiles(1000, 12); // Файлы до 1 Кб
+        Set<File> hugeFiles12Di = generateDifferentFiles(10000, 12); // Файлы до 100 Кб
+        Set<File> giganticFiles12Di = generateDifferentFiles(300000000, 12); // Файлы до 300 Мб
+        Set<File> oneMbFiles12Di = generateDifferentFiles(1000000000, 12); // Файлы - 1 Гб примерно
 
         // Генерация тестовых данных c 14 файлами каждого размера
-        Set<File> smallFiles30Di = generateDifferentFiles(2, 30); // Файлы почти 0 байт
-        Set<File> mediumFiles30Di = generateDifferentFiles(10, 30); // Файлыдо 10 байт
-        Set<File> largeFiles30Di = generateDifferentFiles(1000, 30); // Файлы до 1 Кб
-        Set<File> hugeFiles30Di = generateDifferentFiles(10000, 30); // Файлы до 100 Кб
-        Set<File> giganticFiles30Di = generateDifferentFiles(300000000, 30); // Файлы до 300 Мб
-        Set<File> oneMbFiles30Di = generateDifferentFiles(1000000000, 30); // Файлы - 1 Гб примерно
+        Set<File> smallFiles14Di = generateDifferentFiles(2, 14); // Файлы почти 0 байт
+        Set<File> mediumFiles14Di = generateDifferentFiles(10, 14); // Файлыдо 10 байт
+        Set<File> largeFiles14Di = generateDifferentFiles(1000, 14); // Файлы до 1 Кб
+        Set<File> hugeFiles14Di = generateDifferentFiles(10000, 14); // Файлы до 100 Кб
+        Set<File> giganticFiles14Di = generateDifferentFiles(300000000, 14); // Файлы до 300 Мб
+        Set<File> oneMbFiles14Di = generateDifferentFiles(1000000000, 14); // Файлы - 1 Гб примерно
 
 
         // Генерация тестовых данных c 16 файлами каждого размера
@@ -156,91 +156,91 @@ public class TestTimeFileGrouper {
 
         // ТЕСТ РАЗНЫХ ФАЙЛОВ ==============================================================================================
         // Тестирование методов с наборами по 2 файлов каждого размера
-//        results.add("Testing Small Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(smallFiles2Di, results);
-//        results.add("Testing Medium Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(mediumFiles2Di, results);
-//        results.add("Testing Large Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(largeFiles2Di, results);
-//        results.add("Testing Huge Files 2 -РАЗНЫЕ ФАЙЛЫ-----------------------");
-//        testFileGroup(hugeFiles2Di, results);
-//        results.add("Testing Gigantic Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(giganticFiles2Di, results);
-//        results.add("Testing OneMbFiles Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(oneMbFiles2Di, results);
+        results.add("Testing Small Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles2Di, results);
+        results.add("Testing Medium Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles2Di, results);
+        results.add("Testing Large Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles2Di, results);
+        results.add("Testing Huge Files 2 -РАЗНЫЕ ФАЙЛЫ-----------------------");
+        testFileGroup(hugeFiles2Di, results);
+        results.add("Testing Gigantic Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles2Di, results);
+        results.add("Testing OneMbFiles Files 2 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles2Di, results);
 
 
         // Тестирование методов с наборами по 4 файлов каждого размера
-//        results.add("Testing Small Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(smallFiles4Di, results);
-//        results.add("Testing Medium Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(mediumFiles4Di, results);
-//        results.add("Testing Large Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(largeFiles4Di, results);
-//        results.add("Testing Huge Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(hugeFiles4Di, results);
-//        results.add("Testing Gigantic Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(giganticFiles4Di, results);
-//        results.add("Testing OneMbFiles Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(oneMbFiles4Di, results);
+        results.add("Testing Small Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles4Di, results);
+        results.add("Testing Medium Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles4Di, results);
+        results.add("Testing Large Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles4Di, results);
+        results.add("Testing Huge Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles4Di, results);
+        results.add("Testing Gigantic Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles4Di, results);
+        results.add("Testing OneMbFiles Files 4 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles4Di, results);
 
 
         // Тестирование методов с наборами по 8 файлов каждого размера
-//        results.add("Testing Small Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(smallFiles8Di, results);
-//        results.add("Testing Medium Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(mediumFiles8Di, results);
-//        results.add("Testing Large Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(largeFiles8Di, results);
-//        results.add("Testing Huge Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(hugeFiles8Di, results);
-//        results.add("Testing Gigantic Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(giganticFiles8Di, results);
-//        results.add("Testing OneMbFiles Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(oneMbFiles8Di, results);
+        results.add("Testing Small Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles8Di, results);
+        results.add("Testing Medium Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles8Di, results);
+        results.add("Testing Large Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles8Di, results);
+        results.add("Testing Huge Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles8Di, results);
+        results.add("Testing Gigantic Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles8Di, results);
+        results.add("Testing OneMbFiles Files 8 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles8Di, results);
 
         // Тестирование методов с наборами по 10 файлов каждого размера
-        results.add("Testing Small Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(smallFiles20Di, results);
-        results.add("Testing Medium Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(mediumFiles20Di, results);
-        results.add("Testing Large Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(largeFiles20Di, results);
-        results.add("Testing Huge Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(hugeFiles20Di, results);
-        results.add("Testing Gigantic Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(giganticFiles20Di, results);
-        results.add("Testing OneMbFiles Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(oneMbFiles20Di, results);
+//        results.add("Testing Small Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(smallFiles20Di, results);
+//        results.add("Testing Medium Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(mediumFiles20Di, results);
+//        results.add("Testing Large Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(largeFiles20Di, results);
+//        results.add("Testing Huge Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(hugeFiles20Di, results);
+//        results.add("Testing Gigantic Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(giganticFiles20Di, results);
+//        results.add("Testing OneMbFiles Files 20 РАЗНЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(oneMbFiles20Di, results);
 
 
         // Тестирование методов с наборами по 12 файлов каждого размера
-        results.add("Testing Small Files 25 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(smallFiles25Di, results);
-        results.add("Testing Medium Files 25 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(mediumFiles25Di, results);
-        results.add("Testing Large Files 25 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(largeFiles25Di, results);
-        results.add("Testing Huge Files 25 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(hugeFiles25Di, results);
-        results.add("Testing Gigantic Files 25 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(giganticFiles25Di, results);
-        results.add("Testing OneMbFiles Files 25 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(oneMbFiles25Di, results);
+//        results.add("Testing Small Files 12 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles12Di, results);
+        results.add("Testing Medium Files 12 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles12Di, results);
+        results.add("Testing Large Files 12 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles12Di, results);
+        results.add("Testing Huge Files 12 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles12Di, results);
+        results.add("Testing Gigantic Files 12 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles12Di, results);
+        results.add("Testing OneMbFiles Files 12 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles12Di, results);
 
         // Тестирование методов с наборами по 14 файлов каждого размера
-        results.add("Testing Small Files 30 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(smallFiles30Di, results);
-        results.add("Testing Medium Files 30 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(mediumFiles30Di, results);
-        results.add("Testing Large Files 30 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(largeFiles30Di, results);
-        results.add("Testing Huge Files 30 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(hugeFiles30Di, results);
-        results.add("Testing Gigantic Files 30 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(giganticFiles30Di, results);
-        results.add("Testing OneMbFiles Files 30 РАЗНЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(oneMbFiles30Di, results);
+        results.add("Testing Small Files 14 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles14Di, results);
+        results.add("Testing Medium Files 14 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles14Di, results);
+        results.add("Testing Large Files 14 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles14Di, results);
+        results.add("Testing Huge Files 14 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles14Di, results);
+        results.add("Testing Gigantic Files 14 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles14Di, results);
+        results.add("Testing OneMbFiles Files 14 РАЗНЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles14Di, results);
 
 
         // Тестирование методов с наборами по 16 файлов каждого размера
@@ -277,92 +277,92 @@ public class TestTimeFileGrouper {
 
         // ТЕСТ ОДИНАКОВЫХ ФАЙЛОВ =======================================================================================
         // Тестирование методов с наборами по 2 файлов каждого размера
-//        results.add("Testing Small Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(smallFiles2Id, results);
-//        results.add("Testing Medium Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(mediumFiles2Id, results);
-//        results.add("Testing Large Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(largeFiles2Id, results);
-//        results.add("Testing Huge Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(hugeFiles2Id, results);
-//        results.add("Testing Gigantic Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(giganticFiles2Id, results);
-//        results.add("Testing OneMbFiles Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(oneMbFiles2Id, results);
+        results.add("Testing Small Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles2Id, results);
+        results.add("Testing Medium Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles2Id, results);
+        results.add("Testing Large Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles2Id, results);
+        results.add("Testing Huge Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles2Id, results);
+        results.add("Testing Gigantic Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles2Id, results);
+        results.add("Testing OneMbFiles Files 2 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles2Id, results);
 
 
         // Тестирование методов с наборами по 4 файлов каждого размера
-//        results.add("Testing Small Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(smallFiles4Id, results);
-//        results.add("Testing Medium Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(mediumFiles4Id, results);
-//        results.add("Testing Large Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(largeFiles4Id, results);
-//        results.add("Testing Huge Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(hugeFiles4Id, results);
-//        results.add("Testing Gigantic Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(giganticFiles4Id, results);
-//        results.add("Testing OneMbFiles Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(oneMbFiles4Id, results);
+        results.add("Testing Small Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles4Id, results);
+        results.add("Testing Medium Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles4Id, results);
+        results.add("Testing Large Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles4Id, results);
+        results.add("Testing Huge Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles4Id, results);
+        results.add("Testing Gigantic Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles4Id, results);
+        results.add("Testing OneMbFiles Files 4 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles4Id, results);
 
 
         // Тестирование методов с наборами по 8 файлов каждого размера
-//        results.add("Testing Small Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(smallFiles8Id, results);
-//        results.add("Testing Medium Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(mediumFiles8Id, results);
-//        results.add("Testing Large Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(largeFiles8Id, results);
-//        results.add("Testing Huge Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(hugeFiles8Id, results);
-//        results.add("Testing Gigantic Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(giganticFiles8Id, results);
-//        results.add("Testing OneMbFiles Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-//        testFileGroup(oneMbFiles8Id, results);
+        results.add("Testing Small Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles8Id, results);
+        results.add("Testing Medium Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles8Id, results);
+        results.add("Testing Large Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles8Id, results);
+        results.add("Testing Huge Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles8Id, results);
+        results.add("Testing Gigantic Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles8Id, results);
+        results.add("Testing OneMbFiles Files 8 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles8Id, results);
 
         // Тестирование методов с наборами по 10 файлов каждого размера
-        results.add("Testing Small Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(smallFiles20Id, results);
-        results.add("Testing Medium Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(mediumFiles20Id, results);
-        results.add("Testing Large Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(largeFiles20Id, results);
-        results.add("Testing Huge Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(hugeFiles20Id, results);
-        results.add("Testing Gigantic Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(giganticFiles20Id, results);
-        results.add("Testing OneMbFiles Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(oneMbFiles20Id, results);
+//        results.add("Testing Small Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(smallFiles20Id, results);
+//        results.add("Testing Medium Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(mediumFiles20Id, results);
+//        results.add("Testing Large Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(largeFiles20Id, results);
+//        results.add("Testing Huge Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(hugeFiles20Id, results);
+//        results.add("Testing Gigantic Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(giganticFiles20Id, results);
+//        results.add("Testing OneMbFiles Files 20 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+//        testFileGroup(oneMbFiles20Id, results);
 
 
         // Тестирование методов с наборами по 12 файлов каждого размера
-        results.add("Testing Small Files 25 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(smallFiles25Id, results);
-        results.add("Testing Medium Files 25 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(mediumFiles25Id, results);
-        results.add("Testing Large Files 25 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(largeFiles25Id, results);
-        results.add("Testing Huge Files 25 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(hugeFiles25Id, results);
-        results.add("Testing Gigantic Files 25 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(giganticFiles25Id, results);
-        results.add("Testing OneMbFiles Files 25 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(oneMbFiles25Id, results);
+        results.add("Testing Small Files 12 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles12Id, results);
+        results.add("Testing Medium Files 12 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles12Id, results);
+        results.add("Testing Large Files 12 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles12Id, results);
+        results.add("Testing Huge Files 12 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles12Id, results);
+        results.add("Testing Gigantic Files 12 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFiles12Id, results);
+        results.add("Testing OneMbFiles Files 12 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles12Id, results);
 
 
         // Тестирование методов с наборами по 14 файлов каждого размера
-        results.add("Testing Small Files 30 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(smallFiles30Id, results);
-        results.add("Testing Medium Files 30 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(mediumFiles30Id, results);
-        results.add("Testing Large Files 30 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(largeFiles30Id, results);
-        results.add("Testing Huge Files 30 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(hugeFiles30Id, results);
-        results.add("Testing Gigantic Files 30 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(giganticFiles30Id, results);
-        results.add("Testing OneMbFiles Files 30 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
-        testFileGroup(oneMbFiles30Id, results);
+        results.add("Testing Small Files 14 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(smallFiles14Id, results);
+        results.add("Testing Medium Files 14 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(mediumFiles14Id, results);
+        results.add("Testing Large Files 14 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(largeFiles14Id, results);
+        results.add("Testing Huge Files 14 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(hugeFiles14Id, results);
+        results.add("Testing Gigantic Files 14 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(giganticFile14Id, results);
+        results.add("Testing OneMbFiles Files 14 ОДИНАКОВЫЕ ФАЙЛЫ------------------------");
+        testFileGroup(oneMbFiles14Id, results);
 
 
 

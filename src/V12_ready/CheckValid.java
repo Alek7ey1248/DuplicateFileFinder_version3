@@ -50,22 +50,22 @@ public class CheckValid {
             System.err.println(" File " + file.getAbsolutePath() + " не существует");
             return false;
         }
+//
+//        if (!file.isFile()) {
+//            System.err.println(" File " + file.getAbsolutePath() + " это не файл");
+//            return false;
+//        }
+//
+//        if (!file.canRead()) {
+//            System.err.println(" File " + file.getAbsolutePath() + " поврежден или нет прав на чтение");
+//            return false;
+//        }
 
-        if (!file.isFile()) {
-            System.err.println(" File " + file.getAbsolutePath() + " это не файл");
-            return false;
-        }
-
-        if (!file.canRead()) {
-            System.err.println(" File " + file.getAbsolutePath() + " поврежден или нет прав на чтение");
-            return false;
-        }
-
-        // Проверка на доступность для хеширования
+        // Проверка на доступность для чтения или хеширования
         try (FileInputStream fis = new FileInputStream(file)) {
             // Если удалось открыть файл, значит он доступен
         } catch (IOException e) {
-            System.err.println(" File " + file.getAbsolutePath() + "- используется другим процессом или поврежден");
+            System.err.println(file.getAbsolutePath() + " не доступен - используется другим процессом или поврежден");
             return false;
         }
 

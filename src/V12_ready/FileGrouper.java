@@ -32,7 +32,7 @@ public class FileGrouper {
 
 
     // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
-    void groupByHesh(Set<File> files) throws IOException, NoSuchAlgorithmException {
+    void groupByHesh(Set<File> files) {
         System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
 
         files.forEach(file -> {
@@ -50,7 +50,7 @@ public class FileGrouper {
 
     // Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
     // (Ускоренный потоками)
-    void groupByHeshParallel(Set<File> files) throws IOException, NoSuchAlgorithmException {
+    void groupByHeshParallel(Set<File> files) {
         System.out.println(" вычислениеа хеша списка файлов - " + Arrays.toString(files.toArray()));
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальныепотоки
