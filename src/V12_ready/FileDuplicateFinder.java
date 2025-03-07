@@ -41,16 +41,25 @@ public class FileDuplicateFinder {
      * @return path - путь к директории, в которой нужно найти дубликаты
     * */
     public void findDuplicates(String[] paths) throws IOException {
+
+        long startTime = System.currentTimeMillis();
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
+        long endTime = System.currentTimeMillis();
+        long duration = (long) (endTime - startTime);
+
 
         processGroupFiles();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
 
-        //removeSingleFiles();  // Удаляем списки по одному файлу из filesByKey
 
+        long startTime1 = System.currentTimeMillis();
         printSortedFileGroups();  // Вывод групп дубликатов файлов в консоль
+        long endTime1 = System.currentTimeMillis();
+        long duration1 = (long) (endTime1 - startTime1);
 
+        System.out.println("Время выполнения walkFileTree  --- " + duration + " ms       ");
+        System.out.println("Время выполнения printSortedFileGroups  --- " + duration1 + " ms       ");
     }
 
 
@@ -123,7 +132,7 @@ public class FileDuplicateFinder {
 
                     case 1:
                         if (sizeFile <= LARGE_FILE_THRESHOLD) {  // на среднем на 12 процессоров до  205591 байт = LARGE_FILE_THRESHOLD =  205591
-                            fileGrouper.groupByContentParallel(files);
+                            fileGrouper.groupByContent(files);
                         } else {
                             boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
                             if (areFileNamesSimilar) {
@@ -135,7 +144,7 @@ public class FileDuplicateFinder {
                         break;
 
                     case 2: // 5 -  на среднем(12 процессоров)
-                        if (sizeFile < LARGE_FILE_THRESHOLD) {
+                        if (sizeFile < LARGE_FILE_THRESHOLD*1.5) {
                                 fileGrouper.groupByHeshParallel(files);
                         } else {
                             boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
@@ -249,7 +258,6 @@ public class FileDuplicateFinder {
     // Вывод групп дубликатов файлов в консоль
     public void printSortedFileGroups() {
 
-        long startTime = System.currentTimeMillis();
         // Добавляем все Set<File> из filesByKey
         for (Set<File> fileSet : fileGrouper.getFilesByKey().values()) {
             if (fileSet.size() > 1) {
@@ -279,9 +287,6 @@ public class FileDuplicateFinder {
             System.out.println("-------------------------------------------------");
         }
         System.out.println("-  LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
-        long endTime = System.currentTimeMillis();
-        long duration = (long) (endTime - startTime);
-        System.out.println("Время выполнения printSortedFileGroups  --- " + duration + " ms       ");
     }
 
 
