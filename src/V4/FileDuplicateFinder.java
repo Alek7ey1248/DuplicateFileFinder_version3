@@ -10,12 +10,11 @@ public class FileDuplicateFinder {
 
     private final CheckValid checkValid;
 
-    private final Map<Long, List<Set<File>>> fileByContent;  // Карта файлов по содержимому (ключ - хеш содержимого, значение - список групп файлов) - отсортированная по ключу и потокобезопасная
+    private final ConcurrentHashMap<Long, CopyOnWriteArrayList<Set<File>>> fileByContent = new ConcurrentHashMap<>();
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
-        fileByContent = new ConcurrentSkipListMap<>();
     }
 
 
@@ -49,6 +48,8 @@ public class FileDuplicateFinder {
 
         if (files == null) return;  // Проверяем, что массив не пустой
 
+        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
+
         for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
             final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
 
@@ -57,8 +58,20 @@ public class FileDuplicateFinder {
             } else {
                 // Если файл не валиден, пропускаем его и переходим к следующему файлу
                 if (!checkValid.isValidFile(file)) continue;
-                processFile(file);
+                executorService.submit(() -> {
+                    try {
+                        processFile(file);
+                    } catch (IOException e) {
+                        System.err.println("Ошибка при обработке файла: " + file.getAbsolutePath());
+                        throw new RuntimeException(e);
+                    }
+                });
             }
+        }
+
+        executorService.shutdown(); // Завершаем работу пула потоков
+        while (!executorService.isTerminated()) {
+            // Ожидаем завершения всех задач
         }
     }
 
@@ -67,20 +80,38 @@ public class FileDuplicateFinder {
      * @param file - файл, который нужно добавить в карту
      */
     private void processFile(File file) throws IOException {
-        System.out.println(" обрабатывается файл - " + file.getAbsolutePath());
-        long fileSize = file.length(); // Размер файла
-        // Если в карте (есть такой ключ) есть файлы с таким же размером
-        if (fileByContent.containsKey(fileSize)) {
-            // Добавляем файл в одну из групп Set<File> fileSet
-            boolean isAdded = addFileToSet(fileSize, file);
+        System.out.println("Обрабатывается файл - " + file.getAbsolutePath());
+        long fileSize = file.length();
 
-            if (!isAdded) {    // Если файл не добавлен ни в одну группу, создаем новую группу
-                addFileToNewSetInListByKey(fileSize, file);
+        fileByContent.compute(fileSize, (key, fileList) -> {
+            if (fileList == null) {
+                // Если нет групп для этого размера, создаем новую
+                Set<File> newGroup = ConcurrentHashMap.newKeySet();
+                newGroup.add(file);
+                CopyOnWriteArrayList<Set<File>> newFileList = new CopyOnWriteArrayList<>();
+                newFileList.add(newGroup);
+                return newFileList;
+            } else {
+                // Проверяем существующие группы
+                for (Set<File> fileSet : fileList) {
+                    File firstFile = fileSet.iterator().next();
+                    try {
+                        if (FileComparator.areFilesEqual(file, firstFile)) {
+                            fileSet.add(file);
+                            return fileList; // Файл добавлен, возвращаем список
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
+                        throw new RuntimeException(e);
+                    }
+                }
+                // Если файл не был добавлен, создаем новую группу
+                Set<File> newGroup = ConcurrentHashMap.newKeySet();
+                newGroup.add(file);
+                fileList.add(newGroup);
+                return fileList;
             }
-        } else {  // Если в карте нет файлов с таким же размером(ключем) как у файла
-            // Добавляем группу списков в карту и файл в группу
-            addFileToNewSetToNewListByNewKey(fileSize, file);
-        }
+        });
     }
 
 
@@ -121,7 +152,7 @@ public class FileDuplicateFinder {
      * @param file - файл, который нужно добавить в карту
      */
     private void addFileToNewSetToNewListByNewKey(long fileSize, File file) {
-        List<Set<File>> fileList = new ArrayList<>(); // Создаем список групп файлов
+        CopyOnWriteArrayList<Set<File>> fileList = new CopyOnWriteArrayList<>(); // Создаем список групп файлов
         Set<File> newGroup = new HashSet<>();         // Создаем новый список файлов
         newGroup.add(file);                            // Добавляем файл в список
         fileList.add(newGroup);                        // Добавляем список в группу списков
