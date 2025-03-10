@@ -12,12 +12,10 @@ public class FileDuplicateFinder {
     private final CheckValid checkValid;
 
     // Хранит группы файлов по хешу
-    private final Map<FileKeyHash, Set<File>> filesByKey = new ConcurrentHashMap<>();;
-//    public Map<FileKeyHash, Set<File>> getFilesByKey() {
-//        return filesByKey;
-//    }
-
-    private final ConcurrentHashMap<Long, CopyOnWriteArrayList<Set<File>>> fileByContent = new ConcurrentHashMap<>();
+    private final Map<FileKeyHash, Set<File>> filesByKey = new ConcurrentSkipListMap<>();;
+    public Map<FileKeyHash, Set<File>> getFilesByKey() {
+        return filesByKey;
+    }
 
     /* Конструктор */
     public FileDuplicateFinder() {
@@ -75,12 +73,6 @@ public class FileDuplicateFinder {
                             System.out.println("Ошибка при вычислении хеша файла: " + file.getAbsolutePath());
                             e.printStackTrace();
                         }
-//                        try {
-//                            processFileCompare(file);
-//                        } catch (IOException e) {
-//                            System.err.println("Ошибка при обработке файла: " + file.getAbsolutePath());
-//                            throw new RuntimeException(e);
-//                        }
                     });
                     // ---------------------------------------------
                 }
@@ -94,129 +86,12 @@ public class FileDuplicateFinder {
     }
 
 
-    /* Метод обработки файла для добавления в fileByContent
-     * @param file - файл, который нужно добавить в карту
-     */
-    private void processFileCompare(File file) throws IOException {
-        System.out.println("Обрабатывается файл - " + file.getAbsolutePath());
-        long fileSize = file.length();
-
-        fileByContent.compute(fileSize, (key, fileList) -> {
-            if (fileList == null) {
-                // Если нет групп для этого размера, создаем новую
-                Set<File> newGroup = ConcurrentHashMap.newKeySet();
-                newGroup.add(file);
-                CopyOnWriteArrayList<Set<File>> newFileList = new CopyOnWriteArrayList<>();
-                newFileList.add(newGroup);
-                return newFileList;
-            } else {
-                // Проверяем существующие группы
-                for (Set<File> fileSet : fileList) {
-                    File firstFile = fileSet.iterator().next();
-                    try {
-                        if (FileComparator.areFilesEqual(file, firstFile)) {
-                            fileSet.add(file);
-                            return fileList; // Файл добавлен, возвращаем список
-                        }
-                    } catch (IOException e) {
-                        System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
-                        throw new RuntimeException(e);
-                    }
-                }
-                // Если файл не был добавлен, создаем новую группу
-                Set<File> newGroup = ConcurrentHashMap.newKeySet();
-                newGroup.add(file);
-                fileList.add(newGroup);
-                return fileList;
-            }
-        });
-    }
-
-
-
-    /* Вспомогательный метод для добавления файла в одну изгрупп Set<File> fileSet
-     * Для этого перебираем все Set<File> в списке fileList
-     * и сравниваем файл  с первым файлом в каждой группе
-     * Если файл одинаков по содержимому с первым файлом в группе, добавляем файл в группу
-     * и возвращаем true, иначе false
-     */
-    private boolean addFileToSet(long fileSize, File file) throws IOException {
-        List<Set<File>> fileList = fileByContent.get(fileSize); // Получаем список групп файлов по ключу fileSize
-        for (Set<File> fileSet : fileList) { // Перебираем все группы файлов по ключу fileSize
-            File firstFile = fileSet.iterator().next(); // Извлекаем первый файл для сравнения
-            if (FileComparator.areFilesEqual(file, firstFile)) { // Если файл одинаков по содержимому с первым файлом в группе
-                fileSet.add(file); // Добавляем файл в группу
-                return true; // Файл добавлен
-            }
-        }
-        return false; // Файл не добавлен
-    }
-
-
-    /* Вспомогательный метод для создания нового Set<File> fileSet
-    * в List<Set<File>> fileList по ключу fileSize и добавления туда файла
-     */
-    private void addFileToNewSetInListByKey(long fileSize, File file) {
-        Set<File> newGroup = new HashSet<>();  // Создаем новую группу
-        newGroup.add(file);      // Добавляем файл в группу
-        fileByContent.get(fileSize).add(newGroup);  // Добавляем новый список по ключу в карту
-    }
-
-
-    /* Вспомогательный метод для добавления в Map<Long, List<Set<File>>> fileByContent
-     * новой группы списка файлов по ключу - размер файла
-     * и добавления файла в группу
-     * @param fileSize - размер файла
-     * @param file - файл, который нужно добавить в карту
-     */
-    private void addFileToNewSetToNewListByNewKey(long fileSize, File file) {
-        CopyOnWriteArrayList<Set<File>> fileList = new CopyOnWriteArrayList<>(); // Создаем список групп файлов
-        Set<File> newGroup = new HashSet<>();         // Создаем новый список файлов
-        newGroup.add(file);                            // Добавляем файл в список
-        fileList.add(newGroup);                        // Добавляем список в группу списков
-        fileByContent.put(fileSize, fileList);         // Добавляем группу списков в карту
-    }
-
-
-    // Вывод групп дубликатов файлов в консоль
-//    public void printSortedFileGroups() {
-//
-//        // Выводим отсортированные группы в консоль
-//        for (List<Set<File>> fileList : fileByContent.values()) {  // Перебираем все группы списков файлов
-//
-//            for (Set<File> fileSet : fileList) {             // Перебираем все группы файлов
-//                if (fileSet.size() < 2) {                    // Если в группе только один файл, переходим к следующей группе
-//                    continue;
-//                }
-//                // Извлекаем размер первого файла для вывода
-//                File firstFile = fileSet.iterator().next();
-//                System.out.println("-------------------------------------------------");
-//                System.out.println("Группа дубликатов размером: " + firstFile.length() + " байт");
-//                for (File file : fileSet) {                  // Перебираем все файлы в группе
-//                    System.out.println("    " + file.getAbsolutePath());
-//                }
-//                System.out.println("-------------------------------------------------");
-//            }
-//        }
-//    }
-
-    // Вывод групп дубликатов файлов в консоль
+    // Сортирровка и Вывод групп дубликатов файлов в консоль
     public void printSortedFileGroups() {
 
-        // сортировка filesByKey по размеру файла
-        // Преобразуем Map в список записей
-        List<Map.Entry<FileKeyHash, Set<File>>> entries = new ArrayList<>(filesByKey.entrySet());
-
-        // Сортируем список записей по ключам (FileKeyHash)
-        Collections.sort(entries, new Comparator<Map.Entry<FileKeyHash, Set<File>>>() {
-            @Override
-            public int compare(Map.Entry<FileKeyHash, Set<File>> e1, Map.Entry<FileKeyHash, Set<File>> e2) {
-                return e1.getKey().compareTo(e2.getKey());
-            }
-        });
-
         // Выводим отсортированные группы в консоль
-        for (Map.Entry<FileKeyHash, Set<File>> fileSet : entries) {             // Перебираем все группы файлов
+        for (Map.Entry<FileKeyHash, Set<File>> fileSet : filesByKey.entrySet()) {             // Перебираем все группы файлов
+
             if (fileSet.getValue().size() < 2) {                    // Если в группе только один файл, переходим к следующей группе
                 continue;
             }
@@ -231,21 +106,6 @@ public class FileDuplicateFinder {
     }
 
 
-
-
-    // Метод преобразования Map<Long, List<Set<File>>> fileByContent в  List<Set<File>> duplicates
-    // Для тестирования в тестах TesterUnit
-//    public List<Set<File>> getDuplicates() {
-//        List<Set<File>> duplicates = new ArrayList<>();
-//        for (List<Set<File>> fileList : fileByContent.values()) {
-//            for (Set<File> fileSet : fileList) {
-//                if (fileSet.size() > 1) {
-//                    duplicates.add(fileSet);
-//                }
-//            }
-//        }
-//        return duplicates;
-//    }
     public List<Set<File>> getDuplicates() {
         List<Set<File>> duplicates = new ArrayList<>();
         for (Set<File> fileSet : filesByKey.values()) {

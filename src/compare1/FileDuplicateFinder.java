@@ -1,8 +1,7 @@
-package compare;
+package compare1;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -18,7 +17,8 @@ public class FileDuplicateFinder {
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.filesBySize = new ConcurrentHashMap<>();
-        this.duplicates = Collections.synchronizedList(new ArrayList<>());
+        this.duplicates = new CopyOnWriteArrayList<>();
+        //this.duplicates = Collections.synchronizedList(new ArrayList<>());
     }
 
 
@@ -33,29 +33,6 @@ public class FileDuplicateFinder {
         findDuplicateGroups();  // Параллельная обработка файлов одинакового размера из карты filesBySize для поиска дубликатов в список duplicates
     }
 
-
-    /* Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
-     * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HasyMap filesBySize.
-     * @param path - путь к директории, с которой начинается обход файловой системы
-     */
-//    public void walkFileTree(String path) {
-//        File directory = new File(path);  // Создаем объект File(директорий) для указанного пути
-//        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
-//
-//        if (files != null) {  // Проверяем, что массив не пустой
-//            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
-//                if (file.isDirectory()) {    // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-//                    walkFileTree(file.getAbsolutePath());
-//                } else {
-//                    if (checkValid.isValidFile(file)) {  // Проверка валидности файла
-//                        // Если текущий файл не является директорией, добавляем его в карту
-//                        // Группируем файлы по их размеру
-//                        filesBySize.computeIfAbsent(file.length(), k -> new HashSet<>()).add(file.toPath());
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     /* Ускореный метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
      * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
@@ -78,16 +55,15 @@ public class FileDuplicateFinder {
             for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
                 final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
                 futures[i] = CompletableFuture.runAsync(() -> {
-//                    try {
+
                     if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
                         walkFileTree(file.getAbsolutePath());
                     } else {
-                        if (!checkValid.isValidFile(file)) {  // Проверяем, что текущий файл является валидным
-                            return;
+                        if (checkValid.isValidFile(file)) { // Проверяем, что файл является валидным
+                            // Добавляем файл в карту fileBySize по его размеру
+                            long fileSize = file.length();
+                            filesBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
                         }
-                        // Добавляем файл в карту fileBySize по его размеру
-                        long fileSize = file.length();
-                        filesBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
                     }
                 }, executor);
             }

@@ -1,4 +1,4 @@
-package compare;// Main: Точка входа в программу. Обрабатывает аргументы командной строки и запускает процесс поиска дубликатов.
+package compare1;// Main: Точка входа в программу. Обрабатывает аргументы командной строки и запускает процесс поиска дубликатов.
 //FileDuplicateFinder: Основной класс, который выполняет поиск дубликатов файлов.
 //FileComparator: Класс для побайтного сравнения содержимого файлов.
 
@@ -14,10 +14,10 @@ public class Main {
 
         // Пример использования
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
-        String[] paths = {"/home/alek7ey"};
+        //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
         //String[] paths = {"/home/alek7ey/.cache"};
-        //String[] paths = {"/home/alek7ey/snap"};
+        String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Android"};
         //String[] paths = {"/home/alek7ey/.local"};

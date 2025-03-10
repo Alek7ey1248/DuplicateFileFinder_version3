@@ -1,4 +1,4 @@
-package compare;
+package compare1;
 
 import java.io.File;
 import java.io.IOException;

@@ -84,7 +84,6 @@ public class FileDuplicateFinder {
             for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
                 final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
                 futures[i] = CompletableFuture.runAsync(() -> {
-//                    try {
                         if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
                             walkFileTree(file.getAbsolutePath());
                         } else {

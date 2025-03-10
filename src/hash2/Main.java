@@ -14,8 +14,8 @@ public class Main {
         // Пример использования
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey"};           // 81,       сравн - очень долго,  хеш - 72 - 75 - 88 (ускоренный - 50)
-        //String[] paths = {"/home/alek7ey/.local"};    // 1 - 1,6,  сравн - 1 - 1,5,      хеш - 0,9 - 1,6    (ускоренный - 0,9)
-        String[] paths = {"/home/alek7ey/.cache"};      // 6.6 - 9,  сравн - очень долго,  хеш - 6 - 14     (ускоренный - 4,4 - 6)
+        String[] paths = {"/home/alek7ey/.local"};    // 1 - 1,6,  сравн - 1 - 1,5,      хеш - 0,9 - 1,6    (ускоренный - 0,9)
+        //String[] paths = {"/home/alek7ey/.cache"};      // 6.6 - 9,  сравн - очень долго,  хеш - 6 - 14     (ускоренный - 4,4 - 6)
         //String[] paths = {"/home/alek7ey/snap"};      // 11,8,     сравн - 22 - 24,      хеш - 9,6 - 11,6   (ускоренный - 6)
         //String[] paths = {"/home/alek7ey/snap/flutter"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
         //String[] paths = {"/home/alek7ey/snap/telegram-desktop"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
