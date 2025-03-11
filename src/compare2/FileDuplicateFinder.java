@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 public class FileDuplicateFinder {
@@ -13,10 +14,14 @@ public class FileDuplicateFinder {
     // Хранит группы файлов по ключу - размеру файла
     private final Map<Long, List<Set<File>>> fileByContent;
 
+    ExecutorService executor;
+
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
+        //this.fileByContent = new ConcurrentSkipListMap<>();
         this.fileByContent = new ConcurrentHashMap<>();
+        //this.executor = Executors.newCachedThreadPool();
     }
 
 
@@ -45,44 +50,36 @@ public class FileDuplicateFinder {
             return;
         }
 
-        File directory = new File(path); // Создаем объект File(директорий) для указанного пути
-        File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
-
-        if (files == null) return;  // Проверяем, что массив не пустой
+        File directory = new File(path); // Создаем объект File(директория) для указанного пути
+        File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в указанной директории
+        if (files == null) return; // Проверяем, что массив не пустой
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        var futures = new CompletableFuture[files.length];
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        //ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*2);
-        for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
-            final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
+        for (File f : files) { // Перебираем каждый файл и директорию в текущей директории
+            final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
 
-            // --------------------------------------------------
-            futures[i] = CompletableFuture.runAsync(() -> {
-                if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-                    try {
-                        walkFileTree(file.getAbsolutePath());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    // Если файл валиден, то добавляем его в карту
-                    if (checkValid.isValidFile(file)) {
+            if (file.isDirectory()) { // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
+                walkFileTree(file.getAbsolutePath());
+            } else {
+                // Если файл валиден, то добавляем его в массив futures
+                if (checkValid.isValidFile(file)) {
+                    futures.add(CompletableFuture.runAsync(() -> {
                         try {
                             processFileCompare(file);
                         } catch (IOException e) {
                             System.err.println("Ошибка при обработке файла: " + file.getAbsolutePath());
                             throw new RuntimeException(e);
                         }
-                    }
+                    }, executor));
                 }
-            }, executor);
-            // --------------------------------------------------
+            }
         }
 
         // Ожидаем завершения всех CompletableFuture
-        CompletableFuture.allOf(futures).join();
-        executor.shutdown();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        executor.shutdown(); // Закрываем executor после завершения всех задач
     }
 
 
@@ -91,37 +88,39 @@ public class FileDuplicateFinder {
      */
     private void processFileCompare(File file) throws IOException {
         System.out.println("Обрабатывается файл - " + file.getAbsolutePath());
-        long fileSize = file.length();
+        Long fileSize = file.length();
 
-        fileByContent.compute(fileSize, (key, fileList) -> {
-            if (fileList == null) {
-                // Если нет групп для этого размера, создаем новую
-                Set<File> newGroup = ConcurrentHashMap.newKeySet();
-                newGroup.add(file);
-                CopyOnWriteArrayList<Set<File>> newFileList = new CopyOnWriteArrayList<>();
-                newFileList.add(newGroup);
-                return newFileList;
-            } else {
-                // Проверяем существующие группы
-                for (Set<File> fileSet : fileList) {
-                    File firstFile = fileSet.iterator().next();
-                    try {
-                        if (FileComparator.areFilesEqual(file, firstFile)) {
-                            fileSet.add(file);
-                            return fileList; // Файл добавлен, возвращаем список
+//        synchronized (fileByContent) {
+            fileByContent.compute(fileSize, (key, fileList) -> {
+                if (fileList == null) {
+                    // Если нет групп для этого размера, создаем новую
+                    Set<File> newGroup = ConcurrentHashMap.newKeySet();
+                    newGroup.add(file);
+                    List<Set<File>> newFileList = new CopyOnWriteArrayList<>();
+                    newFileList.add(newGroup);
+                    return newFileList;
+                } else {
+                    // Проверяем существующие группы
+                    for (Set<File> fileSet : fileList) {
+                        final File firstFile = fileSet.iterator().next();
+                        try {
+                            if (FileComparator.areFilesEqual(file, firstFile)) {
+                                fileSet.add(file);
+                                return fileList; // Файл добавлен, возвращаем список
+                            }
+                        } catch (IOException e) {
+                            System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
+                            throw new RuntimeException(e);
                         }
-                    } catch (IOException e) {
-                        System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
-                        throw new RuntimeException(e);
                     }
+                    // Если файл не был добавлен, создаем новую группу
+                    Set<File> newGroup = ConcurrentHashMap.newKeySet();
+                    newGroup.add(file);
+                    fileList.add(newGroup);
+                    return fileList;
                 }
-                // Если файл не был добавлен, создаем новую группу
-                Set<File> newGroup = ConcurrentHashMap.newKeySet();
-                newGroup.add(file);
-                fileList.add(newGroup);
-                return fileList;
-            }
-        });
+            });
+//        }
     }
 
 

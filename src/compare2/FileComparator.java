@@ -95,6 +95,7 @@ public class FileComparator {
     private static boolean compareLargeFileContents(FileChannel channel1, FileChannel channel2, long size) throws InterruptedException {
         //ExecutorService executor = Executors.newFixedThreadPool((int) (Runtime.getRuntime().availableProcessors() * 1.25));  // Создаем ExecutorService с фиксированным пулом потоков
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        //ExecutorService executor = Executors.newCachedThreadPool(); // Создаем ExecutorService с кэширующим пулом потоков
         List<Future<Boolean>> futures = new ArrayList<>(); // Список задач
         long position = 0;
 
@@ -177,14 +178,14 @@ public class FileComparator {
     // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip");
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip");
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (пустой).zip");  // Разные файлы
-    // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
-    // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
+     File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат");
+     File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)");
     // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)");
            // File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
            // File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
-     File file1 = new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt");
-     File file2 = new File("/home/alek7ey/Рабочий стол/largeFile.txt");
+     //File file1 = new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt");
+     //File file2 = new File("/home/alek7ey/Рабочий стол/largeFile.txt");
     // System.out.println(areFilesEqual(file1, file2));
 
 //           System.out.println(quickCompareFiles(file1, file2));
