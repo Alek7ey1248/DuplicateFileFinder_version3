@@ -33,7 +33,7 @@ public class FileDuplicateFinder {
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
-
+        System.err.println(" -------- вышел из walkFileTree ---------------------- ");
         // Вывод групп дубликатов файлов в консоль
         printSortedFileGroups();
     }
@@ -44,53 +44,111 @@ public class FileDuplicateFinder {
      * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
-    public void walkFileTree(String path) throws IOException {
+    public void walkFileTree(String path) {
         if (!checkValid.isValidDirectoryPath(path)) {
             System.err.println("Невалидная директория: " + path);
             return;
         }
 
-        File directory = new File(path); // Создаем объект File(директория) для указанного пути
-        File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в указанной директории
-        if (files == null) return; // Проверяем, что массив не пустой
+        File rootDirectory = new File(path); // Создаем объект File(рут директория) для указанного пути
+        Deque<File> directories = new LinkedList<>();   // Создаем очередь для обхода файловой системы
+        directories.push(rootDirectory); // Добавляем в очередь рут директорию
 
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        //ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        //List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        for (File f : files) { // Перебираем каждый файл и директорию в текущей директории
-            final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
+        while(!directories.isEmpty()) {
+            System.err.println("1111111  ---------------------- ");
+            File currentDirectory = directories.remove(); // Извлекаем из очереди текущую директорию
+            File[] files = currentDirectory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
 
-            if (file.isDirectory()) { // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-                walkFileTree(file.getAbsolutePath());
-            } else {
-                // Если файл валиден, то добавляем его в массив futures
-                if (checkValid.isValidFile(file)) {
+            if(files == null) continue; // Проверяем, что массив не пустой
+
+            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+            for(int i = 0; i < files.length; i++) { // Перебираем каждый файл и директорию в текущей директории
+
+                System.err.println("222222222222  ---------------------- ");
+                final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
+                if(file.isDirectory() && checkValid.isValidDirectoryPath(file.getAbsolutePath())) {
+                    System.err.println("333333333333333333  ---------------------- ");
+                    directories.push(file); // Если текущий файл является валидной директорией, добавляем его в очередь
+                } else {
                     futures.add(CompletableFuture.runAsync(() -> {
-                        try {
-                            processFileCompare(file);
-                        } catch (IOException e) {
-                            System.err.println("Ошибка при обработке файла: " + file.getAbsolutePath());
-                            throw new RuntimeException(e);
-                        }
-                    }, executor));
-                }
-            }
-        }
+                        // Если файл валиден, то добавляем его в массив futures
+                        if(checkValid.isValidFile(file)) {
+                            //System.err.println("444444444444444  ---------------------- " + file.getAbsolutePath());
 
-        // Ожидаем завершения всех CompletableFuture
+                                //System.err.println("41414141414141414141414141414  ---------------------- ");
+                                processFileCompare(file);
+                               // System.out.println(" закончил обрабатыватся файл - " + file.getAbsolutePath());
+
+                        }
+                    }));
+                }
+
+            }
+
+            // Ожидаем завершения всех CompletableFuture
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         executor.shutdown(); // Закрываем executor после завершения всех задач
+            System.err.println("----------- закончился for(int i = 0; i < files.length; i++) ---------------------- ");
+        }
+
+        System.err.println("directories - ПУСТАЯ ---------------------- ");
+
+
+        System.err.println("------------------ задачи завершены  ---------------------- ");
     }
+
+//    public void walkFileTree(String path) throws IOException {
+//        if (!checkValid.isValidDirectoryPath(path)) {
+//            System.err.println("Невалидная директория: " + path);
+//            return;
+//        }
+//
+//        File directory = new File(path); // Создаем объект File(директория) для указанного пути
+//        File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в указанной директории
+//        if (files == null) return; // Проверяем, что массив не пустой
+//
+//        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+//        //ExecutorService executor = Executors.newCachedThreadPool();
+//        List<CompletableFuture<Void>> futures = new ArrayList<>();
+//
+//        for (File f : files) { // Перебираем каждый файл и директорию в текущей директории
+//            final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
+//
+//            if (file.isDirectory()) { // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
+//                walkFileTree(file.getAbsolutePath());
+//            } else {
+//                // Если файл валиден, то добавляем его в массив futures
+//                if (checkValid.isValidFile(file)) {
+//                    futures.add(CompletableFuture.runAsync(() -> {
+//                        try {
+//                            processFileCompare(file);
+//                        } catch (IOException e) {
+//                            System.err.println("Ошибка при обработке файла: " + file.getAbsolutePath());
+//                            throw new RuntimeException(e);
+//                        }
+//                    }, executor));
+//                }
+//            }
+//        }
+//
+//        // Ожидаем завершения всех CompletableFuture
+//        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+//        executor.shutdown(); // Закрываем executor после завершения всех задач
+//    }
 
 
     /* Метод обработки файла для добавления в fileByContent
      * @param file - файл, который нужно добавить в карту
      */
-    private void processFileCompare(File file) throws IOException {
+    private void processFileCompare(File file)  {
         System.out.println("Обрабатывается файл - " + file.getAbsolutePath());
         Long fileSize = file.length();
 
-//        synchronized (fileByContent) {
             fileByContent.compute(fileSize, (key, fileList) -> {
                 if (fileList == null) {
                     // Если нет групп для этого размера, создаем новую
@@ -110,7 +168,7 @@ public class FileDuplicateFinder {
                             }
                         } catch (IOException e) {
                             System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
-                            throw new RuntimeException(e);
+                            e.printStackTrace();
                         }
                     }
                     // Если файл не был добавлен, создаем новую группу
@@ -120,7 +178,6 @@ public class FileDuplicateFinder {
                     return fileList;
                 }
             });
-//        }
     }
 
 
