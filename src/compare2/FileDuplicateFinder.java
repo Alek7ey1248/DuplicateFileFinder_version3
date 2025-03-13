@@ -14,10 +14,13 @@ public class FileDuplicateFinder {
     // Хранит группы файлов по ключу - размеру файла
     private final Map<Long, List<List<File>>> fileByContent;
 
+    private final List<String> verifiedDirectories;  // Список всех абсолютных путей проверенных директорий
+
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.fileByContent = new ConcurrentSkipListMap<>();
+        this.verifiedDirectories = new ArrayList<>();
     }
 
 
@@ -41,10 +44,12 @@ public class FileDuplicateFinder {
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
     public void walkFileTree(String path) {
-        if (!checkValid.isValidDirectoryPath(path)) {
-            System.err.println("Невалидная директория: " + path);
+        if (!checkValid.isValidDirectoryPath(path) || verifiedDirectories.contains(path)) {
+            System.err.println("Невалидная директория или проверенная уже: " + path);
             return;
         }
+
+        verifiedDirectories.add(path); // Добавляем проверенную директорию в список
 
         File directory = new File(path); // Создаем объект File(рут директория) для указанного пути
         File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
