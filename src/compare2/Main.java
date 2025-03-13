@@ -21,11 +21,11 @@ public class Main {
         //String[] paths = {"/home/alek7ey/snap/telegram-desktop"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
         //String[] paths = {"/home/alek7ey/Android"};   // 3 - 4,    сравн - 2,5 - 3,9,    хеш - 2,4 - 2,6    (ускоренный - 2.4-2.6)
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"}; // 24 - 27,  сравн - 24,  хеш - 33 (ускоренный - 29 - 32)
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
+        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder";}
         //String[] paths = "/home/alek7ey/Android";
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
 
         // Проверка валидности путей
         CheckValid checkValid = new CheckValid();
@@ -41,7 +41,7 @@ public class Main {
         finder.findDuplicates(paths);
 
         long endTime = System.currentTimeMillis();
-        long duration = (long) (endTime - startTime);
+        long duration = endTime - startTime;
         System.out.println("Время выполнения поиска дубликатов файлов в директории " + Arrays.toString(paths) + " --- " + duration + " ms       ");
 
 

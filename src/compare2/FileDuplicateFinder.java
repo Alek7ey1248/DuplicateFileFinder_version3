@@ -54,15 +54,14 @@ public class FileDuplicateFinder {
         File directory = new File(path); // Создаем объект File(рут директория) для указанного пути
         File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
 
-        if (files.length == 0) { // Проверяем, что массив не пустой
+        if (files != null && files.length == 0) { // Проверяем, что массив не пустой
             System.err.println(" В директории " + path + " нет файлов");
             return;
         }
-        for(File f : files) { // Перебираем каждый файл и директорию в текущей директории
-            if(f.isDirectory()) {
-                walkFileTree(f.getAbsolutePath()); // Если текущий файл является валидной директорией, вставляем рекурсивно в walkFileTree
+        for(File file : files) { // Перебираем каждый файл и директорию в текущей директории
+            if(file.isDirectory()) {
+                walkFileTree(file.getAbsolutePath()); // Если текущий файл является валидной директорией, вставляем рекурсивно в walkFileTree
             } else {
-                final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
                 // Если файл валиден, то добавляем его в fileByContent
                 if(checkValid.isValidFile(file)) {
                     processFileCompare(file);
@@ -155,7 +154,7 @@ public class FileDuplicateFinder {
          private boolean addFileInGroup(long fileSize, File file) {
              // если есть ключ, то перебираем список списков по ключу
              for (List<File> group : fileByContent.get(fileSize)) {
-                 File firstFile = group.get(0);
+                 File firstFile = group.getFirst();
                  try {
                      // если первый файл в группе равен текущему файлу, то добавляем его в группу
                      if (FileComparator.areFilesEqual(file, firstFile)) {
