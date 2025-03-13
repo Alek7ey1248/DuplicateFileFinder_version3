@@ -20,6 +20,8 @@ public class Main {
         String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Android"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey/.local"};
 
         // Проверка валидности путей

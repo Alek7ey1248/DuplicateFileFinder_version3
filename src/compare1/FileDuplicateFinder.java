@@ -12,13 +12,14 @@ public class FileDuplicateFinder {
     final Map<Long, Set<File>> getFilesBySize() {return filesBySize;}
     private final List<List<File>> duplicates;  /* Список для хранения результата - групп дубликатов файлов */
     List<List<File>> getDuplicates() {return duplicates;}
+    private final List<String> verifiedDirectories;  // Множество для хранения проверенных директорий
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.filesBySize = new ConcurrentHashMap<>();
         this.duplicates = new CopyOnWriteArrayList<>();
-        //this.duplicates = Collections.synchronizedList(new ArrayList<>());
+        this.verifiedDirectories = new ArrayList<>();
     }
 
 
@@ -39,23 +40,22 @@ public class FileDuplicateFinder {
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
     public void walkFileTree(String path) {
-        if (!checkValid.isValidDirectoryPath(path)) {
-            //System.err.println("Невалидная директория: " + path);
+        if (!checkValid.isValidDirectoryPath(path) || verifiedDirectories.contains(path)) {
+            System.err.println("Невалидная директория или проверенная уже: " + path);
             return;
         }
+
+        verifiedDirectories.add(path); // Добавляем проверенную директорию в список
 
         File directory = new File(path); // Создаем объект File(директорий) для указанного пути
         File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
 
         if (files != null) {  // Проверяем, что массив не пустой
             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
-            //CompletableFuture[] futures = new CompletableFuture[files.length]; // Массив для хранения CompletableFuture
-            var futures = new CompletableFuture[files.length];
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-            for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
-                final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
-                futures[i] = CompletableFuture.runAsync(() -> {
-
+            for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
                         walkFileTree(file.getAbsolutePath());
                     } else {
@@ -66,10 +66,12 @@ public class FileDuplicateFinder {
                         }
                     }
                 }, executor);
+                futures.add(future);
             }
 
             // Ожидаем завершения всех CompletableFuture
-            CompletableFuture.allOf(futures).join();
+            CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            allOf.join(); // Блокируем текущий поток до завершения всех задач
             executor.shutdown();
         }
     }
@@ -78,28 +80,35 @@ public class FileDuplicateFinder {
     /*  Находит группы побайтно одинаковых файлов из карты файлов, ключ которой — размер файла.*/
     public void findDuplicateGroups() throws IOException {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();  // Создаем ExecutorService с виртуальными потоками
-        List<Future<Void>> futures = new ArrayList<>();  // Список задач для параллельного выполнения
+        //List<Future<Void>> futures = new ArrayList<>();  // Список задач для параллельного выполнения
 
         for (Long size : filesBySize.keySet()) {  // перебираю ключи (размеры файлов)
             Set<File> files = filesBySize.get(size);  // Получаю список файлов для текущего размера
-            futures.add(executor.submit(() -> {  // Отправляем задачу на обработку файлов в пул потоков
+            //futures.add(executor.submit(() -> {  // Отправляем задачу на обработку файлов в пул потоков
+            executor.submit(() -> {
                 // Находим дубликаты в группе файлов одинакового размера и добавляем их в список дубликатов duplicates
                 findDuplicatesInSameSizeFiles(files);
                 return null;
-            }));
+            //}));
+            });
         }
 
-        // Ожидаем завершения всех задач
-        for (Future<Void> future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Завершаем работу пула потоков - на скорость вроде повлияло
         executor.shutdown();
+        while (!executor.isTerminated()) {
+            // Ждем завершения всех задач
+        }
+
+//        // Ожидаем завершения всех задач
+//        for (Future<Void> future : futures) {
+//            try {
+//                future.get();
+//            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        // Завершаем работу пула потоков - на скорость вроде повлияло
+//        executor.shutdown();
+
 //        try {
 //            // Ждем завершения всех задач в течение 60 секунд
 //            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -140,16 +149,22 @@ public class FileDuplicateFinder {
             List<Future<Boolean>> futures = new ArrayList<>();  // Список задач для параллельного выполнения
 
             for (File anotherFile : files) {  // Перебираем оставшиеся файлы в списке
+
                 if (file.equals(anotherFile)) {  // Если пути к файлам равны, пропускаем
-                    continue;
+                    //continue;
+                    return;
                 }
 
                 // Отправляем задачу на сравнение файлов в пул потоков
                 futures.add(executor.submit(() -> {
-                    if (FileComparator.areFilesEqual(file, anotherFile)) {
-                            group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
-                            toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
-                        return true;
+                    try {
+                        if (FileComparator.areFilesEqual(file, anotherFile)) {
+                                group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
+                                toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
+                                return true;
+                        }
+                    } catch (IOException e) {
+                        System.err.println("Ошибка при сравнении файлов: " + file + " и " + anotherFile);
                     }
                     return false;
                 }));
@@ -172,15 +187,6 @@ public class FileDuplicateFinder {
 
         // Завершаем работу ExecutorService
         executor.shutdown();
-//        try {
-//            // Ждем завершения всех задач в течение 60 секунд
-//            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-//                executor.shutdownNow(); // Принудительно завершаем все активные задачи
-//            }
-//        } catch (InterruptedException e) {
-//            executor.shutdownNow(); // Принудительно завершаем все активные задачи
-//            Thread.currentThread().interrupt(); // Восстанавливаем статус прерывания
-//        }
     }
 
 
