@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 
 public class FileDuplicateFinder {
@@ -12,16 +12,12 @@ public class FileDuplicateFinder {
     private final CheckValid checkValid;
 
     // Хранит группы файлов по ключу - размеру файла
-    private final Map<Long, List<Set<File>>> fileByContent;
-
-    ExecutorService executor;
+    private final Map<Long, List<List<File>>> fileByContent;
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
-        //this.fileByContent = new ConcurrentSkipListMap<>();
-        this.fileByContent = new ConcurrentHashMap<>();
-        //this.executor = Executors.newCachedThreadPool();
+        this.fileByContent = new ConcurrentSkipListMap<>();
     }
 
 
@@ -30,17 +26,17 @@ public class FileDuplicateFinder {
      * @return path - путь к директории, в которой нужно найти дубликаты
     * */
     public void findDuplicates(String[] paths) throws IOException {
+
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
-        System.err.println(" -------- вышел из walkFileTree ---------------------- ");
         // Вывод групп дубликатов файлов в консоль
         printSortedFileGroups();
     }
 
 
 
-    /* Ускореный метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
+    /* Метод для рекурсивного обхода директории выполняет рекурсивный обход файловой системы,
      * начиная с указанного пути (path). Все файлы, найденные в процессе обхода, группируются по их размеру в HashMap filesBySize.
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
@@ -50,152 +46,156 @@ public class FileDuplicateFinder {
             return;
         }
 
-        File rootDirectory = new File(path); // Создаем объект File(рут директория) для указанного пути
-        Deque<File> directories = new LinkedList<>();   // Создаем очередь для обхода файловой системы
-        directories.push(rootDirectory); // Добавляем в очередь рут директорию
+        File directory = new File(path); // Создаем объект File(рут директория) для указанного пути
+        File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
 
-        //ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        //List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        while(!directories.isEmpty()) {
-            System.err.println("1111111  ---------------------- ");
-            File currentDirectory = directories.remove(); // Извлекаем из очереди текущую директорию
-            File[] files = currentDirectory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
-
-            if(files == null) continue; // Проверяем, что массив не пустой
-
-            ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-            List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-            for(int i = 0; i < files.length; i++) { // Перебираем каждый файл и директорию в текущей директории
-
-                System.err.println("222222222222  ---------------------- ");
-                final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
-                if(file.isDirectory() && checkValid.isValidDirectoryPath(file.getAbsolutePath())) {
-                    System.err.println("333333333333333333  ---------------------- ");
-                    directories.push(file); // Если текущий файл является валидной директорией, добавляем его в очередь
-                } else {
-                    futures.add(CompletableFuture.runAsync(() -> {
-                        // Если файл валиден, то добавляем его в массив futures
-                        if(checkValid.isValidFile(file)) {
-                            //System.err.println("444444444444444  ---------------------- " + file.getAbsolutePath());
-
-                                //System.err.println("41414141414141414141414141414  ---------------------- ");
-                                processFileCompare(file);
-                               // System.out.println(" закончил обрабатыватся файл - " + file.getAbsolutePath());
-
-                        }
-                    }));
-                }
-
-            }
-
-            // Ожидаем завершения всех CompletableFuture
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        executor.shutdown(); // Закрываем executor после завершения всех задач
-            System.err.println("----------- закончился for(int i = 0; i < files.length; i++) ---------------------- ");
+        if (files.length == 0) { // Проверяем, что массив не пустой
+            System.err.println(" В директории " + path + " нет файлов");
+            return;
         }
-
-        System.err.println("directories - ПУСТАЯ ---------------------- ");
-
-
-        System.err.println("------------------ задачи завершены  ---------------------- ");
+        for(File f : files) { // Перебираем каждый файл и директорию в текущей директории
+            if(f.isDirectory()) {
+                walkFileTree(f.getAbsolutePath()); // Если текущий файл является валидной директорией, вставляем рекурсивно в walkFileTree
+            } else {
+                final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
+                // Если файл валиден, то добавляем его в fileByContent
+                if(checkValid.isValidFile(file)) {
+                    processFileCompare(file);
+                }
+            }
+        }
     }
 
-//    public void walkFileTree(String path) throws IOException {
+      //  Метод НЕ рекусивный
+//    public void walkFileTree(String path) {
 //        if (!checkValid.isValidDirectoryPath(path)) {
 //            System.err.println("Невалидная директория: " + path);
 //            return;
 //        }
 //
-//        File directory = new File(path); // Создаем объект File(директория) для указанного пути
-//        File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в указанной директории
-//        if (files == null) return; // Проверяем, что массив не пустой
+//        File rootDirectory = new File(path); // Создаем объект File(рут директория) для указанного пути
+//        Deque<File> directories = new LinkedList<>();   // Создаем очередь для обхода файловой системы
+//        directories.push(rootDirectory); // Добавляем в очередь рут директорию
 //
-//        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-//        //ExecutorService executor = Executors.newCachedThreadPool();
-//        List<CompletableFuture<Void>> futures = new ArrayList<>();
+//        //ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 //
-//        for (File f : files) { // Перебираем каждый файл и директорию в текущей директории
-//            final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
+//        while(!directories.isEmpty()) {
+//            File currentDirectory = directories.remove(); // Извлекаем из очереди текущую директорию
+//            File[] files = currentDirectory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
 //
-//            if (file.isDirectory()) { // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
-//                walkFileTree(file.getAbsolutePath());
-//            } else {
-//                // Если файл валиден, то добавляем его в массив futures
-//                if (checkValid.isValidFile(file)) {
-//                    futures.add(CompletableFuture.runAsync(() -> {
-//                        try {
-//                            processFileCompare(file);
-//                        } catch (IOException e) {
-//                            System.err.println("Ошибка при обработке файла: " + file.getAbsolutePath());
-//                            throw new RuntimeException(e);
+//            if (files.length == 0) continue; // Проверяем, что массив не пустой
+//
+//            for(File f : files) { // Перебираем каждый файл и директорию в текущей директории
+//                final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
+//                if(file.isDirectory()) {
+//                    directories.push(file); // Если текущий файл является валидной директорией, добавляем его в очередь
+//                } else {
+//                        // Если файл валиден, то добавляем его в массив futures
+//                        if(checkValid.isValidFile(file)) {
+////                            executor.submit(() -> {
+//                                 processFileCompare(file);
+////                            });
 //                        }
-//                    }, executor));
 //                }
 //            }
 //        }
-//
-//        // Ожидаем завершения всех CompletableFuture
-//        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-//        executor.shutdown(); // Закрываем executor после завершения всех задач
+////        executor.shutdown(); // Завершаем работу пула потоков
+////        while (!executor.isTerminated()) {
+////            // Ожидаем завершения всех задач
+////        }
 //    }
 
 
     /* Метод обработки файла для добавления в fileByContent
      * @param file - файл, который нужно добавить в карту
      */
-    private void processFileCompare(File file)  {
-        System.out.println("Обрабатывается файл - " + file.getAbsolutePath());
-        Long fileSize = file.length();
+    private void processFileCompare(File file) {
+        System.out.println(" " + file.getAbsolutePath());
 
-            fileByContent.compute(fileSize, (key, fileList) -> {
-                if (fileList == null) {
-                    // Если нет групп для этого размера, создаем новую
-                    Set<File> newGroup = ConcurrentHashMap.newKeySet();
-                    newGroup.add(file);
-                    List<Set<File>> newFileList = new CopyOnWriteArrayList<>();
-                    newFileList.add(newGroup);
-                    return newFileList;
-                } else {
-                    // Проверяем существующие группы
-                    for (Set<File> fileSet : fileList) {
-                        final File firstFile = fileSet.iterator().next();
-                        try {
-                            if (FileComparator.areFilesEqual(file, firstFile)) {
-                                fileSet.add(file);
-                                return fileList; // Файл добавлен, возвращаем список
-                            }
-                        } catch (IOException e) {
-                            System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
-                            e.printStackTrace();
-                        }
-                    }
-                    // Если файл не был добавлен, создаем новую группу
-                    Set<File> newGroup = ConcurrentHashMap.newKeySet();
-                    newGroup.add(file);
-                    fileList.add(newGroup);
-                    return fileList;
-                }
-            });
+        long fileSize = file.length(); // Получаем размер файла
+
+        // Если ключа нет(то есть списка групп файлов с таким размером файла нет),
+         // то добавляем новый ключ, список групп, нов группу и файл в нее
+        if (!fileByContent.containsKey(fileSize)) {
+            addNewKey(fileSize, file);
+            return;
+        }
+
+        // Если ключ есть, то добавляем файл в группу если есть группа файлов с таким же содержимым как и у входящего файла
+        if (!addFileInGroup(fileSize, file)) {
+            // Если файл не добавлен в группу, то добавляем новую группу в список по ключу(размер файла) и файл в нее
+            addNewGroup(fileSize, file);
+        }
+
     }
+
+        /*  Вспомогательный Метод добавления нового ключа в карту fileByContent
+         * так же добавляет новую группу и файл в нее
+         * @param fileSize - размер файла
+         * @param file - файл, который нужно добавить в карту
+        */
+        private void addNewKey(long fileSize, File file) {
+            List<File> newGroup = new CopyOnWriteArrayList<>();
+            newGroup.add(file);
+            List<List<File>> newListList = new CopyOnWriteArrayList<>();
+            newListList.add(newGroup);
+            fileByContent.put(fileSize, newListList); // Добавляем новую группу в карту
+        }
+
+        /* Вспомогательный Метод добавления новой группы в один из списков
+         * в карту fileByContent в том случае если будет найдена группа файлов с одинаковым содержимым.
+         * @param fileSize - размер файла
+         * @param file - файл, который нужно добавить в карту
+        */
+         private boolean addFileInGroup(long fileSize, File file) {
+             // если есть ключ, то перебираем список списков по ключу
+             for (List<File> group : fileByContent.get(fileSize)) {
+                 File firstFile = group.get(0);
+                 try {
+                     // если первый файл в группе равен текущему файлу, то добавляем его в группу
+                     if (FileComparator.areFilesEqual(file, firstFile)) {
+                         group.add(file);
+                         return true; // если файл добавлен в группу, то возвращаем true
+                     }
+                 } catch (IOException e) {
+                     System.err.println("Ошибка при сравнении файлов: " + file.getAbsolutePath() + " и " + firstFile.getAbsolutePath());
+                     e.printStackTrace();
+                 }
+             }
+             return false; // если файл не добавлен в группу, то возвращаем false
+         }
+
+
+
+        /* Вспомогательный Метод добавления новой группы в один из списков
+         * в карту fileByContent и файла в нее в том случае если НЕ будет найдена
+         * группа файлов с таким же содержимым как и у входящего файла
+         * @param fileSize - размер файла
+         * @param file - файл, который нужно добавить в карту
+        */
+        private void addNewGroup(long fileSize, File file) {
+            List<File> newGroup = new CopyOnWriteArrayList<>();
+            newGroup.add(file);
+            fileByContent.get(fileSize).add(newGroup);
+        }
+
 
 
     // Вывод групп дубликатов файлов в консоль
     public void printSortedFileGroups() {
 
         // Выводим отсортированные группы в консоль
-        for (List<Set<File>> fileList : fileByContent.values()) {  // Перебираем все группы списков файлов
+        for (List<List<File>> fileList : fileByContent.values()) {  // Перебираем все группы списков файлов
 
-            for (Set<File> fileSet : fileList) {             // Перебираем все группы файлов
-                if (fileSet.size() < 2) {                    // Если в группе только один файл, переходим к следующей группе
+            for (List<File> fl : fileList) {             // Перебираем все группы файлов
+                if (fl.size() < 2) {                    // Если в группе только один файл, переходим к следующей группе
                     continue;
                 }
                 // Извлекаем размер первого файла для вывода
-                File firstFile = fileSet.iterator().next();
+                File firstFile = fl.getFirst();
                 System.out.println("-------------------------------------------------");
                 System.out.println("Группа дубликатов размером: " + firstFile.length() + " байт");
-                for (File file : fileSet) {                  // Перебираем все файлы в группе
+                for (File file : fl) {                  // Перебираем все файлы в группе
                     System.out.println("    " + file.getAbsolutePath());
                 }
                 System.out.println("-------------------------------------------------");
@@ -207,15 +207,22 @@ public class FileDuplicateFinder {
     // Метод преобразования Map<Long, List<Set<File>>> fileByContent в  List<Set<File>> duplicates
     // Для тестирования в тестах TesterUnit
     public List<Set<File>> getDuplicates() {
-        List<Set<File>> duplicates = new ArrayList<>();
-        for (List<Set<File>> fileList : fileByContent.values()) {
-            for (Set<File> fileSet : fileList) {
-                if (fileSet.size() > 1) {
-                    duplicates.add(fileSet);
+        List<List<File>> duplicates = new ArrayList<>();
+        for (List<List<File>> fileList : fileByContent.values()) {
+            for (List<File> fl : fileList) {
+                if (fl.size() > 1) {
+                    duplicates.add(fl);
                 }
             }
         }
-        return duplicates;
+
+        // Преобразуем List<List<File>> в List<Set<File>>
+        // Для тестирования в тестах TesterUnit
+        List<Set<File>> duplicatesSet = duplicates.stream()
+                .map(HashSet::new) // Преобразуем каждый List<File> в Set<File>
+                .collect(Collectors.toList()); // Собираем результаты в List<Set<File>>
+
+        return duplicatesSet;
     }
 
 }
