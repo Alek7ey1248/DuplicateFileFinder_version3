@@ -58,17 +58,20 @@ public class FileDuplicateFinder {
             System.err.println(" В директории " + path + " нет файлов");
             return;
         }
+
         for(File file : files) { // Перебираем каждый файл и директорию в текущей директории
-            if(file.isDirectory()) {
-                walkFileTree(file.getAbsolutePath()); // Если текущий файл является валидной директорией, вставляем рекурсивно в walkFileTree
-            } else {
-                // Если файл валиден, то добавляем его в fileByContent
-                if(checkValid.isValidFile(file)) {
-                    processFileCompare(file);
+                if (file.isDirectory()) {
+                    walkFileTree(file.getAbsolutePath()); // Если текущий файл является валидной директорией, вставляем рекурсивно в walkFileTree
+                } else {
+                    // Если файл валиден, то добавляем его в fileByContent
+                    if(checkValid.isValidFile(file)) {
+                            processFileCompare(file);
+                    }
                 }
-            }
         }
     }
+
+
 
       //  Метод НЕ рекусивный
 //    public void walkFileTree(String path) {

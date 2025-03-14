@@ -1,8 +1,7 @@
-package compare1;// Main: Точка входа в программу. Обрабатывает аргументы командной строки и запускает процесс поиска дубликатов.
-//FileDuplicateFinder: Основной класс, который выполняет поиск дубликатов файлов.
-//FileComparator: Класс для побайтного сравнения содержимого файлов.
+package compare1;
 
 
+import processing.CheckValid;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -23,6 +22,7 @@ public class Main {
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey/.local"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21"};
 
         // Проверка валидности путей
         CheckValid checkValid = new CheckValid();
@@ -34,11 +34,8 @@ public class Main {
 
         FileDuplicateFinder finder = new FileDuplicateFinder();
 
-        // ищем дубликаты файлов в директории
+        // ищем дубликаты файлов в директории и выводим результат
         finder.findDuplicates(paths);
-
-        // выводим отсортированные результаты поиска дубликатов
-        DuplicateFilePrinter.printDuplicates(finder.getDuplicates());
 
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);

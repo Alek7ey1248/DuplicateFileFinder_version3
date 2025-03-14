@@ -1,5 +1,6 @@
 package compare1;
 
+import processing.FileGrouper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ import static org.junit.Assert.*;
 public class TesterUnit {
 
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру
-	private compare1.FileDuplicateFinder finder;
+
 	private Map<Long, Set<Path>> expectedFilesBySize;
 
 	// Для тестирования метода areFilesEqual - побайтное сравнение содержимого двух файлов
@@ -48,7 +49,7 @@ public class TesterUnit {
 		// Для тестирования метода walkFileTree класса FileDuplicateFinder
 		// Обходит файловую систему, начиная с указанного пути и группирует файлы по их размеру в HashMap filesBySize
 		// expectedFilesBySize - ожидаемый результат
-		finder = new FileDuplicateFinder();
+		//finder = new FileDuplicateFinder();
 		expectedFilesBySize = new HashMap<>();
 
 		expectedFilesBySize.put(32L, Set.of(
@@ -243,6 +244,7 @@ public class TesterUnit {
 	    expectedFilesBySize - ожидаемый результат*/
 	@Test
 	public void testWalkFileTree() throws IOException {
+		FileDuplicateFinder finder = new FileDuplicateFinder();
 
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 
@@ -302,20 +304,21 @@ public class TesterUnit {
 //	}
 
 
-	/** Тестирование метода findDuplicateGroups класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
+	/** Тестирование метода processGroupFiles класса FileDuplicateFinder - из списка файлов одинакового размера находит дубликаты
 	 * Этот код сначала проверяет, что все ожидаемые группы присутствуют в фактическом результате, а затем проверяет, что в фактическом
 	 * результате нет лишних групп. Если лишняя группа найдена, тест выводит сообщение с информацией о ней.*/
 	@Test
-	public void testFindDuplicateGroups() throws IOException {
-		//FileDuplicateFinder finder = new FileDuplicateFinder();
-		//Map<Long, List<Path>> filesBySize = new HashMap<>();
+	public void testProcessGroupFiles() throws IOException {
+		FileDuplicateFinder finder = new FileDuplicateFinder();
+
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
-		finder.findDuplicateGroups();
+		finder.processGroupFiles();
+
 
 		// переведем List<File> в List<Path>
-		List<List<File>> sf = finder.getDuplicates();
+		List<Set<File>> sf = finder.getDuplicates();
 		List<List<Path>> actual = new ArrayList<>();
-		for (List<File> group : sf) {
+		for (Set<File> group : sf) {
 			List<Path> pathGroup = new ArrayList<>();
 			for (File file : group) {
 				pathGroup.add(file.toPath());
@@ -352,12 +355,12 @@ public class TesterUnit {
 		}
 	}
 
-	//* Тестирование метода findDuplicatesInSameSizeFiles класса FileDuplicateFinder -
+	//* Тестирование метода groupByContentParallel класса FileGrouper -
 	// из списка файлов одинакового размера находит дубликаты.
-	// Это вспомогательный метод, который используется в методе findDuplicateGroups.
+	// Это вспомогательный метод, который используется в методе processGroupFiles класса compare1.FileDuplicateFinder.
 	@Test
-	public void testFindDuplicatesInSameSizeFiles() throws IOException {
-		compare1.FileDuplicateFinder finder = new FileDuplicateFinder();
+	public void testGroupByContentParallel() throws IOException {
+		FileGrouper grouper = new FileGrouper();
 
 		// Создаем список файлов одинакового размера
 		Set<File> files = new HashSet<>();
@@ -406,11 +409,11 @@ public class TesterUnit {
 		));
 
 		// Результат работы метода
-		finder.findDuplicatesInSameSizeFiles(files);
+		grouper.groupByContentParallel(files);
 
-		List<List<File>> lf = finder.getDuplicates();
+		List<Set<File>> lf = grouper.getFilesByContent();
 		List<List<Path>> actual = new ArrayList<>();
-		for (List<File> group : lf) {
+		for (Set<File> group : lf) {
 			List<Path> pathGroup = new ArrayList<>();
 			for (File file : group) {
 				pathGroup.add(file.toPath());
