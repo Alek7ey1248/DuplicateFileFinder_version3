@@ -16,19 +16,13 @@ public class Main {
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
         //String[] paths = {"/home/alek7ey/.cache"};
-        String[] paths = {"/home/alek7ey/snap"};
-        //String[] paths = {"/home/alek7ey"};
+        //String[] paths = {"/home/alek7ey/snap"};
+        String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Android"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey/.local"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21"};
-
-        // Проверка валидности путей
-        CheckValid checkValid = new CheckValid();
-        if(!checkValid.getValidDirectoryPaths(paths)) {
-            return;
-        }
 
         long startTime = System.currentTimeMillis();
 

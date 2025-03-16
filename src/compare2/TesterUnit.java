@@ -285,7 +285,7 @@ public class TesterUnit {
 
 	/** Тестирование метода areFilesEqual - побайтное сравнение содержимого двух файлов */
 //	@Test
-//	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
+//	public void testаа throws IOException, ExecutionException, InterruptedException {
 //		// Проверка на равенство файлов с одинаковым содержимым
 //		assertEquals(true, FileComparator.areFilesEqual(file1.toFile(), file2.toFile()));
 //		assertEquals(true, FileComparator.areFilesEqual(file5.toFile(), file6.toFile()));

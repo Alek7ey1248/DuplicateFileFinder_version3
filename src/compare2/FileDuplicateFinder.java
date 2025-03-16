@@ -1,5 +1,8 @@
 package compare2;
 
+import processing.CheckValid;
+import processing.FileComparator;
+import processing.Printer;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -34,7 +37,7 @@ public class FileDuplicateFinder {
             walkFileTree(path);
         }
         // Вывод групп дубликатов файлов в консоль
-        printSortedFileGroups();
+        Printer.duplicatesByContent2(fileByContent);
     }
 
 
@@ -70,47 +73,6 @@ public class FileDuplicateFinder {
                 }
         }
     }
-
-
-
-      //  Метод НЕ рекусивный
-//    public void walkFileTree(String path) {
-//        if (!checkValid.isValidDirectoryPath(path)) {
-//            System.err.println("Невалидная директория: " + path);
-//            return;
-//        }
-//
-//        File rootDirectory = new File(path); // Создаем объект File(рут директория) для указанного пути
-//        Deque<File> directories = new LinkedList<>();   // Создаем очередь для обхода файловой системы
-//        directories.push(rootDirectory); // Добавляем в очередь рут директорию
-//
-//        //ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-//
-//        while(!directories.isEmpty()) {
-//            File currentDirectory = directories.remove(); // Извлекаем из очереди текущую директорию
-//            File[] files = currentDirectory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
-//
-//            if (files.length == 0) continue; // Проверяем, что массив не пустой
-//
-//            for(File f : files) { // Перебираем каждый файл и директорию в текущей директории
-//                final File file = f; // Сохраняем ссылку на текущий файл в локальной переменной
-//                if(file.isDirectory()) {
-//                    directories.push(file); // Если текущий файл является валидной директорией, добавляем его в очередь
-//                } else {
-//                        // Если файл валиден, то добавляем его в массив futures
-//                        if(checkValid.isValidFile(file)) {
-////                            executor.submit(() -> {
-//                                 processFileCompare(file);
-////                            });
-//                        }
-//                }
-//            }
-//        }
-////        executor.shutdown(); // Завершаем работу пула потоков
-////        while (!executor.isTerminated()) {
-////            // Ожидаем завершения всех задач
-////        }
-//    }
 
 
     /* Метод обработки файла для добавления в fileByContent
@@ -185,30 +147,6 @@ public class FileDuplicateFinder {
             newGroup.add(file);
             fileByContent.get(fileSize).add(newGroup);
         }
-
-
-
-    // Вывод групп дубликатов файлов в консоль
-    public void printSortedFileGroups() {
-
-        // Выводим отсортированные группы в консоль
-        for (List<List<File>> fileList : fileByContent.values()) {  // Перебираем все группы списков файлов
-
-            for (List<File> fl : fileList) {             // Перебираем все группы файлов
-                if (fl.size() < 2) {                    // Если в группе только один файл, переходим к следующей группе
-                    continue;
-                }
-                // Извлекаем размер первого файла для вывода
-                File firstFile = fl.getFirst();
-                System.out.println("-------------------------------------------------");
-                System.out.println("Группа дубликатов размером: " + firstFile.length() + " байт");
-                for (File file : fl) {                  // Перебираем все файлы в группе
-                    System.out.println("    " + file.getAbsolutePath());
-                }
-                System.out.println("-------------------------------------------------");
-            }
-        }
-    }
 
 
     // Метод преобразования Map<Long, List<Set<File>>> fileByContent в  List<Set<File>> duplicates

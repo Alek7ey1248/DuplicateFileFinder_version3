@@ -33,7 +33,7 @@ public class FileDuplicateFinder {
             walkFileTree(path);
         }
         processGroupFiles();  // Группировка файлов по содержимому
-        Printer.duplicatesByContent(fileGrouper.getFilesByContent());
+        Printer.duplicatesByContent1(fileGrouper.getFilesByContent());
     }
 
 

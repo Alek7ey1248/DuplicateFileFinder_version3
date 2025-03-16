@@ -6,7 +6,7 @@ import java.util.*;
 public class Printer {
 
     // Вывод групп дубликатов файлов в консоль (compare1)
-    public static void duplicatesByContent(List<Set<File>> filesByContent) {
+    public static void duplicatesByContent1(List<Set<File>> filesByContent) {
         // Сортировка по размеру первого файла в каждом сетe
         Collections.sort(filesByContent, new Comparator<Set<File>>() {
             @Override
@@ -37,4 +37,28 @@ public class Printer {
         }
     }
 
+
+    // Вывод групп дубликатов файлов в консоль (compare2)
+    public static void duplicatesByContent2(Map<Long, List<List<File>>> fileByContent) {
+
+        // Выводим отсортированные группы в консоль
+        for (List<List<File>> fileList : fileByContent.values()) {  // Перебираем все группы списков файлов
+
+            for (List<File> fl : fileList) {             // Перебираем все группы файлов
+                if (fl.size() < 2) {                    // Если в группе только один файл, переходим к следующей группе
+                    continue;
+                }
+                // Извлекаем размер первого файла для вывода
+                File firstFile = fl.getFirst();
+                System.out.println("-------------------------------------------------");
+                System.out.println("Группа дубликатов типа - " + firstFile.getName());
+                System.out.println(" размер: " + firstFile.length());
+                System.out.println();
+                for (File file : fl) {                  // Перебираем все файлы в группе
+                    System.out.println("    " + file.getAbsolutePath());
+                }
+                System.out.println("-------------------------------------------------");
+            }
+        }
+    }
 }
