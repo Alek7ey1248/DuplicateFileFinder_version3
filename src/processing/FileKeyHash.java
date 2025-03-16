@@ -140,9 +140,9 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         for (CompletableFuture<MessageDigest> future : futures) {
             try {
                 MessageDigest partDigest = future.join(); // Получаем результат задачи
-                synchronized (finalDigest) {
+                //synchronized (finalDigest) {
                     finalDigest.update(partDigest.digest()); // Обновляем финальный хеш
-                }
+                //}
             } catch (CompletionException e) {
                 System.err.println("Ошибка при обновлении хеша: " + e.getMessage());
                 e.printStackTrace(); // Выводим стек вызовов для диагностики

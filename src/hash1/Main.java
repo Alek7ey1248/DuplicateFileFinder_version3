@@ -17,8 +17,8 @@ public class Main {
         //String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey/.jdks"};
         //String[] paths = {"/home/alek7ey/.config"};
-        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
-        String[] paths = {"/home/alek7ey/.local"};
+        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
+        //String[] paths = {"/home/alek7ey/.local"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder", "/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21"};
 
         FileDuplicateFinder fdf = new FileDuplicateFinder();;
