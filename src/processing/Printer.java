@@ -61,4 +61,31 @@ public class Printer {
             }
         }
     }
+
+
+    // Вывод групп дубликатов файлов в консоль (hash1)
+    // выводит группы дубликатов файлов
+    public static void duplicatesByHash(Map<FileKeyHash, Set<File>> filesByKeyHash) {
+        // Проходим по всем записям в TreeMap fileByHash
+        for (Map.Entry<FileKeyHash, Set<File>> entry : filesByKeyHash.entrySet()) {
+            // Получаем ключ (FileKey) и значение (Set<File>) для текущей записи
+            FileKeyHash key = entry.getKey();
+            Set<File> files = entry.getValue();
+            // Проверяем, что в группе есть файлы
+            if (files.size() > 1) {
+                // Выводим информацию о группе дубликатов
+                System.out.println("-------------------------------------------------------------------");
+                System.out.println("Группа дубликатов файла типа - " + files.iterator().next().getName());
+                System.out.println(" размера - " + key.getSize());
+                System.out.println("----------------------------");
+                // Проходим по всем файлам в группе и выводим их пути
+                for (File file : files) {
+                    System.out.println(file.getAbsolutePath());
+                }
+                System.out.println();
+            }
+        }
+    }
+
+
 }

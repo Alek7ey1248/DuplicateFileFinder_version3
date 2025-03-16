@@ -52,7 +52,10 @@ public class FileDuplicateFinder {
         File directory = new File(path); // Создаем объект File(директорий) для указанного пути
         File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
 
-        if (files != null) {  // Проверяем, что массив не пустой
+        if (files == null || files.length == 0) { // Проверяем, что массив не пустой
+            System.err.println(" В директории " + path + " нет файлов");
+            return;
+        }
             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -75,7 +78,6 @@ public class FileDuplicateFinder {
             CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
             allOf.join(); // Блокируем текущий поток до завершения всех задач
             executor.shutdown();
-        }
     }
 
 

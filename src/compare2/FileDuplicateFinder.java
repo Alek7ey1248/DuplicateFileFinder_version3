@@ -57,7 +57,7 @@ public class FileDuplicateFinder {
         File directory = new File(path); // Создаем объект File(рут директория) для указанного пути
         File[] files = directory.listFiles(); // Получаем список всех файлов и директорий в текущей директории
 
-        if (files != null && files.length == 0) { // Проверяем, что массив не пустой
+        if (files == null || files.length == 0) { // Проверяем, что массив не пустой
             System.err.println(" В директории " + path + " нет файлов");
             return;
         }
