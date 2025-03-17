@@ -20,7 +20,7 @@ public class TesterUnit {
 
 	private compareAndHash1.FileDuplicateFinder finder;
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
-	private Map<Long, Set<Path>> expectedFilesBySize;
+	private Map<Long, Set<File>> expectedFilesBySize;
 	// Для тестирования метода findDuplicates - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
 	private Map<Long, List<Set<File>>> expectedDuplicatesBySize;
 
@@ -51,54 +51,54 @@ public class TesterUnit {
 		expectedFilesBySize = new HashMap<>();
 
 		expectedFilesBySize.put(32L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/d2.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/d1.txt")
 		));
 		expectedFilesBySize.put(0L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.sudo_as_admin_successful"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/aaaaaaaa"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/aaaaaaaa"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/test23/g2.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/aaaaaaaa"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/g1.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa")
 		));
 		expectedFilesBySize.put(20L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/a1.txt")
 		));
 		expectedFilesBySize.put(94869L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/photo_2021-12-09_16-12-54.jpg"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/photo_2021-12-09_16-12-54 (копия).jpg")
 		));
 		expectedFilesBySize.put(23L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/c1.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c1.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/c2.txt")
 		));
 		expectedFilesBySize.put(136L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file2.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file2.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/file1.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/file1.txt")
 		));
 		expectedFilesBySize.put(3771L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/.bashrc (копия)")
 		));
 		expectedFilesBySize.put(3359325264L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)")
 		));
 		expectedFilesBySize.put(13L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/b1.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/b2.txt")
 		));
 		expectedFilesBySize.put(29L, Set.of(
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt"),
-				Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt")
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/test22/e2.txt"),
+				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/e1.txt")
 		));
 
 
@@ -210,6 +210,57 @@ public class TesterUnit {
 		file15 = Paths.get("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)");
 
 	}
+
+
+
+	/**  Тестирования метода walkFileTree класса FileDuplicateFinder
+	 Обходит файловую систему, начиная с указанного пути и группирует файлы по их размеру в HashMap filesBySize
+	 expectedFilesBySize - ожидаемый результат*/
+	@Test
+	public void testWalkFileTree() throws IOException {
+		compareAndHash2.FileDuplicateFinder finder = new compareAndHash2.FileDuplicateFinder();
+
+		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
+
+		// переведем Set<File> в Set<Path>
+		Map<Long, Set<File>> fBS = finder.getFilesBySize();
+		//Map<Long, Set<File>> fBS = new ConcurrentHashMap<>(finder.getFilesBySize());
+		Map<Long, Set<File>> filesBySize = new HashMap<>();
+
+		for (Map.Entry<Long, Set<File>> entry : fBS.entrySet()) {
+			Long key = entry.getKey();
+			Set<File> fileSet = entry.getValue();
+
+//			// Преобразуем Set<File> в Set<Path>
+//			Set<File> fileSet = new HashSet<>();
+//			for (File file : fileSet) {
+//				fileSet.add(file); // Преобразуем File в Path
+//			}
+
+			// Добавляем в новую карту
+			filesBySize.put(key, fileSet);
+		}
+
+
+		// Сортируем проверяемые и проверочные списки файлов одинакового размера что бы при сравнении у них совпадали порядки
+		for (Long key : filesBySize.keySet()) {
+			Set<File> actualSet = filesBySize.get(key);
+			List<File> actualList = new ArrayList<>(actualSet);
+			Set<File> expectedSet = expectedFilesBySize.get(key);
+			List<File> expectedList = new ArrayList<>(expectedSet);
+
+			if (actualList != null && expectedList != null) {
+				Collections.sort(actualList);
+				Collections.sort(expectedList);
+			}
+		}
+		// сверяем содержание полученого filesBySize и ожидаемого expectedFilesBySize
+		assertEquals(expectedFilesBySize, filesBySize);
+	}
+
+
+
+
 
 	/** Тестирование метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в */
 	@Test

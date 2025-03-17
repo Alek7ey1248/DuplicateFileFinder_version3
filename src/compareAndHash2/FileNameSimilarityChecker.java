@@ -60,7 +60,7 @@ public class FileNameSimilarityChecker {
         FileDuplicateFinder finder = new FileDuplicateFinder();
         finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы");
 
-        Map<Long, Set<File>> duplicatesBySize = finder.getFileBySize();
+        Map<Long, Set<File>> duplicatesBySize = finder.getFilesBySize();
 
         for (Map.Entry<Long, Set<File>> entry : duplicatesBySize.entrySet()) {
             Set<File> files = entry.getValue();

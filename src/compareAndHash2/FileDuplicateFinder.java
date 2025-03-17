@@ -18,7 +18,7 @@ public class FileDuplicateFinder {
     private final FileNameSimilarityChecker fileNameSimilarityChecker;
 
     private final ConcurrentHashMap<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
-    Map<Long, Set<File>> getFileBySize() {return fileBySize;}
+    public final Map<Long, Set<File>> getFilesBySize() {return fileBySize;}
 
     private final FileGrouper fileGrouper;
 

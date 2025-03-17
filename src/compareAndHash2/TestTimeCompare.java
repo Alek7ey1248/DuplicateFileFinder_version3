@@ -28,7 +28,7 @@ public class TestTimeCompare {
     private void testWalkFileTree() {
         FileDuplicateFinder finder = new FileDuplicateFinder();
         finder.walkFileTree("/home/alek7ey/snap");
-        Set<File> files = finder.getFileBySize().get(10376644L);
+        Set<File> files = finder.getFilesBySize().get(10376644L);
         for (File file : files) {
             System.out.println(file);
         }
