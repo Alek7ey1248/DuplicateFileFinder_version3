@@ -1,13 +1,16 @@
-package compareAndHash1;
+package compareAndHash;
 
+import processing.CheckValid;
 import processing.FileGrouper;
 import processing.FileNameSimilarityChecker;
-import processing.CheckValid;
 import processing.Printer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 
 
@@ -115,34 +118,20 @@ public class FileDuplicateFinder {
                     return;
                 }
 
-                // Для среднего компа - 12 процессоров
                 //----------------------------------------------------------------------------------
                 switch (numFiles == 2 || numFiles < NUM_PROCESSORS / 2.5  ? 1 : 2) {
 
                     case 1:
-                        if (sizeFile <= LARGE_FILE_THRESHOLD) {  // на среднем на 12 процессоров до  205591 байт = LARGE_FILE_THRESHOLD =  205591
+                        if (sizeFile <= LARGE_FILE_THRESHOLD) {
                             fileGrouper.groupByContent(files);
                         } else {
-                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
-                            if (areFileNamesSimilar) {
-                                    fileGrouper.groupByHeshParallel(files);
-                            } else {
                                 fileGrouper.groupByContentParallel(files);
-                            }
                         }
                         break;
 
-                    case 2: // 5 -  на среднем(12 процессоров)
-                        if (sizeFile < LARGE_FILE_THRESHOLD*1.5) {
-                                fileGrouper.groupByHeshParallel(files);
-                        } else {
-                            boolean areFileNamesSimilar = fileNameSimilarityChecker.areFileNamesSimilar(files);
-                            if (areFileNamesSimilar) {
-                                    fileGrouper.groupByHeshParallel(files);
-                            } else {
-                                fileGrouper.groupByContentParallel(files);
-                            }
-                        }
+                    case 2:
+                        fileGrouper.groupByHeshParallel(files);
+                        //fileGrouper.groupByContentParallel(files);
                         break;
                 }
                 //-----------------------------------------------------------------------------------
