@@ -10,6 +10,8 @@ import java.util.concurrent.*;
 
 public class FileDuplicateFinder {
 
+    private static final int NUM_PROCESSORS = Runtime.getRuntime().availableProcessors();  // Количество доступных процессоров
+
     private final CheckValid checkValid;  // Проверка валидности файлов и директорий
     private final FileGrouper fileGrouper;  // Группировка файлов по содержимому
     private final Map<Long, Set<File>> filesBySize;  /* HashMap filesBySize - для хранения файлов, сгруппированных по размеру */
@@ -83,30 +85,63 @@ public class FileDuplicateFinder {
 
     // Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
     // Перед этим смотрим если файлов меньше 2, то пропускаем
-    public void processGroupFiles() {
+//    public void processGroupFiles() {
+//
+//        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
+//        List<CompletableFuture<Void>> futures = new ArrayList<>();
+//
+//        // Список файлов одинакового размера
+//        filesBySize.forEach((key, files) -> {
+//            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+//
+//                if (files.size() < 2) {  // Пропускаем списки файлов, которых меньше 2
+//                    return;
+//                }
+//                // Группировка файлов по содержимому
+//                int numFiles = files.size();
+//                if (numFiles == 2 || numFiles <= NUM_PROCESSORS / 3) {
+//                    fileGrouper.groupByContent(files);
+//                } else {
+//                    fileGrouper.groupByContentParallel(files);
+//                }
+//
+//            }, executor);
+//            futures.add(future);
+//        });
+//        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+//        allOf.join(); // Блокируем текущий поток до завершения всех задач
+//
+//        executor.shutdown();
+//        awaitTermination(executor);
+//    }
 
+    public void processGroupFiles() {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        // Список файлов одинакового размера
-        filesBySize.forEach((key, files) -> {
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-
-                if (files.size() < 2) {  // Пропускаем списки файлов, которых меньше 2
-                    return;
-                }
-                // Группировка файлов по содержимому
-                fileGrouper.groupByContentParallel(files);
-                //fileGrouper.groupByContent(files);
-
-            }, executor);
-            futures.add(future);
-        });
+        // Фильтруем списки файлов заранее, убираем те, которые меньше 2
+        filesBySize.entrySet().parallelStream()
+                .filter(entry -> entry.getValue().size() >= 2)
+                .forEach(entry -> {
+                            Set<File> files = entry.getValue();
+                            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                            // Группировка файлов по содержимому
+                            int numFiles = files.size();
+                            if (numFiles == 2 || numFiles <= NUM_PROCESSORS / 3) {
+                                fileGrouper.groupByContent(files);
+                            } else {
+                                fileGrouper.groupByContentParallel(files);
+                            }
+                    }, executor);
+                    futures.add(future);
+                });
         CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allOf.join(); // Блокируем текущий поток до завершения всех задач
 
-        executor.shutdown();
-        awaitTermination(executor);
+        try {
+            allOf.join(); // Блокируем текущий поток до завершения всех задач
+        } finally {
+            executor.shutdown();
+            awaitTermination(executor);
+        }
     }
 
 
