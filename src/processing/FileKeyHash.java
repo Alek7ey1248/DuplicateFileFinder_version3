@@ -1,6 +1,9 @@
 package processing;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -11,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FileKeyHash implements Comparable<FileKeyHash> {
     private final long size;
@@ -91,6 +95,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     static byte[] calculateHashLargeFile(File file) {
         //System.out.println("вычисление хеша LargeFile - " + file);
         try {
+            System.out.println("хеш файла - " + Arrays.toString(updateDigestWithLargeFileContent(file)));
             return updateDigestWithLargeFileContent(file); // Обновляем хеш содержимым файла
         } catch (IOException e) {
             System.err.println("Ошибка чтения файла " + file + ": " + e.getMessage());
@@ -106,8 +111,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         long fileSize = file.length(); // Получаем размер файла
         long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS); // Размер каждой части файла
 
-        //ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
-        ExecutorService executor = Executors.newFixedThreadPool(NUM_BLOCKS); // Создаем пул потоков
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
+        //ExecutorService executor = Executors.newFixedThreadPool(NUM_BLOCKS); // Создаем пул потоков
         List<CompletableFuture<MessageDigest>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
 
         for (int i = 0; i < NUM_BLOCKS; i++) {
@@ -158,10 +163,10 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     // Вспомогательный метод для создания объекта MessageDigest
     private static MessageDigest createMessageDigest() {
         try {
-//            return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
+            //return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
             return MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("Алгоритм хеширования SHA-256 не найден");
+            System.out.println("Алгоритм хеширования MD5 не найден");
             throw new RuntimeException(e);
         }
     }
@@ -226,7 +231,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
 
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 
         System.out.println(" LARGE_FILE_SIZE = " + LARGE_FILE_SIZE);
         System.out.println(" BUFFER_SIZE = " + BUFFER_SIZE);
@@ -240,21 +245,13 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 //        String hf1 = calculateHashSmallFile(file1);
 //        String hf2 = calculateHashLargeFile(file2);
 
-        CompletableFuture<byte[]> hashFuture1 = CompletableFuture.supplyAsync(() -> {
-            return FileKeyHash.calculateHashLargeFile(file1);
-        });
-
-        CompletableFuture<byte[]> hashFuture2 = CompletableFuture.supplyAsync(() -> {
-            return FileKeyHash.calculateHashLargeFile(file2);
-        });
-
-        // Ожидаем завершения обоих вычислений
-        byte[] hash1 = hashFuture1.join();
-        byte[] hash2 = hashFuture2.join();
+        FileKeyHash fk1 = new FileKeyHash(file1);
+        FileKeyHash fk2 = new FileKeyHash(file2);
 
         long endTime = System.currentTimeMillis();
 
-        if (Arrays.equals(hash1, hash2)) {
+        if (fk1.equals(fk2)) {
+        //if (fk1.compareTo(fk2) == 0) {
             System.out.println("Файлы одинаковые");
         } else {
             System.out.println("Файлы разные");
