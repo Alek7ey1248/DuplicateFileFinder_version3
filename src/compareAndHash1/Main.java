@@ -25,12 +25,6 @@ public class Main {
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
 
-        // Проверка валидности путей
-        CheckValid checkValid = new CheckValid();
-        if(!checkValid.getValidDirectoryPaths(paths)) {
-            return;
-        }
-
         long startTime = System.currentTimeMillis();
 
         FileDuplicateFinder finder = new FileDuplicateFinder();

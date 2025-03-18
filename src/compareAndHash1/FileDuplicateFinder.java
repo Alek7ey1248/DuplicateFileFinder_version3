@@ -1,5 +1,10 @@
 package compareAndHash1;
 
+import processing.FileKeyHash;
+import processing.FileGrouper;
+import processing.FileNameSimilarityChecker;
+import processing.CheckValid;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -12,13 +17,15 @@ public class FileDuplicateFinder {
 
     private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/428L; // Порог для больших файлов; // порог для больших файлов
 
+    private final List<String> verifiedDirectories;  // Список всех абсолютных путей проверенных директорий
+
     private final CheckValid checkValid;
 
     // класс для проверки схожести имен файлов
     private final FileNameSimilarityChecker fileNameSimilarityChecker;
 
-    private final ConcurrentHashMap<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
-    Map<Long, Set<File>> getFileBySize() {return fileBySize;}
+    private final Map<Long, Set<File>> filesBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
+    Map<Long, Set<File>> getFilesBySize() {return filesBySize;}
 
     private final FileGrouper fileGrouper;
 
@@ -28,8 +35,9 @@ public class FileDuplicateFinder {
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
+        this.verifiedDirectories = new ArrayList<>();
         this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
-        this.fileBySize = new ConcurrentHashMap<>();
+        this.filesBySize = new ConcurrentHashMap<>();
         this.fileGrouper = new FileGrouper();
         this.duplicates = new ArrayList<>();
     }
@@ -68,10 +76,12 @@ public class FileDuplicateFinder {
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
     public void walkFileTree(String path) {
-        if (!checkValid.isValidDirectoryPath(path)) {
-            //System.err.println("Невалидная директория: " + path);
+        if (!checkValid.isValidDirectoryPath(path) || verifiedDirectories.contains(path)) {
+            System.err.println("Невалидная директория или проверенная уже: " + path);
             return;
         }
+
+        verifiedDirectories.add(path); // Добавляем проверенную директорию в список
 
         File directory = new File(path); // Создаем объект File(директорий) для указанного пути
         File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
@@ -92,7 +102,7 @@ public class FileDuplicateFinder {
                             }
                             // Добавляем файл в карту fileBySize по его размеру
                             long fileSize = file.length();
-                            fileBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
+                            filesBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
                         }
                 }, executor);
             }
@@ -112,7 +122,7 @@ public class FileDuplicateFinder {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         // Список файлов одинакового размера
-        fileBySize.entrySet().forEach(entry -> {
+        filesBySize.entrySet().forEach(entry -> {
         //fileBySize.forEach((key, files) -> {
 
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {

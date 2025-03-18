@@ -1,5 +1,7 @@
 package compareAndHash2;
 
+import processing.FileComparator;
+
 import org.junit.Before;
 import org.junit.Test;
 

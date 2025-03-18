@@ -1,7 +1,5 @@
 package processing;
 
-import processing.FileComparator;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -106,7 +104,7 @@ public class FileGrouper {
 //                    continue;
 //                }
                 try {
-                    if (compareAndHash1.FileComparator.areFilesEqual(file, anotherFile)) {
+                    if (FileComparator.areFilesEqual(file, anotherFile)) {
                         group.add(anotherFile);  // Добавляем путь к дубликату в группу дубликатов
                         toRemove.add(anotherFile);  // Добавляем путь к дубликату в список для удаления
                     }

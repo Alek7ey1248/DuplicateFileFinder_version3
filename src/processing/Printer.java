@@ -88,4 +88,44 @@ public class Printer {
     }
 
 
+
+    // Формирует duplicates из getFilesByKey и getFilesByContent, сортирует и выводит в консоль (compareAndHash2)
+    public static List<Set<File>> duplicatesByHashAndContent(Map<FileKeyHash, Set<File>> filesByKey, List<Set<File>> filesByContent) {
+
+        List<Set<File>> duplicates = new ArrayList<>();
+
+        // Добавляем все Set<File> из filesByKey
+        for (Set<File> fileSet : filesByKey.values()) {
+            if (fileSet.size() > 1) {
+                duplicates.add(fileSet);
+            }
+        }
+        //duplicates.addAll(fileGrouper.getFilesByKey().values());
+
+        // Добавляем все Set<File> из filesByContent
+//        for (Set<File> fileSet : fileGrouper.getFilesByContent()) {
+//            duplicates.add(fileSet);
+//        }
+        duplicates.addAll(filesByContent);
+
+        // Сортируем список по размеру первого файла в каждом Set<File>
+        duplicates.sort(Comparator.comparingLong(set -> set.iterator().next().length()));
+
+        // Выводим отсортированные группы в консоль
+        for (Set<File> fileSet : duplicates) {
+            // Извлекаем размер первого файла для вывода
+            File firstFile = fileSet.iterator().next();
+            System.out.println("-------------------------------------------------");
+            System.out.println("Группа дубликатов размером: " + firstFile.length() + " байт");
+            for (File file : fileSet) {
+                System.out.println("    " + file.getAbsolutePath());
+            }
+            System.out.println("-------------------------------------------------");
+        }
+
+        return duplicates;
+    }
+
+
+
 }

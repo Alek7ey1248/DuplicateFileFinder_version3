@@ -1,5 +1,7 @@
 package compareAndHash1;
 
+
+import processing.FileComparator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +20,7 @@ import static org.junit.Assert.*;
  */
 public class TesterUnit {
 
-	private compareAndHash1.FileDuplicateFinder finder;
+	private FileDuplicateFinder finder;
 	// Для тестирования метода walkFileTree - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
 	private Map<Long, Set<File>> expectedFilesBySize;
 	// Для тестирования метода findDuplicates - обход файловой системы и группировка файлов по их размеру в списки групп дубликатов в
@@ -64,6 +66,7 @@ public class TesterUnit {
 				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/aaaaaaaa"),
 				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/aaaaaaaa")
 		));
+
 		expectedFilesBySize.put(20L, Set.of(
 				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2 (копия).txt"),
 				new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/a2.txt"),
@@ -218,7 +221,7 @@ public class TesterUnit {
 	 expectedFilesBySize - ожидаемый результат*/
 	@Test
 	public void testWalkFileTree() throws IOException {
-		compareAndHash2.FileDuplicateFinder finder = new compareAndHash2.FileDuplicateFinder();
+		FileDuplicateFinder finder = new FileDuplicateFinder();
 
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 
@@ -289,7 +292,7 @@ public class TesterUnit {
 	/** Тестирование метода findDuplicates для проверки групп дубликатов */
 	@Test
 	public void findDuplicates2() throws IOException {
-		compareAndHash1.FileDuplicateFinder finder = new FileDuplicateFinder();
+		FileDuplicateFinder finder = new FileDuplicateFinder();
 		// Ожидаемый результат
 		List<Set<File>> expected = new ArrayList<>();
 		expected.add(new HashSet<>(Arrays.asList(
@@ -338,18 +341,18 @@ public class TesterUnit {
 	@Test
 	public void testAreFilesEqual() throws IOException, ExecutionException, InterruptedException {
 		// Проверка на равенство файлов с одинаковым содержимым
-		assertEquals(true, compareAndHash1.FileComparator.areFilesEqual(file1.toFile(), file2.toFile()));
-		assertEquals(true, compareAndHash1.FileComparator.areFilesEqual(file5.toFile(), file6.toFile()));
-		assertEquals(true, compareAndHash1.FileComparator.areFilesEqual(file7.toFile(), file8.toFile()));
-		assertEquals(true, compareAndHash1.FileComparator.areFilesEqual(file9.toFile(), file10.toFile()));
+		assertEquals(true, FileComparator.areFilesEqual(file1.toFile(), file2.toFile()));
+		assertEquals(true, FileComparator.areFilesEqual(file5.toFile(), file6.toFile()));
+		assertEquals(true, FileComparator.areFilesEqual(file7.toFile(), file8.toFile()));
+		assertEquals(true, FileComparator.areFilesEqual(file9.toFile(), file10.toFile()));
 		// Проверка на равенство файлов с разным содержимым
-		assertEquals(false, compareAndHash1.FileComparator.areFilesEqual(file3.toFile(), file4.toFile()));
-		assertEquals(false, compareAndHash1.FileComparator.areFilesEqual(file5.toFile(), file3.toFile()));
+		assertEquals(false, FileComparator.areFilesEqual(file3.toFile(), file4.toFile()));
+		assertEquals(false, FileComparator.areFilesEqual(file5.toFile(), file3.toFile()));
 		// Проверка на равенство файлов нулевого размера
-		assertEquals(true, compareAndHash1.FileComparator.areFilesEqual(file11.toFile(), file12.toFile()));
-		assertEquals(true, compareAndHash1.FileComparator.areFilesEqual(file13.toFile(), file11.toFile()));
+		assertEquals(true, FileComparator.areFilesEqual(file11.toFile(), file12.toFile()));
+		assertEquals(true, FileComparator.areFilesEqual(file13.toFile(), file11.toFile()));
 		// Проверка на равенство очень больших файлов
-		boolean result = compareAndHash1.FileComparator.areFilesEqual(file14.toFile(), file15.toFile());
+		boolean result = FileComparator.areFilesEqual(file14.toFile(), file15.toFile());
 		assertEquals(true, result);
 	}
 	

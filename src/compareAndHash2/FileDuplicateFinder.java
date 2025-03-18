@@ -1,5 +1,10 @@
 package compareAndHash2;
 
+import processing.CheckValid;
+import processing.FileGrouper;
+import processing.Printer;
+import processing.FileNameSimilarityChecker;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -9,25 +14,22 @@ import java.util.concurrent.*;
 public class FileDuplicateFinder {
 
     private static final int NUM_PROCESSORS = Runtime.getRuntime().availableProcessors();  // Количество процессоров
-
     private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/428L; // Порог для больших файлов; // порог для больших файлов
+    private final List<String> verifiedDirectories;  // Список всех абсолютных путей проверенных директорий
 
-    private final CheckValid checkValid;
+    private final CheckValid checkValid;  // класс для проверки валидности файлов и директорий
+    private final FileNameSimilarityChecker fileNameSimilarityChecker;    // класс для проверки схожести имен файлов
+    private final FileGrouper fileGrouper;  // класс для группировки файлов по хешу и контенту
 
-    // класс для проверки схожести имен файлов
-    private final FileNameSimilarityChecker fileNameSimilarityChecker;
+    private final Map<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
 
-    private final ConcurrentHashMap<Long, Set<File>> fileBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
-    public final Map<Long, Set<File>> getFilesBySize() {return fileBySize;}
+    private List<Set<File>> duplicates; // Список групп дубликатов файлов - результат поиска дубликатов
 
-    private final FileGrouper fileGrouper;
-
-    private final List<Set<File>> duplicates;
-    List<Set<File>> getDuplicates() {return duplicates;}
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
+        this.verifiedDirectories = new ArrayList<>();
         this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
         this.fileBySize = new ConcurrentHashMap<>();
         this.fileGrouper = new FileGrouper();
@@ -36,19 +38,16 @@ public class FileDuplicateFinder {
 
 
     /* Основной метод для поиска групп дубликатов файлов
-     * @return duplicates - список групп дубликатов файлов
-     * @return path - путь к директории, в которой нужно найти дубликаты
-    * */
+     * path - путь к директории, в которой нужно найти дубликаты
+     */
     public void findDuplicates(String[] paths) throws IOException {
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
-
-        processGroupFiles();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
-
-        removeSingleFiles();  // Удаляем списки по одному файлу из filesByKey
-
-        printSortedFileGroups();  // Вывод групп дубликатов файлов в консоль
+        // Добавляем файлы в карту fileByKey и fileByContent из HashMap fileBySize
+        processGroupFiles();
+        // Получаем список групп дубликатов файлов, сортируем и выводим результат
+        duplicates = Printer.duplicatesByHashAndContent(fileGrouper.getFilesByKey(), fileGrouper.getFilesByContent());
     }
 
 
@@ -58,10 +57,12 @@ public class FileDuplicateFinder {
      * @param path - путь к директории, с которой начинается обход файловой системы
      */
     public void walkFileTree(String path) {
-        if (!checkValid.isValidDirectoryPath(path)) {
-            System.out.println("Невалидная директория: " + path);
+        if (!checkValid.isValidDirectoryPath(path) || verifiedDirectories.contains(path)) {
+            System.err.println("Невалидная директория или проверенная уже: " + path);
             return;
         }
+
+        verifiedDirectories.add(path); // Добавляем проверенную директорию в список
 
         File directory = new File(path); // Создаем объект File(директорий) для указанного пути
         File[] files = directory.listFiles();  // Получаем список всех файлов и директорий в указанной директории
@@ -73,8 +74,8 @@ public class FileDuplicateFinder {
 
             for (int i = 0; i < files.length; i++) {  // Перебираем каждый файл и директорию в текущей директории
                 final File file = files[i]; // Сохраняем ссылку на текущий файл в локальной переменной
+                // ----------------------------------------------------------------------------------------
                 futures[i] = CompletableFuture.runAsync(() -> {
-//                    try {
                         if (file.isDirectory()) {  // Если текущий файл является директорией, рекурсивно вызываем walkFileTree
                             walkFileTree(file.getAbsolutePath());
                         } else {
@@ -86,8 +87,8 @@ public class FileDuplicateFinder {
                             fileBySize.computeIfAbsent(fileSize, k -> ConcurrentHashMap.newKeySet()).add(file);
                         }
                 }, executor);
+                // ----------------------------------------------------------------------------------------
             }
-
             // Ожидаем завершения всех CompletableFuture
             CompletableFuture.allOf(futures).join();
             executor.shutdown();
@@ -95,8 +96,8 @@ public class FileDuplicateFinder {
     }
 
 
-    // Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
-    // Перед этим смотрим если файлов меньше 2, то пропускаем
+    /* Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
+     */
     public void processGroupFiles() {
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
@@ -169,52 +170,6 @@ public class FileDuplicateFinder {
     }
 
 
-    // Удаление списков по одному файлу - из filesByKey
-    public void removeSingleFiles() {
-        for (Iterator<Map.Entry<FileKeyHash, Set<File>>> iterator = fileGrouper.getFilesByKey().entrySet().iterator(); iterator.hasNext(); ) {
-            Map.Entry<FileKeyHash, Set<File>> entry = iterator.next();
-            if (entry.getValue().size() < 2) {
-//            if (entry.getValue().isEmpty()) {
-                iterator.remove();
-            }
-        }
-    }
-
-
-    // Вывод групп дубликатов файлов в консоль
-    public void printSortedFileGroups() {
-
-        // Добавляем все Set<File> из filesByKey
-//        for (Set<File> fileSet : fileGrouper.getFilesByKey().values()) {
-//            duplicates.add(fileSet);
-//        }
-        duplicates.addAll(fileGrouper.getFilesByKey().values());
-
-        // Добавляем все Set<File> из filesByContent
-//        for (Set<File> fileSet : fileGrouper.getFilesByContent()) {
-//            duplicates.add(fileSet);
-//        }
-        duplicates.addAll(fileGrouper.getFilesByContent());
-
-        // Сортируем список по размеру первого файла в каждом Set<File>
-        duplicates.sort(Comparator.comparingLong(set -> set.iterator().next().length()));
-
-        // Выводим отсортированные группы в консоль
-        for (Set<File> fileSet : duplicates) {
-            // Извлекаем размер первого файла для вывода
-            File firstFile = fileSet.iterator().next();
-            System.out.println("-------------------------------------------------");
-            System.out.println("Группа дубликатов размером: " + firstFile.length() + " байт");
-            for (File file : fileSet) {
-                System.out.println("    " + file.getAbsolutePath());
-            }
-            System.out.println("-------------------------------------------------");
-        }
-        System.out.println("-  LARGE_FILE_THRESHOLD = " + LARGE_FILE_THRESHOLD);
-
-    }
-
-
     /* Метод для получения порога для больших файлов
         * @return порог для больших файлов
      */
@@ -223,5 +178,11 @@ public class FileDuplicateFinder {
         int availableProcessors = Runtime.getRuntime().availableProcessors(); // Количество доступных процессоров
         return maxMemory / (availableProcessors * 4L); // Возвращаем порог
     }
+
+    // Возвращает карту файлов, сгруппированных по размеру - геттер
+    Map<Long, Set<File>> getFilesBySize() {return fileBySize;}
+
+    // Возвращает список групп дубликатов файлов - геттер
+    List<Set<File>> getDuplicates() {return duplicates;}
 
 }

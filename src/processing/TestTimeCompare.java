@@ -96,7 +96,7 @@ public class TestTimeCompare {
         }
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);
-        if (new compareAndHash1.FileKeyHash(file1).equals(new compareAndHash1.FileKeyHash(file2))) {
+        if (new FileKeyHash(file1).equals(new FileKeyHash(file2))) {
             System.out.println("файлы одинаковы");
         } else {
             System.out.println("файлы разные");
@@ -124,7 +124,7 @@ public class TestTimeCompare {
             byte[] hash2 = hashFuture2.join();        }
         long endTime = System.currentTimeMillis();
         long duration = (long) (endTime - startTime);
-        if (new compareAndHash1.FileKeyHash(file1).equals(new FileKeyHash(file2))) {
+        if (new FileKeyHash(file1).equals(new FileKeyHash(file2))) {
             System.out.println("файлы одинаковы");
         } else {
             System.out.println("файлы разные");
