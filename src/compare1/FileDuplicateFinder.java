@@ -104,7 +104,6 @@ public class FileDuplicateFinder {
 //                } else {
 //                    fileGrouper.groupByContentParallel(files);
 //                }
-//
 //            }, executor);
 //            futures.add(future);
 //        });
@@ -119,7 +118,7 @@ public class FileDuplicateFinder {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         // Фильтруем списки файлов заранее, убираем те, которые меньше 2
-        filesBySize.entrySet().parallelStream()
+        filesBySize.entrySet().stream()
                 .filter(entry -> entry.getValue().size() >= 2)
                 .forEach(entry -> {
                             Set<File> files = entry.getValue();
