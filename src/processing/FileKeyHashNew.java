@@ -1,9 +1,6 @@
 package processing;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -14,29 +11,28 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class FileKeyHash implements Comparable<FileKeyHash> {
+public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
     private final long size;
     public long getSize() {
         return size;
     }
     //private final String partialContentHash;   // Хеш первых 1024 байт файла
-    private final byte[] fullContentHash;      // Хеш всего файла
+    private final Long fullContentHash;      // Хеш всего файла
     // (На больш компе) - calculateHashLargeFile становиться быстрее calculateHashSmallFile на 512000(500Кб)
     // Значит порог для больших файлов - LARGE_FILE_SIZE = 524812288 надо делить на 1025
     private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1025; // порог для больших файлов - после тестирований скорее всего так и оставлю
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
-    private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
+    private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors()*2); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
 
     // конструктор по умолчанию
-    public FileKeyHash() {
+    public FileKeyHashNew() {
         this.size = 0;
-        this.fullContentHash = new byte[0];
+        this.fullContentHash = 0L;
     }
 
     // Конструктор для создания ключа файла на основе размера и части содержимого
-    public FileKeyHash(File file) throws IOException, NoSuchAlgorithmException {
+    public FileKeyHashNew(File file) throws IOException, NoSuchAlgorithmException {
         this.size = file.length();
         this.fullContentHash = calculateHash(file);
     }
@@ -44,11 +40,11 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     /* Метод для расчета хеша файла
      * @param file - файл, для которого нужно рассчитать хеш
      */
-    public static byte[] calculateHash(File file) {
+    public static Long calculateHash(File file) {
         // если файл пустой, возвращаем -1
         if (file.length() == 0) {
             //return "-1";
-            return new byte[0];
+            return 0L;
         }
 
         if (file.length() < LARGE_FILE_SIZE) {
@@ -61,7 +57,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 
 
     // метод для вычисления хеша файла
-    static byte[] calculateHashSmallFile(File file) {
+    static Long calculateHashSmallFile(File file) {
         //System.out.println("вычисление хеша  - " + file.getAbsolutePath());
 
         try {
@@ -77,8 +73,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
             }
             fis.close();
 
-            // возвращаем хеш в виде байтового массива
-            return digest.digest();
+            // возвращаем хеш в виде Long при помощи метода byteArrayToLong
+            return byteArrayToLong(digest.digest());
         } catch (IOException e) {
             System.out.println("Ошибка при вычислении хеша файла " + file + ": " + e.getMessage());
             e.printStackTrace();
@@ -92,7 +88,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
      * @param file - файл, для которого нужно рассчитать хеш
      */
     // Метод для вычисления хеша большого файла
-    static byte[] calculateHashLargeFile(File file) {
+    static Long calculateHashLargeFile(File file) {
         //System.out.println("вычисление хеша LargeFile - " + file);
         try {
             System.out.println("хеш файла - " + Arrays.toString(updateDigestWithLargeFileContent(file)));
@@ -105,7 +101,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 
 
     // Вспомогательный метод для обновления хеша содержимым большого файла
-    private static byte[] updateDigestWithLargeFileContent(File file) throws IOException {
+    private static Long updateDigestWithLargeFileContent(File file) throws IOException {
 
         MessageDigest finalDigest = createMessageDigest(); // Создаем объект MessageDigest для финального хеширования
         long fileSize = file.length(); // Получаем размер файла
@@ -156,7 +152,19 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 
         executor.shutdown();
         // Получение финального хеша
-        return finalDigest.digest();
+        return byteArrayToLong(finalDigest.digest());
+    }
+
+
+    /* Метод перевода байтового массива в Long
+     * @param byteArray - байтовый массив
+     */
+    private static Long byteArrayToLong(byte[] byteArray) {
+        long result = 0;
+        for (int i = 0; i < byteArray.length; i++) {
+            result += (byteArray[i] & 0xff) << (8 * i);
+        }
+        return result;
     }
 
 
@@ -177,7 +185,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FileKeyHash fileKeyHash = (FileKeyHash) o;
+        FileKeyHashNew fileKeyHash = (FileKeyHashNew) o;
         return size == fileKeyHash.size && Arrays.equals(fullContentHash, fileKeyHash.fullContentHash);
     }
 
@@ -189,7 +197,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     
     // Переопределение метода compareTo для корректного сравнения объектов FileKey
     @Override
-    public int compareTo(FileKeyHash other) {
+    public int compareTo(FileKeyHashNew other) {
         int sizeComparison = Long.compare(this.size, other.size);
         if (sizeComparison != 0) {
             return sizeComparison;
@@ -248,8 +256,8 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
 //        String hf1 = calculateHashSmallFile(file1);
 //        String hf2 = calculateHashLargeFile(file2);
 
-        FileKeyHash fk1 = new FileKeyHash(file1);
-        FileKeyHash fk2 = new FileKeyHash(file2);
+        FileKeyHashNew fk1 = new FileKeyHashNew(file1);
+        FileKeyHashNew fk2 = new FileKeyHashNew(file2);
 
         long endTime1 = System.currentTimeMillis();
         System.out.println("Время выполнения хеширования: " + (endTime1 - startTime) + " мс");
