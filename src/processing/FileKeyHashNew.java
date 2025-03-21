@@ -13,169 +13,84 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
-    private final long size;
-    public long getSize() {
-        return size;
-    }
-    //private final String partialContentHash;   // Хеш первых 1024 байт файла
-    private final Long fullContentHash;      // Хеш всего файла
+
+    private final byte[] contentHash;      // Хеш всего файла
+
+    private long offset; // Смещение в файле
+
     // (На больш компе) - calculateHashLargeFile становиться быстрее calculateHashSmallFile на 512000(500Кб)
     // Значит порог для больших файлов - LARGE_FILE_SIZE = 524812288 надо делить на 1025
     private static final int LARGE_FILE_SIZE = getOptimalLargeFileSize()/1025; // порог для больших файлов - после тестирований скорее всего так и оставлю
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
-    private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors()*2); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
 
     // конструктор по умолчанию
     public FileKeyHashNew() {
-        this.size = 0;
-        this.fullContentHash = 0L;
+        this.contentHash = new byte[0];
     }
 
     // Конструктор для создания ключа файла на основе размера и части содержимого
     public FileKeyHashNew(File file) throws IOException, NoSuchAlgorithmException {
-        this.size = file.length();
-        this.fullContentHash = calculateHash(file);
-    }
 
-    /* Метод для расчета хеша файла
-     * @param file - файл, для которого нужно рассчитать хеш
-     */
-    public static Long calculateHash(File file) {
-        // если файл пустой, возвращаем -1
-        if (file.length() == 0) {
-            //return "-1";
-            return 0L;
-        }
+        long offset;
 
         if (file.length() < LARGE_FILE_SIZE) {
             // если файл меньше порога, используем bufferSize для не больших файлов
-            return calculateHashSmallFile(file);
+            offset = 8192;
+        } else {
+            // если файл больше порога, используем bufferSize для больших файлов
+            offset = BUFFER_SIZE;
         }
-        // если файл больше порога, используем bufferSize для больших файлов
-        return calculateHashLargeFile(file);
+        this.contentHash = calculateHash(file, offset);
     }
 
 
     // метод для вычисления хеша файла
-    static Long calculateHashSmallFile(File file) {
-        //System.out.println("вычисление хеша  - " + file.getAbsolutePath());
+    // Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
+    private byte[] calculateHash(File file, long offset) throws IOException {
 
-        try {
-            //MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для финального хеширования
-            FileInputStream fis = new FileInputStream(file.getAbsoluteFile());
-            byte[] byteArray = new byte[8192];
-            int bytesCount;
+        if (!file.exists() || offset < 0 || offset >= file.length()) {
+            throw new IllegalArgumentException("Неверный файл или смещение");
+        }
 
-            // Чтение файла и обновление хеша
-            while ((bytesCount = fis.read(byteArray)) != -1) {
-                digest.update(byteArray, 0, bytesCount);
+        //System.out.println("---  calculateFileHash ---" + i);
+        // Создаем объект MessageDigest для вычисления хеша файла
+        MessageDigest digest = createMessageDigest();
+
+        // Открываем FileInputStream для чтения содержимого файла
+        try (FileInputStream fis = new FileInputStream(file)) {
+            // Пропускаем байты до указанного смещения, чтобы начать чтение с нужного места
+            fis.skip(offset);
+
+            // Создаем массив байтов для хранения данных, читаемых из файла
+            byte[] byteArray = new byte[BUFFER_SIZE];
+
+            // Читаем данные из файла в массив byteArray и сохраняем количество прочитанных байтов
+            int bytesCount = fis.read(byteArray);
+
+            // Если метод read возвращает -1, это означает, что достигнут конец файла
+            if (bytesCount == -1) {
+                return new byte[0]; // Возвращаем пустой массив байтов
             }
-            fis.close();
 
-            // возвращаем хеш в виде Long при помощи метода byteArrayToLong
-            return byteArrayToLong(digest.digest());
-        } catch (IOException e) {
-            System.out.println("Ошибка при вычислении хеша файла " + file + ": " + e.getMessage());
-            e.printStackTrace();
-            return null;
+            // Обновляем объект digest, добавляя к нему прочитанные байты
+            digest.update(byteArray, 0, bytesCount);
         }
+
+        // Завершаем вычисление хеша и получаем массив байтов, представляющий хеш
+        byte[] hashBytes = digest.digest();
+
+        //System.out.println("..." + Arrays.toString(hashBytes));
+        // Преобразуем массив байтов хеша в строку в шестнадцатеричном формате и возвращаем ее
+        return hashBytes;
     }
 
 
-    // Метод для вычисления хеша болшьшого файла
-    /* Метод для расчета хеша большого файла
-     * @param file - файл, для которого нужно рассчитать хеш
-     */
-    // Метод для вычисления хеша большого файла
-    static Long calculateHashLargeFile(File file) {
-        //System.out.println("вычисление хеша LargeFile - " + file);
+    // Создание объекта MessageDigest для вычисления хеша
+    private MessageDigest createMessageDigest() {
         try {
-            System.out.println("хеш файла - " + updateDigestWithLargeFileContent(file));
-            return updateDigestWithLargeFileContent(file); // Обновляем хеш содержимым файла
-        } catch (IOException e) {
-            System.err.println("Ошибка чтения файла " + file + ": " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    // Вспомогательный метод для обновления хеша содержимым большого файла
-    private static Long updateDigestWithLargeFileContent(File file) throws IOException {
-
-        MessageDigest finalDigest = createMessageDigest(); // Создаем объект MessageDigest для финального хеширования
-        long fileSize = file.length(); // Получаем размер файла
-        long partSize = (long) Math.ceil((double) fileSize / NUM_BLOCKS); // Размер каждой части файла
-
-        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Создаем пул потоков
-        //ExecutorService executor = Executors.newFixedThreadPool(NUM_BLOCKS); // Создаем пул потоков
-        List<CompletableFuture<MessageDigest>> futures = new ArrayList<>(); // Список для хранения CompletableFuture
-
-        for (int i = 0; i < NUM_BLOCKS; i++) {
-            long start = i * partSize; // Начало части
-            long end = Math.min(start + partSize, fileSize); // Конец части
-            futures.add(CompletableFuture.supplyAsync(() -> {
-                //System.out.println("-------------------------start = " + start + "  end = " + end);
-                try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {  // Открываем файл для чтения
-                    MessageDigest digest = createMessageDigest(); // Создаем объект MessageDigest для хеширования
-                    byte[] buffer = new byte[BUFFER_SIZE]; // Буфер для чтения файла
-                    raf.seek(start); // Переходим к началу части файла
-                    long bytesReadTotal = 0; // Общее количество прочитанных байт
-                    int bytesRead; // Количество байт, прочитанных из файла
-
-                    // Пока есть байты в файле, читаем их и обновляем хеш
-                    while (bytesReadTotal < (end - start) && (bytesRead = raf.read(buffer, 0, (int) Math.min(BUFFER_SIZE, end - start - bytesReadTotal))) != -1) {
-                        digest.update(buffer, 0, bytesRead); // Обновляем хеш
-                        bytesReadTotal += bytesRead; // Обновляем общее количество прочитанных байт
-                    }
-
-                    return digest; // Возвращаем объект MessageDigest
-                } catch (IOException e) {
-                    System.err.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
-                    throw new UncheckedIOException(e);
-                }
-            }, executor));
-        }
-
-        // Ожидаем завершения всех задач и обновляем финальный хеш
-        for (CompletableFuture<MessageDigest> future : futures) {
-            try {
-                MessageDigest partDigest = future.join(); // Получаем результат задачи
-                //synchronized (finalDigest) {
-                    finalDigest.update(partDigest.digest()); // Обновляем финальный хеш
-                //}
-            } catch (CompletionException e) {
-                System.err.println("Ошибка при обновлении хеша: " + e.getMessage());
-                e.printStackTrace(); // Выводим стек вызовов для диагностики
-            }
-        }
-
-        executor.shutdown();
-        // Получение финального хеша
-        return byteArrayToLong(finalDigest.digest());
-    }
-
-
-    /* Метод перевода байтового массива в Long
-     * @param byteArray - байтовый массив
-     */
-    private static Long byteArrayToLong(byte[] byteArray) {
-        long result = 0;
-        for (int i = 0; i < byteArray.length; i++) {
-            result += (byteArray[i] & 0xff) << (8 * i);
-        }
-        return result;
-    }
-
-
-    // Вспомогательный метод для создания объекта MessageDigest
-    private static MessageDigest createMessageDigest() {
-        try {
-            //return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
             return MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            System.out.println("Алгоритм хеширования MD5 не найден");
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при создании MessageDigest", e);
         }
     }
 
@@ -186,23 +101,19 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FileKeyHashNew fileKeyHash = (FileKeyHashNew) o;
-        return size == fileKeyHash.size && fullContentHash.equals(fileKeyHash.fullContentHash);
+        return Arrays.equals(contentHash, fileKeyHash.contentHash);
     }
 
     // Переопределение метода hashCode для корректного сравнения объектов FileKey
     @Override
     public int hashCode() {
-        return Objects.hash(size) ^ fullContentHash.hashCode();
+        return Arrays.hashCode(contentHash); // Вычисляем хеш объекта FileKey на основе размера и хеша содержимого
     }
     
     // Переопределение метода compareTo для корректного сравнения объектов FileKey
     @Override
     public int compareTo(FileKeyHashNew other) {
-        int sizeComparison = Long.compare(this.size, other.size);
-        if (sizeComparison != 0) {
-            return sizeComparison;
-        }
-        return this.fullContentHash.compareTo(other.fullContentHash);
+        return Arrays.compare(this.contentHash, other.contentHash);
     }
 
 
@@ -241,38 +152,6 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 
-        System.out.println(" LARGE_FILE_SIZE = " + LARGE_FILE_SIZE);
-        System.out.println(" BUFFER_SIZE = " + BUFFER_SIZE);
-        long startTime = System.currentTimeMillis();
 
-        //File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)");
-        //File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат");
-
-        File file1 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback .mp4");
-        File file2 = new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (копия).mp4");
-
-        System.out.println("  размер файла - " + file1.length());
-
-//        String hf1 = calculateHashSmallFile(file1);
-//        String hf2 = calculateHashLargeFile(file2);
-
-        FileKeyHashNew fk1 = new FileKeyHashNew(file1);
-        FileKeyHashNew fk2 = new FileKeyHashNew(file2);
-
-        long endTime1 = System.currentTimeMillis();
-        System.out.println("Время выполнения хеширования: " + (endTime1 - startTime) + " мс");
-
-        if (fk1.equals(fk2)) {
-        //if (fk1.compareTo(fk2) == 0) {
-            System.out.println("Файлы одинаковые");
-        } else {
-            System.out.println("Файлы разные");
-        }
-
-        long endTime = System.currentTimeMillis();
-        System.out.println("Время выполнения всего: " + (endTime - startTime) + " мс");
-
-
-        System.out.println("Время выполнения equals: " + (endTime - endTime1) + " мс");
     }
 }
