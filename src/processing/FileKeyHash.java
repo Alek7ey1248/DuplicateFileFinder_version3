@@ -95,7 +95,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     static byte[] calculateHashLargeFile(File file) {
         //System.out.println("вычисление хеша LargeFile - " + file);
         try {
-            System.out.println("хеш файла - " + Arrays.toString(updateDigestWithLargeFileContent(file)));
+            //System.out.println("хеш файла - " + Arrays.toString(updateDigestWithLargeFileContent(file)));
             return updateDigestWithLargeFileContent(file); // Обновляем хеш содержимым файла
         } catch (IOException e) {
             System.err.println("Ошибка чтения файла " + file + ": " + e.getMessage());

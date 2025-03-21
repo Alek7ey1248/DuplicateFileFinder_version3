@@ -32,31 +32,71 @@ public class FileGrouperNew {
     }
 
 
+    // рекурсивный основной метод
+//    public void groupByContent(Set<File> files, String key, long offset) {
+//
+//        // filesByContent группировка файлов по хешам их первых буферов
+//        filesByContent = groupFiles(files, key, offset);
+//        System.out.println("---- проход --------" + i++);
+//
+//        // Проходим по всем сгруппированным файлам
+//        for (Map.Entry<String, Set<File>> entry : filesByContent.entrySet()) {
+//            Set<File> fileGroup = entry.getValue(); // Получаем набор файлов для текущего хеша
+//
+//            // если в результате предыдущей группировки по предыдущим хешам
+//            // в группе меньше двух файлов, то удаляем группу из карты filesByContent
+//            if (fileGroup.size() < 2) {
+//                System.out.println("---- удаляем- filesByContent.remove(entry.getKey());");
+//                filesByContent.remove(entry.getKey());
+//                continue;
+//            }
+//
+//            // Если размер первого файла в группе меньше смещения, то заканчиваем группировки filesByContent
+//            if (fileGroup.iterator().next().length() < offset + BUFFER_SIZE) {
+//                System.out.println("------------- Закончили упражнение");
+//                continue;
+//            }
+//
+//            // Рекурсивный вызов для дальнейшей группировки файлов, если группа больше одного
+//            // Увеличиваем смещение на размер буфера, чтобы читать следующий блок данных
+//            groupByContent(fileGroup, entry.getKey(), offset + BUFFER_SIZE);
+//
+//        }
+//    }
+
+    // не рекурсивный метод
     public void groupByContent(Set<File> files, String key, long offset) {
-
-        //System.out.println("------------- " + i++);
-
-        // Создаем карту для группировки файлов по их хешам
+        // filesByContent группировка файлов по хешам их первых буферов
         filesByContent = groupFiles(files, key, offset);
-
-        // Проходим по всем сгруппированным файлам
-        for (Map.Entry<String, Set<File>> entry : filesByContent.entrySet()) {
+        System.out.println("---- проход --------" + i++);
+        // Используем стек для хранения групп файлов и их параметров
+        Stack<Map.Entry<String, Set<File>>> stack = new Stack<>();
+        stack.addAll(filesByContent.entrySet());
+        while (!stack.isEmpty()) {
+            Map.Entry<String, Set<File>> entry = stack.pop();
             Set<File> fileGroup = entry.getValue(); // Получаем набор файлов для текущего хеша
-
-            // Проверяем, если в группе больше одного файла
-            if (fileGroup.size() > 1) {
-                if (fileGroup.iterator().next().length() > offset) {
-                    System.out.println("------------- Закончили упражнение");
-                    return;
-                }
-                // Рекурсивный вызов для дальнейшей группировки файлов, если группа больше одного
-                // Увеличиваем смещение на размер буфера, чтобы читать следующий блок данных
-                groupByContent(fileGroup, entry.getKey(), offset + BUFFER_SIZE);
-            } else {
+            // Если в группе меньше двух файлов, то удаляем группу из карты filesByContent
+            if (fileGroup.size() < 2) {
+                System.out.println("---- удаляем- filesByContent.remove(entry.getKey());");
                 filesByContent.remove(entry.getKey());
+                continue;
             }
+            // Если размер первого файла в группе меньше смещения, то заканчиваем группировки filesByContent
+            if (fileGroup.iterator().next().length() < offset + BUFFER_SIZE) {
+                System.out.println("------------- Закончили упражнение");
+                continue;
+            }
+            // Добавляем группу обратно в стек с увеличенным смещением
+            stack.push(new AbstractMap.SimpleEntry<>(entry.getKey(), fileGroup));
+            // Увеличиваем смещение на размер буфера для следующей обработки
+            offset += BUFFER_SIZE;
+            // Группируем файлы заново и добавляем новые группы в стек
+            Map<String, Set<File>> newGroupedFiles = groupFiles(fileGroup, entry.getKey(), offset);
+            stack.addAll(newGroupedFiles.entrySet());
         }
     }
+
+
     /* Метод вычисляет хеш для каждого файла в переданном множестве файлов,
      * начиная с указанного смещения offset, и группирует файлы по их хешам.
      * Возвращает карту, в которой ключ - хеш файла, значение - множество файлов с этим хешем.
@@ -70,7 +110,9 @@ public class FileGrouperNew {
         for (File file : files) {
             try {
                 // Вычисляем хеш для текущего файла, начиная с указанного смещения
-                String newFileHash = key + calculateFileHash(file, offset);
+                String newFileHash = calculateFileHash(file, offset);
+//                String newFileHash = key + calculateFileHash(file, offset);
+                //System.out.println("newFileHash = " + newFileHash);
 
                 // Создаем объект MessageDigest для объединения хешей
                 //MessageDigest digest = createMessageDigest();
@@ -105,6 +147,11 @@ public class FileGrouperNew {
 
     // Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
     private String calculateFileHash(File file, long offset) throws IOException {
+
+        if (!file.exists() || offset < 0 || offset >= file.length()) {
+            throw new IllegalArgumentException("Неверный файл или смещение");
+        }
+
         //System.out.println("---  calculateFileHash ---" + i);
         // Создаем объект MessageDigest для вычисления хеша файла
         MessageDigest digest = createMessageDigest();
@@ -168,32 +215,20 @@ public class FileGrouperNew {
 //        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена) (Копия)"));
 
-        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
-
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 2)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 3)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 4)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 5)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 6)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 7)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 8)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 9)"));
-//        files.add(new File("/home/alek7ey/Рабочий стол/Доп файлы для TestTimeFileGrouper/фильм про солдат (другая копия) (Копия 10)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
 
 
-//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip"));
 
-        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt"));
+        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt"));
 
         //files.add(new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt"));
 
@@ -203,31 +238,41 @@ public class FileGrouperNew {
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/videoplayback (середина изменена).mp4"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/BiglargeFile.txt"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test01.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test02.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test03.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test04.txt"));
+//
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt"));
+//
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt"));
+//
+//
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test11 (копия).txt"));
-
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (другая копия).txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test21 (копия).txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test1одинтакой.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test2одинтакой.txt"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test3одинтакой.txt"));
 
 
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (другая копия).txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (3-я копия).txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31 (копия).txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test31.txt"));
-
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test1одинтакой.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test2одинтакой.txt"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder/test3одинтакой.txt"));
-
-
-        System.out.println("размер первого файла: " + files.iterator().next().length());
+        //System.out.println("размер первого файла: " + files.iterator().next().length());
         long startTime = System.currentTimeMillis();
+
+//        File directory = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
+//        File[] arrayFiles = directory.listFiles();
+//        if (arrayFiles != null) {
+//            for (File file : arrayFiles) {
+//                if (file.isFile()) {
+//                    files.add(file);
+//                }
+//            }
+//        }
 
 
         //fileGrouper.groupByContentParallel(files);
