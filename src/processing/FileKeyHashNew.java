@@ -91,7 +91,7 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
     static Long calculateHashLargeFile(File file) {
         //System.out.println("вычисление хеша LargeFile - " + file);
         try {
-            System.out.println("хеш файла - " + Arrays.toString(updateDigestWithLargeFileContent(file)));
+            System.out.println("хеш файла - " + updateDigestWithLargeFileContent(file));
             return updateDigestWithLargeFileContent(file); // Обновляем хеш содержимым файла
         } catch (IOException e) {
             System.err.println("Ошибка чтения файла " + file + ": " + e.getMessage());
@@ -186,13 +186,13 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         FileKeyHashNew fileKeyHash = (FileKeyHashNew) o;
-        return size == fileKeyHash.size && Arrays.equals(fullContentHash, fileKeyHash.fullContentHash);
+        return size == fileKeyHash.size && fullContentHash.equals(fileKeyHash.fullContentHash);
     }
 
     // Переопределение метода hashCode для корректного сравнения объектов FileKey
     @Override
     public int hashCode() {
-        return Objects.hash(size) ^ Arrays.hashCode(fullContentHash); // Вычисляем хеш объекта FileKey на основе размера и хеша содержимого
+        return Objects.hash(size) ^ fullContentHash.hashCode();
     }
     
     // Переопределение метода compareTo для корректного сравнения объектов FileKey
@@ -202,7 +202,7 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
         if (sizeComparison != 0) {
             return sizeComparison;
         }
-        return Arrays.compare(this.fullContentHash, other.fullContentHash);
+        return this.fullContentHash.compareTo(other.fullContentHash);
     }
 
 
