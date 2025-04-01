@@ -17,10 +17,10 @@ import java.util.concurrent.*;
  */
 public class FileGrouperNew {
 
-    private static int i = 0;
+    private static int i = 0;  // счетчик проходов
 
-    private Map<String, Set<File>> filesByContent;
-    public Map<String, Set<File>> getFilesByContent() {
+    private Map<FileKeyHashNew, Set<File>> filesByContent;  // Карта для хранения сгруппированных файлов по их хешам
+    public Map<FileKeyHashNew, Set<File>> getFilesByContent() {
         return filesByContent;
     }
 
@@ -32,67 +32,61 @@ public class FileGrouperNew {
     }
 
 
-    // рекурсивный основной метод
-//    public void groupByContent(Set<File> files, String key, long offset) {
-//
+    // Основной рекурсивный метод
+//    public void groupByContent(Set<File> files, FileKeyHashNew key, long offset) {
 //        // filesByContent группировка файлов по хешам их первых буферов
-//        filesByContent = groupFiles(files, key, offset);
-//        System.out.println("---- проход --------" + i++);
+//        filesByContent = groupFiles(files,offset);
 //
-//        // Проходим по всем сгруппированным файлам
-//        for (Map.Entry<String, Set<File>> entry : filesByContent.entrySet()) {
+//        // Используем стек для хранения групп файлов и их параметров
+//        Stack<Map.Entry<FileKeyHashNew, Set<File>>> stack = new Stack<>();
+//        stack.addAll(filesByContent.entrySet());
+//        while (!stack.isEmpty()) {
+//            Map.Entry<FileKeyHashNew, Set<File>> entry = stack.pop(); // Извлекаем элемент из стека
 //            Set<File> fileGroup = entry.getValue(); // Получаем набор файлов для текущего хеша
-//
-//            // если в результате предыдущей группировки по предыдущим хешам
-//            // в группе меньше двух файлов, то удаляем группу из карты filesByContent
+//            // Если в группе меньше двух файлов, то удаляем группу из карты filesByContent
 //            if (fileGroup.size() < 2) {
-//                System.out.println("---- удаляем- filesByContent.remove(entry.getKey());");
+//                //System.out.println("---- удаляем- filesByContent.remove(entry.getKey());");
 //                filesByContent.remove(entry.getKey());
 //                continue;
 //            }
 //
-//            // Если размер первого файла в группе меньше смещения, то заканчиваем группировки filesByContent
-//            if (fileGroup.iterator().next().length() < offset + BUFFER_SIZE) {
-//                System.out.println("------------- Закончили упражнение");
-//                continue;
+//            if (fileGroup.size() == 3) {
+//                System.out.println("**************** поймал " );
+//                for (File file : fileGroup) {
+//                    System.out.println("---- файл --- " + file.getAbsolutePath());
+//                }
 //            }
 //
-//            // Рекурсивный вызов для дальнейшей группировки файлов, если группа больше одного
-//            // Увеличиваем смещение на размер буфера, чтобы читать следующий блок данных
-//            groupByContent(fileGroup, entry.getKey(), offset + BUFFER_SIZE);
-//
+//            // Если размер первого файла в группе меньше смещения, то заканчиваем группировки filesByContent
+//            if (fileGroup.iterator().next().length() < offset + BUFFER_SIZE) {
+//                //System.out.println("------------- Закончили упражнение");
+//                continue;
+//            }
+//            // Добавляем группу обратно в стек с увеличенным смещением
+//            //stack.push(new AbstractMap.SimpleEntry<>(entry.getKey(), fileGroup));
+//            // Увеличиваем смещение на размер буфера для следующей обработки
+//            offset += BUFFER_SIZE;
+//            // Группируем файлы заново и добавляем новые группы в стек
+//            Map<FileKeyHashNew, Set<File>> newGroupedFiles = groupFiles(fileGroup, offset);
+//            stack.addAll(newGroupedFiles.entrySet());
 //        }
 //    }
 
-    // не рекурсивный метод
-    public void groupByContent(Set<File> files, String key, long offset) {
-        // filesByContent группировка файлов по хешам их первых буферов
-        filesByContent = groupFiles(files, key, offset);
-        System.out.println("---- проход --------" + i++);
-        // Используем стек для хранения групп файлов и их параметров
-        Stack<Map.Entry<String, Set<File>>> stack = new Stack<>();
-        stack.addAll(filesByContent.entrySet());
-        while (!stack.isEmpty()) {
-            Map.Entry<String, Set<File>> entry = stack.pop();
-            Set<File> fileGroup = entry.getValue(); // Получаем набор файлов для текущего хеша
-            // Если в группе меньше двух файлов, то удаляем группу из карты filesByContent
-            if (fileGroup.size() < 2) {
-                System.out.println("---- удаляем- filesByContent.remove(entry.getKey());");
-                filesByContent.remove(entry.getKey());
-                continue;
+    public void groupByContent(Set<File> files) {
+        long offset = 0;
+        while (true) {
+            Map<FileKeyHashNew, Set<File>> newGroupedFiles = groupFiles(files, offset);
+            if (newGroupedFiles.isEmpty()) {
+                break; // Если больше нет файлов для обработки, выходим из цикла
             }
-            // Если размер первого файла в группе меньше смещения, то заканчиваем группировки filesByContent
-            if (fileGroup.iterator().next().length() < offset + BUFFER_SIZE) {
-                System.out.println("------------- Закончили упражнение");
-                continue;
+            // Обновляем основную карту группировки
+            for (Map.Entry<FileKeyHashNew, Set<File>> entry : newGroupedFiles.entrySet()) {
+                filesByContent.merge(entry.getKey(), entry.getValue(), (existingSet, newSet) -> {
+                    existingSet.addAll(newSet);
+                    return existingSet;
+                });
             }
-            // Добавляем группу обратно в стек с увеличенным смещением
-            stack.push(new AbstractMap.SimpleEntry<>(entry.getKey(), fileGroup));
-            // Увеличиваем смещение на размер буфера для следующей обработки
-            offset += BUFFER_SIZE;
-            // Группируем файлы заново и добавляем новые группы в стек
-            Map<String, Set<File>> newGroupedFiles = groupFiles(fileGroup, entry.getKey(), offset);
-            stack.addAll(newGroupedFiles.entrySet());
+            offset += BUFFER_SIZE; // Увеличиваем смещение для следующей обработки
         }
     }
 
@@ -101,113 +95,44 @@ public class FileGrouperNew {
      * начиная с указанного смещения offset, и группирует файлы по их хешам.
      * Возвращает карту, в которой ключ - хеш файла, значение - множество файлов с этим хешем.
      */
-    private Map<String, Set<File>> groupFiles(Set<File> files, String key, long offset) {
-        //System.out.println("---  groupFiles ---" + i);
-        // Создаем новую карту для группировки файлов по их хешам
-        Map<String, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
+//    private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset) {
+//        // Создаем новую карту для группировки файлов по их хешам
+//        Map<FileKeyHashNew, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
+//
+//        // Проходим по каждому файлу в переданном множестве файлов
+//        for (File file : files) {
+//            try {
+//                // Вычисляем хеш для текущего файла, начиная с указанного смещения
+//                FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, BUFFER_SIZE);
+//                newFilesByContent.computeIfAbsent(fileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
+//            } catch (RuntimeException e) {
+//                // Если произошла ошибка при чтении файла, выводим сообщение об ошибке
+//                System.out.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
+//            }
+//        }
+//
+//        // Возвращаем карту сгруппированных файлов
+//        return newFilesByContent;
+//    }
 
-        // Проходим по каждому файлу в переданном множестве файлов
+    private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset) {
+        Map<FileKeyHashNew, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
         for (File file : files) {
             try {
+                if (!file.exists() || file.length() < offset) {
+                    continue; // Пропускаем файлы, которые не существуют или слишком короткие
+                }
                 // Вычисляем хеш для текущего файла, начиная с указанного смещения
-                String newFileHash = calculateFileHash(file, offset);
-//                String newFileHash = key + calculateFileHash(file, offset);
-                //System.out.println("newFileHash = " + newFileHash);
-
-                // Создаем объект MessageDigest для объединения хешей
-                //MessageDigest digest = createMessageDigest();
-
-                // Обновляем хеш с помощью предыдущего хеша
-//                digest.update(key);
-//                // Обновляем хеш с помощью нового хеша
-//                digest.update(newFileHash);
-
-                // Получаем финальный хеш
-//                byte[] combinedHash = digest.digest();
-
-                // Добавляем файл в группу, соответствующую его хешу
-                newFilesByContent.computeIfAbsent(newFileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
-            } catch (IOException | RuntimeException e) {
-                // Если произошла ошибка при чтении файла, выводим сообщение об ошибке
+                FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, BUFFER_SIZE);
+                newFilesByContent.computeIfAbsent(fileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
+            } catch (RuntimeException e) {
                 System.out.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
             }
         }
-
-//        for (Map.Entry<String, Set<File>> res : newFilesByContent.entrySet()) {
-//            Set<File> fileGroup = res.getValue();
-//            System.out.println(" Группа файлов: --------------------");
-//            for (File file : fileGroup) {
-//                System.out.println(file.getAbsolutePath());
-//            }
-//        }
-        // Возвращаем карту сгруппированных файлов
         return newFilesByContent;
     }
 
 
-    // Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
-    private String calculateFileHash(File file, long offset) throws IOException {
-
-        if (!file.exists() || offset < 0 || offset >= file.length()) {
-            throw new IllegalArgumentException("Неверный файл или смещение");
-        }
-
-        //System.out.println("---  calculateFileHash ---" + i);
-        // Создаем объект MessageDigest для вычисления хеша файла
-        MessageDigest digest = createMessageDigest();
-
-        // Открываем FileInputStream для чтения содержимого файла
-        try (FileInputStream fis = new FileInputStream(file)) {
-            // Пропускаем байты до указанного смещения, чтобы начать чтение с нужного места
-            fis.skip(offset);
-
-            // Создаем массив байтов для хранения данных, читаемых из файла
-            byte[] byteArray = new byte[BUFFER_SIZE];
-
-            // Читаем данные из файла в массив byteArray и сохраняем количество прочитанных байтов
-            int bytesCount = fis.read(byteArray);
-
-            // Если метод read возвращает -1, это означает, что достигнут конец файла
-            if (bytesCount == -1) {
-                return ""; // Возвращаем пустую строку, если файл пуст или достигнут конец
-            }
-
-            // Обновляем объект digest, добавляя к нему прочитанные байты
-            digest.update(byteArray, 0, bytesCount);
-        }
-
-        // Завершаем вычисление хеша и получаем массив байтов, представляющий хеш
-        byte[] hashBytes = digest.digest();
-
-        //System.out.println("..." + Arrays.toString(hashBytes));
-        // Преобразуем массив байтов хеша в строку в шестнадцатеричном формате и возвращаем ее
-        return bytesToHex(hashBytes);
-    }
-
-
-    // Создание объекта MessageDigest для вычисления хеша
-    private MessageDigest createMessageDigest() {
-        try {
-            return MessageDigest.getInstance("SHA-256");
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка при создании MessageDigest", e);
-        }
-    }
-
-
-    // Преобразование массива байтов в шестнадцатеричное представление
-    private static String bytesToHex(byte[] bytes) {
-        // Создаем объект StringBuilder для накопления строкового представления байтов
-        StringBuilder sb = new StringBuilder();
-        // Проходим по каждому байту в массиве байтов
-        for (byte b : bytes) {
-            // Форматируем байт как шестнадцатеричное число с двумя цифрами
-            // %02x означает: 0 - добавляет ведущие нули, 2 - минимальная ширина 2 символа, x - шестнадцатеричное представление
-            sb.append(String.format("%02x", b));
-        }
-        // Возвращаем полученную строку, представляющую все байты в шестнадцатеричном формате
-        return sb.toString();
-    }
 
     public static void main(String[] args) throws IOException {
         FileGrouperNew fileGrouper = new FileGrouperNew();
@@ -215,20 +140,20 @@ public class FileGrouperNew {
 //        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена) (Копия)"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (Копия 2)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (копия)"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 3)"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия 2)"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (другая копия) (Копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test11/test12/test13/фильм про солдат (копия)"));
+//        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder/test21/фильм про солдат"));
 
 
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат1.zip"));
         //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат.zip"));
 
-        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt"));
+        //files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/largeFile.txt"));
 
         //files.add(new File("/home/alek7ey/Рабочий стол/largeFile (Копия).txt"));
 
@@ -264,20 +189,13 @@ public class FileGrouperNew {
         //System.out.println("размер первого файла: " + files.iterator().next().length());
         long startTime = System.currentTimeMillis();
 
-//        File directory = new File("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
-//        File[] arrayFiles = directory.listFiles();
-//        if (arrayFiles != null) {
-//            for (File file : arrayFiles) {
-//                if (file.isFile()) {
-//                    files.add(file);
-//                }
-//            }
-//        }
-
+        File dir = new File("/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder");
+        File[] filesArray = dir.listFiles();
+        files = new HashSet<>(Arrays.asList(filesArray));
 
         //fileGrouper.groupByContentParallel(files);
-        fileGrouper.groupByContent(files, "", 0);
-        for (Map.Entry<String, Set<File>> res : fileGrouper.filesByContent.entrySet()) {
+        fileGrouper.groupByContent(files);
+        for (Map.Entry<FileKeyHashNew, Set<File>> res : fileGrouper.filesByContent.entrySet()) {
             Set<File> fileGroup = res.getValue();
             System.out.println(" Группа файлов: --------------------");
             for (File file : fileGroup) {
