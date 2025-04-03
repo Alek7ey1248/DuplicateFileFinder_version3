@@ -12,20 +12,16 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
 
     // конструктор с параметрами
     public FileKeyHashNew(File file, long offset, int bufferSize) {
-        try {
-            this.contentHash = calculateHash(file, offset, bufferSize);  // вычисляем хеш файла
-        } catch (IOException e) {
-             System.out.println("Ошибка при вычислении хеша файла: " + e.getMessage());
-        }
+        this.contentHash = calculateHash(file, offset, bufferSize);  // вычисляем хеш файла
     }
 
 
     // метод для вычисления хеша куска файла
     // Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
-    private static byte[] calculateHash(File file, long offset, int bufferSize) throws IOException {
+    private static byte[] calculateHash(File file, long offset, int bufferSize) {
 
-        if (!file.exists() || offset < 0 || offset >= file.length()) {
-            throw new IllegalArgumentException("Неверный файл или смещение");
+        if (offset + bufferSize > file.length()) {
+            bufferSize = Math.toIntExact(file.length() - offset); // Если размер буфера больше размера файла, то устанавливаем размер буфера равным размеру файла
         }
 
         //System.out.println("---  calculateFileHash ---" + i);
@@ -35,13 +31,22 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
         // Открываем FileInputStream для чтения содержимого файла
         try (FileInputStream fis = new FileInputStream(file)) {
             // Пропускаем байты до указанного смещения, чтобы начать чтение с нужного места
-            fis.skip(offset);
+            try {
+                fis.skip(offset);
+            } catch (IOException e) {
+                System.out.println("Ошибка при пропуске байтов: fis.skip(offset); " + e.getMessage());
+            }
 
             // Создаем массив байтов для хранения данных, читаемых из файла
             byte[] byteArray = new byte[bufferSize];
 
             // Читаем данные из файла в массив byteArray и сохраняем количество прочитанных байтов
-            int bytesCount = fis.read(byteArray);
+            int bytesCount = 0;
+            try {
+                bytesCount = fis.read(byteArray);
+            } catch (IOException e) {
+                System.out.println("Ошибка при чтении файла: bytesCount = fis.read(byteArray);" + e.getMessage());
+            }
 
             // Если метод read возвращает -1, это означает, что достигнут конец файла
             if (bytesCount == -1) {
@@ -50,10 +55,17 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
 
             // Обновляем объект digest, добавляя к нему прочитанные байты
             digest.update(byteArray, 0, bytesCount);
+            //System.out.println();
+
+        } catch (FileNotFoundException e) {
+            System.out.println("Файл не найден: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Ошибка ввода-вывода: " + e.getMessage());
         }
 
         // Завершаем вычисление хеша и получаем массив байтов, представляющий хеш
         byte[] hashBytes = digest.digest();
+        //System.out.println(file.getName() + " : " + Arrays.toString(hashBytes));
 
         return hashBytes;
     }
@@ -63,6 +75,9 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
     private static MessageDigest createMessageDigest() {
         try {
             return MessageDigest.getInstance("MD5");
+            //return MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Алгоритм хеширования не поддерживается", e);
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при создании MessageDigest", e);
         }

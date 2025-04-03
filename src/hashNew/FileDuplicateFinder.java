@@ -37,7 +37,7 @@ public class FileDuplicateFinder {
     /* Основной метод для поиска групп дубликатов файлов
      * @return path - путь к директории, в которой нужно найти дубликаты
     */
-    public void findDuplicates(String[] paths) throws IOException {
+    public void findDuplicates(String[] paths) throws IOException, InterruptedException {
 
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
@@ -96,14 +96,21 @@ public class FileDuplicateFinder {
 
     /* Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
     */
-    public void processGroupFiles() {
-        Set<File> files = filesBySize.values().stream()
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet()); // Получаем все файлы из карты filesBySize
+    public void processGroupFiles() throws InterruptedException {
+        for (Map.Entry<Long, Set<File>> entry : filesBySize.entrySet()) {
+            Set<File> files = entry.getValue(); // Получаем набор файлов с данным размером
+            if (files.size() < 2) { // Если в наборе файлов меньше 2-х, пропускаем его
+                continue;
+            }
 
-        // Группируем файлы по их размеру и контенту
-        fileGrouperNew.groupByContent(files);
-        duplicates = fileGrouperNew.getFilesByContent(); // Получаем сгруппированные файлы по их размеру и контенту
+            System.out.println("Обработка файлов с размером: " + entry.getKey() + " байт");
+
+            // Группируем файлы по контенту в fileGroups
+            List<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
+
+            // доюавляем список групп в список дубликатов duplicates
+            duplicates.addAll(fileGroups);
+        }
     }
 
 
@@ -123,17 +130,19 @@ public class FileDuplicateFinder {
     List<Set<File>> getDuplicates() {return duplicates;}
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+
+        Long startTime = System.currentTimeMillis(); // Начало отсчета времени
 
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey"};           // 81,       сравн - очень долго,  хеш - 72 - 75 - 88 (ускоренный - 50)
         //String[] paths = {"/home/alek7ey/.local"};    // 1 - 1,6,  сравн - 1 - 1,5,      хеш - 0,9 - 1,6    (ускоренный - 0,9)
         //String[] paths = {"/home/alek7ey/.cache"};      // 6.6 - 9,  сравн - очень долго,  хеш - 6 - 14     (ускоренный - 4,4 - 6)
-        //String[] paths = {"/home/alek7ey/snap"};      // 11,8,     сравн - 22 - 24,      хеш - 9,6 - 11,6   (ускоренный - 6)
+        String[] paths = {"/home/alek7ey/snap"};      // 11,8,     сравн - 22 - 24,      хеш - 9,6 - 11,6   (ускоренный - 6)
         //String[] paths = {"/home/alek7ey/snap/flutter"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
         //String[] paths = {"/home/alek7ey/snap/telegram-desktop"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
         //String[] paths = {"/home/alek7ey/Android"};   // 3 - 4,    сравн - 2,5 - 3,9,    хеш - 2,4 - 2,6    (ускоренный - 2.4-2.6)
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"}; // 24 - 27,  сравн - 24,  хеш - 33 (ускоренный - 29 - 32)
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"}; // 24 - 27,  сравн - 24,  хеш - 33 (ускоренный - 29 - 32)
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
 
@@ -143,6 +152,9 @@ public class FileDuplicateFinder {
         } catch (IOException e) {
             System.err.println("Ошибка при поиске дубликатов: " + e.getMessage());
         }
+
+        Long endTime = System.currentTimeMillis(); // Конец отсчета времени
+        System.out.println("Время выполнения: " + (endTime - startTime) + " мс"); // Выводим время выполнения программы
     }
 
 }

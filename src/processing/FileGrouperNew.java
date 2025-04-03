@@ -19,61 +19,28 @@ public class FileGrouperNew {
 
     private static int i = 0;  // счетчик проходов
 
-    private final List<Set<File>> filesByContent;  // Карта для хранения сгруппированных файлов по их хешам
-    public List<Set<File>> getFilesByContent() {
-        return filesByContent;
-    }
+    //private final List<Set<File>> filesByContent;  // Карта для хранения сгруппированных файлов по их хешам
+    //public List<Set<File>> getFilesByContent() {
+    //    return filesByContent;
+    //}
 
     private static final int BUFFER_SIZE = 8192; // Размер буфера 8 КБ
 
     // Конструктор
     public FileGrouperNew() {
-        this.filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
+        //this.filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
     }
 
 
-    // Основной рекурсивный метод
-//    public void groupByContent(Set<File> files, FileKeyHashNew key, long offset) {
-//        // filesByContent группировка файлов по хешам их первых буферов
-//        filesByContent = groupFiles(files,offset);
-//
-//        // Используем стек для хранения групп файлов и их параметров
-//        Stack<Map.Entry<FileKeyHashNew, Set<File>>> stack = new Stack<>();
-//        stack.addAll(filesByContent.entrySet());
-//        while (!stack.isEmpty()) {
-//            Map.Entry<FileKeyHashNew, Set<File>> entry = stack.pop(); // Извлекаем элемент из стека
-//            Set<File> fileGroup = entry.getValue(); // Получаем набор файлов для текущего хеша
-//            // Если в группе меньше двух файлов, то удаляем группу из карты filesByContent
-//            if (fileGroup.size() < 2) {
-//                //System.out.println("---- удаляем- filesByContent.remove(entry.getKey());");
-//                filesByContent.remove(entry.getKey());
-//                continue;
-//            }
-//
-//            if (fileGroup.size() == 3) {
-//                System.out.println("**************** поймал " );
-//                for (File file : fileGroup) {
-//                    System.out.println("---- файл --- " + file.getAbsolutePath());
-//                }
-//            }
-//
-//            // Если размер первого файла в группе меньше смещения, то заканчиваем группировки filesByContent
-//            if (fileGroup.iterator().next().length() < offset + BUFFER_SIZE) {
-//                //System.out.println("------------- Закончили упражнение");
-//                continue;
-//            }
-//            // Добавляем группу обратно в стек с увеличенным смещением
-//            //stack.push(new AbstractMap.SimpleEntry<>(entry.getKey(), fileGroup));
-//            // Увеличиваем смещение на размер буфера для следующей обработки
-//            offset += BUFFER_SIZE;
-//            // Группируем файлы заново и добавляем новые группы в стек
-//            Map<FileKeyHashNew, Set<File>> newGroupedFiles = groupFiles(fileGroup, offset);
-//            stack.addAll(newGroupedFiles.entrySet());
-//        }
-//    }
+    /* Основной рекурсивный метод
+    * Принимает множество файлов ОДИНАКОВЫХ РАЗМЕРОВ и сравнивая постепенно куски хешей,
+    * группирует их по хешам в карту filesByContent.
+    */
+    public List<Set<File>> groupByContent(Set<File> files) {
+        List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
-    public void groupByContent(Set<File> files) {
         long offset = 0;
+        long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
         //  создаем новую очередь для хранения групп файлов, помещаем в нее files
         Queue<Set<File>> fileGroupsQueue = new LinkedList<>();
         fileGroupsQueue.add(files);
@@ -86,21 +53,24 @@ public class FileGrouperNew {
             Map<FileKeyHashNew, Set<File>> currentFilesByContent = groupFiles(currentGroup, offset);
             // проверяем (признак конца обработки - конец файла) каждый Set<File> из currentFilesByContent,
             for (Set<File> fileSet : currentFilesByContent.values()) {
-                // если длинна первого файла меньше offset и больше (offset - BUFFER_SIZE) и в Set<File> больше 1 файла,
-                long firstFileLength = fileSet.iterator().next().length();
-                if (fileSet.size() > 1 && firstFileLength < offset && firstFileLength > (offset - BUFFER_SIZE)) {
+                // если в Set<File> только 1 файл, то пропускаем его
+                if (fileSet.size() < 2) {
+                    continue;
+                }
+                // если длинна файлов меньше offset и больше (offset - BUFFER_SIZE) и в Set<File> больше 1 файла,
+                if (size < offset + BUFFER_SIZE) {
                     // то добавляем его в filesByContent
                     filesByContent.add(fileSet);
                 } else {
                     // иначе
                     // Set<File> добавляем в очередь если в нем больше 1 файла
-                    if (fileSet.size() > 1) {
-                        fileGroupsQueue.add(fileSet);
-                    }
+                    fileGroupsQueue.add(fileSet);
                 }
             }
             // offset увеличиваем на размер буфера BUFFER_SIZE
+            offset += BUFFER_SIZE;
         }
+        return filesByContent;
     }
 
 
@@ -108,33 +78,11 @@ public class FileGrouperNew {
      * начиная с указанного смещения offset, и группирует файлы по их хешам.
      * Возвращает карту, в которой ключ - хеш файла, значение - множество файлов с этим хешем.
      */
-//    private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset) {
-//        // Создаем новую карту для группировки файлов по их хешам
-//        Map<FileKeyHashNew, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
-//
-//        // Проходим по каждому файлу в переданном множестве файлов
-//        for (File file : files) {
-//            try {
-//                // Вычисляем хеш для текущего файла, начиная с указанного смещения
-//                FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, BUFFER_SIZE);
-//                newFilesByContent.computeIfAbsent(fileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
-//            } catch (RuntimeException e) {
-//                // Если произошла ошибка при чтении файла, выводим сообщение об ошибке
-//                System.out.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
-//            }
-//        }
-//
-//        // Возвращаем карту сгруппированных файлов
-//        return newFilesByContent;
-//    }
-
     private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset) {
         Map<FileKeyHashNew, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
         for (File file : files) {
+            //System.out.println(file.getName());
             try {
-//                if (!file.exists() || file.length() < offset) {
-//                    continue; // Пропускаем файлы, которые не существуют или слишком короткие
-//                }
                 // Вычисляем хеш для текущего файла, начиная с указанного смещения
                 FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, BUFFER_SIZE);
                 newFilesByContent.computeIfAbsent(fileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
@@ -206,9 +154,7 @@ public class FileGrouperNew {
         File[] filesArray = dir.listFiles();
         files = new HashSet<>(Arrays.asList(filesArray));
 
-        //fileGrouper.groupByContentParallel(files);
-        fileGrouper.groupByContent(files);
-        for (Set<File> res : fileGrouper.getFilesByContent()) {
+        for (Set<File> res : fileGrouper.groupByContent(files)) {
             System.out.println(" Группа файлов: --------------------");
             for (File file : res) {
                 System.out.println(file.getAbsolutePath());
