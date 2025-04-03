@@ -21,7 +21,7 @@ public class FileDuplicateFinder {
 
     private final Map<Long, Set<File>> filesBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
 
-    private Map<FileKeyHashNew, Set<File>> duplicates; // Список групп дубликатов файлов - результат работы программы
+    private List<Set<File>> duplicates; // Список групп дубликатов файлов - результат работы программы
 
     /* Конструктор */
     public FileDuplicateFinder() {
@@ -30,7 +30,7 @@ public class FileDuplicateFinder {
         this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
         this.filesBySize = new ConcurrentHashMap<>();
         this.fileGrouperNew = new FileGrouperNew();
-        this.duplicates = new HashMap<>();
+        this.duplicates = new ArrayList<>();
     }
 
 
@@ -46,7 +46,7 @@ public class FileDuplicateFinder {
         processGroupFiles();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
 
         // Получаем список групп дубликатов файлов, сортируем и выводим результат
-        Printer.duplicatesByHashNew(duplicates);
+        Printer.duplicatesByContent1(duplicates);
     }
 
 
@@ -120,7 +120,7 @@ public class FileDuplicateFinder {
     Map<Long, Set<File>> getFilesBySize() {return filesBySize;}
 
     // Возвращает список файлов, сгруппированных по одинаковому содержимому - гетер
-    Map<FileKeyHashNew, Set<File>> getDuplicates() {return duplicates;}
+    List<Set<File>> getDuplicates() {return duplicates;}
 
 
     public static void main(String[] args) {

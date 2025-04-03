@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Printer {
 
-    // Вывод групп дубликатов файлов в консоль (compare1)
+    // Вывод групп дубликатов файлов в консоль (compare1) и (hashNew)
     public static void duplicatesByContent1(List<Set<File>> filesByContent) {
         // Сортировка по размеру первого файла в каждом сетe
         Collections.sort(filesByContent, new Comparator<Set<File>>() {
@@ -88,7 +88,7 @@ public class Printer {
     }
 
 
-    // Вывод групп дубликатов файлов в консоль (hashNew)
+    // Вывод групп дубликатов файлов в консоль (hashNew) - НЕ АКТУАЛЕН И НЕ НУЖЕН
     // выводит группы дубликатов файлов
     public static void duplicatesByHashNew(Map<FileKeyHashNew, Set<File>> filesByContent) {
         // Проходим по всем записям в TreeMap fileByHash
