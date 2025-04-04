@@ -24,7 +24,7 @@ public class FileGrouperNew {
     //    return filesByContent;
     //}
 
-    private static final int BUFFER_SIZE = 8192; // Размер буфера 8 КБ
+    private static final long BUFFER_SIZE = 8192L; // Размер буфера 8 КБ
 
     // Конструктор
     public FileGrouperNew() {
@@ -39,36 +39,43 @@ public class FileGrouperNew {
     public List<Set<File>> groupByContent(Set<File> files) {
         List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
-        long offset = 0;
         long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
         //  создаем новую очередь для хранения групп файлов, помещаем в нее files
         Queue<Set<File>> fileGroupsQueue = new LinkedList<>();
-        fileGroupsQueue.add(files);
-        // пока очередь не пуста, извлекаем из нее группу файлов
-        while (!fileGroupsQueue.isEmpty()) {
-            // извлекаем и удаляем группу файлов из очереди
-            Set<File> currentGroup = fileGroupsQueue.poll();
-            // вычисляем их хеши и группируем по хешам типа FileKeyHashNew
-            // методом groupFiles в карту currentFilesByContent
-            Map<FileKeyHashNew, Set<File>> currentFilesByContent = groupFiles(currentGroup, offset);
-            // проверяем (признак конца обработки - конец файла) каждый Set<File> из currentFilesByContent,
-            for (Set<File> fileSet : currentFilesByContent.values()) {
-                // если в Set<File> только 1 файл, то пропускаем его
-                if (fileSet.size() < 2) {
-                    continue;
-                }
-                // если длинна файлов меньше offset и больше (offset - BUFFER_SIZE) и в Set<File> больше 1 файла,
-                if (size < offset + BUFFER_SIZE) {
-                    // то добавляем его в filesByContent
-                    filesByContent.add(fileSet);
-                } else {
-                    // иначе
-                    // Set<File> добавляем в очередь если в нем больше 1 файла
-                    fileGroupsQueue.add(fileSet);
+        Queue<Set<File>> fileGroupsQueueCurrent = new LinkedList<>();
+        fileGroupsQueueCurrent.add(files);
+
+        for(long offset = 0; (offset + 8192L) <= size; offset += 8192L) {
+
+            fileGroupsQueue.addAll(fileGroupsQueueCurrent); // добавляем в очередь fileGroupsQueueCurrent
+            fileGroupsQueueCurrent.clear(); // очищаем fileGroupsQueueCurrent
+            // пока очередь не пуста, извлекаем из нее группу файлов
+            while (!fileGroupsQueue.isEmpty()) {
+                // извлекаем и удаляем группу файлов из очереди
+                Set<File> currentGroup = fileGroupsQueue.poll();
+                // вычисляем их хеши и группируем по хешам типа FileKeyHashNew
+                // методом groupFiles в карту currentFilesByContent
+                Map<FileKeyHashNew, Set<File>> currentFilesByContent = groupFiles(currentGroup, offset);
+                // получившуюся карту currentFilesByContent добавляем в fileGroupsQueueCurrent
+                for (Set<File> fileSet : currentFilesByContent.values()) {
+                    // если в Set<File> только 1 файл, то пропускаем его
+                    if (fileSet.size() > 1) {
+                        // Set<File> добавляем в очередь
+                        fileGroupsQueueCurrent.add(fileSet);
+                    }
                 }
             }
-            // offset увеличиваем на размер буфера BUFFER_SIZE
-            offset += BUFFER_SIZE;
+        }
+        // после завершения обработки всех файлов, добавляем оставшиеся группы в список filesByContent
+        while (!fileGroupsQueueCurrent.isEmpty()) {
+
+            // извлекаем и удаляем группу файлов из очереди
+            Set<File> group = fileGroupsQueue.poll();
+            System.out.println("Добавляем в результат группу файлов: --------------");
+            for (File file : group) {
+                System.out.println(file.getName());
+            }
+            filesByContent.add(group); // добавляем в список filesByContent
         }
         return filesByContent;
     }
@@ -86,7 +93,7 @@ public class FileGrouperNew {
                 // Вычисляем хеш для текущего файла, начиная с указанного смещения
                 FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, BUFFER_SIZE);
                 newFilesByContent.computeIfAbsent(fileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 System.out.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
             }
         }

@@ -8,20 +8,23 @@ import java.util.Arrays;
 
 public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
 
-    private byte[] contentHash;      // Хеш всего файла
+    private final byte[] contentHash;      // Хеш всего файла
 
     // конструктор с параметрами
-    public FileKeyHashNew(File file, long offset, int bufferSize) {
+    public FileKeyHashNew(File file, long offset, long bufferSize) {
         this.contentHash = calculateHash(file, offset, bufferSize);  // вычисляем хеш файла
     }
 
 
     // метод для вычисления хеша куска файла
     // Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
-    private static byte[] calculateHash(File file, long offset, int bufferSize) {
+    private static byte[] calculateHash(File file, long offset, long bufferSize) {
 
-        if (offset + bufferSize > file.length()) {
-            bufferSize = Math.toIntExact(file.length() - offset); // Если размер буфера больше размера файла, то устанавливаем размер буфера равным размеру файла
+        if ((offset + bufferSize) > file.length()) {
+            bufferSize = file.length() - offset; // Если размер буфера больше размера файла, то устанавливаем размер буфера равным размеру файла
+            System.out.println("FileKeyHashNew - Размер файла " + file.getName() + " - " + file.length() +" минус offset - " + offset + " = " + (file.length() - offset));
+
+            System.out.println("Размер буфера больше размера файла, устанавливаем размер буфера равным размеру файла: " + bufferSize);
         }
 
         //System.out.println("---  calculateFileHash ---" + i);
@@ -38,7 +41,7 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
             }
 
             // Создаем массив байтов для хранения данных, читаемых из файла
-            byte[] byteArray = new byte[bufferSize];
+            byte[] byteArray = new byte[(int) bufferSize];
 
             // Читаем данные из файла в массив byteArray и сохраняем количество прочитанных байтов
             int bytesCount = 0;
