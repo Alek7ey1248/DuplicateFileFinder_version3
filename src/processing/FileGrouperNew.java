@@ -28,7 +28,6 @@ public class FileGrouperNew {
 
     // Конструктор
     public FileGrouperNew() {
-        //this.filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
     }
 
 
@@ -37,6 +36,7 @@ public class FileGrouperNew {
     * группирует их по хешам в карту filesByContent.
     */
     public List<Set<File>> groupByContent(Set<File> files) {
+
         List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
         long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
@@ -45,10 +45,13 @@ public class FileGrouperNew {
         Queue<Set<File>> fileGroupsQueueCurrent = new LinkedList<>();
         fileGroupsQueueCurrent.add(files);
 
-        for(long offset = 0; (offset + 8192L) <= size; offset += 8192L) {
+        long offset = 0L; // Начальное смещение для чтения файла
+
+        while(offset < size) {
 
             fileGroupsQueue.addAll(fileGroupsQueueCurrent); // добавляем в очередь fileGroupsQueueCurrent
             fileGroupsQueueCurrent.clear(); // очищаем fileGroupsQueueCurrent
+
             // пока очередь не пуста, извлекаем из нее группу файлов
             while (!fileGroupsQueue.isEmpty()) {
                 // извлекаем и удаляем группу файлов из очереди
@@ -65,16 +68,13 @@ public class FileGrouperNew {
                     }
                 }
             }
+            offset += BUFFER_SIZE; // увеличиваем смещение на размер буфера
         }
+
         // после завершения обработки всех файлов, добавляем оставшиеся группы в список filesByContent
         while (!fileGroupsQueueCurrent.isEmpty()) {
-
             // извлекаем и удаляем группу файлов из очереди
-            Set<File> group = fileGroupsQueue.poll();
-            System.out.println("Добавляем в результат группу файлов: --------------");
-            for (File file : group) {
-                System.out.println(file.getName());
-            }
+            Set<File> group = fileGroupsQueueCurrent.poll();
             filesByContent.add(group); // добавляем в список filesByContent
         }
         return filesByContent;
@@ -102,7 +102,7 @@ public class FileGrouperNew {
 
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         FileGrouperNew fileGrouper = new FileGrouperNew();
         Set<File> files = new HashSet<>();
 //        files.add(new File("/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы/фильм про солдат (середина изменена)"));

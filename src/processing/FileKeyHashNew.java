@@ -22,9 +22,9 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
 
         if ((offset + bufferSize) > file.length()) {
             bufferSize = file.length() - offset; // Если размер буфера больше размера файла, то устанавливаем размер буфера равным размеру файла
-            System.out.println("FileKeyHashNew - Размер файла " + file.getName() + " - " + file.length() +" минус offset - " + offset + " = " + (file.length() - offset));
+            //System.out.println("FileKeyHashNew - Размер файла " + file.getName() + " - " + file.length() +" минус offset - " + offset + " = " + (file.length() - offset));
 
-            System.out.println("Размер буфера больше размера файла, устанавливаем размер буфера равным размеру файла: " + bufferSize);
+            //System.out.println("Размер буфера больше размера файла, устанавливаем размер буфера равным размеру файла: " + bufferSize);
         }
 
         //System.out.println("---  calculateFileHash ---" + i);

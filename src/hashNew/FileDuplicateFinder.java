@@ -16,18 +16,16 @@ public class FileDuplicateFinder {
     private final List<String> verifiedDirectories;  // Список всех абсолютных путей проверенных директорий
 
     private final CheckValid checkValid;  // класс для проверки валидности файлов и директорий
-    private final FileNameSimilarityChecker fileNameSimilarityChecker; // класс для проверки схожести имен файлов
     private final FileGrouperNew fileGrouperNew;  // класс для группировки файлов по хешу и контенту
 
     private final Map<Long, Set<File>> filesBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
 
-    private List<Set<File>> duplicates; // Список групп дубликатов файлов - результат работы программы
+    private final List<Set<File>> duplicates; // Список групп дубликатов файлов - результат работы программы
 
     /* Конструктор */
     public FileDuplicateFinder() {
         this.checkValid = new CheckValid();
         this.verifiedDirectories = new ArrayList<>();
-        this.fileNameSimilarityChecker = new FileNameSimilarityChecker();
         this.filesBySize = new ConcurrentHashMap<>();
         this.fileGrouperNew = new FileGrouperNew();
         this.duplicates = new ArrayList<>();
@@ -37,7 +35,7 @@ public class FileDuplicateFinder {
     /* Основной метод для поиска групп дубликатов файлов
      * @return path - путь к директории, в которой нужно найти дубликаты
     */
-    public void findDuplicates(String[] paths) throws IOException, InterruptedException {
+    public void findDuplicates(String[] paths) throws IOException {
 
         for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
@@ -96,21 +94,23 @@ public class FileDuplicateFinder {
 
     /* Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
     */
-    public void processGroupFiles() throws InterruptedException {
+    public void processGroupFiles() {
         for (Map.Entry<Long, Set<File>> entry : filesBySize.entrySet()) {
             Set<File> files = entry.getValue(); // Получаем набор файлов с данным размером
             if (files.size() < 2) { // Если в наборе файлов меньше 2-х, пропускаем его
                 continue;
             }
 
-            System.out.println("Обработка файлов с размером:----------------------------------------- " + entry.getKey() + " байт");
-            for (File file : files) { // Перебираем каждый файл в наборе
-                System.out.println("Обработка файла: " + file.getName());
-            }
+            System.out.println("Обработка файлов типа " + files.iterator().next().getAbsolutePath() + " размером: " + entry.getKey() + " байт");
+//            for (File file : files) { // Перебираем каждый файл в наборе
+//                System.out.println(file.getAbsolutePath()); // Выводим абсолютный путь к файлу
+//            }
 
             // Группируем файлы по контенту в fileGroups
             List<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
-
+            if (fileGroups.isEmpty()) { // Если не удалось сгруппировать файлы, пропускаем
+                continue;
+            }
             // доюавляем список групп в список дубликатов duplicates
             duplicates.addAll(fileGroups);
         }
@@ -138,14 +138,14 @@ public class FileDuplicateFinder {
         Long startTime = System.currentTimeMillis(); // Начало отсчета времени
 
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
-        //String[] paths = {"/home/alek7ey"};           // 81,       сравн - очень долго,  хеш - 72 - 75 - 88 (ускоренный - 50)
+        String[] paths = {"/home/alek7ey"};           // 81,       сравн - очень долго,  хеш - 72 - 75 - 88 (ускоренный - 50)
         //String[] paths = {"/home/alek7ey/.local"};    // 1 - 1,6,  сравн - 1 - 1,5,      хеш - 0,9 - 1,6    (ускоренный - 0,9)
         //String[] paths = {"/home/alek7ey/.cache"};      // 6.6 - 9,  сравн - очень долго,  хеш - 6 - 14     (ускоренный - 4,4 - 6)
         //String[] paths = {"/home/alek7ey/snap"};      // 11,8,     сравн - 22 - 24,      хеш - 9,6 - 11,6   (ускоренный - 6)
         //String[] paths = {"/home/alek7ey/snap/flutter"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
         //String[] paths = {"/home/alek7ey/snap/telegram-desktop"}; // 1,5 - 1,7,  сравн - 1,5 - 1,7,  хеш - 1,5 - 1,7    (ускоренный - 1,5)
         //String[] paths = {"/home/alek7ey/Android"};   // 3 - 4,    сравн - 2,5 - 3,9,    хеш - 2,4 - 2,6    (ускоренный - 2.4-2.6)
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"}; // 24 - 27,  сравн - 24,  хеш - 33 (ускоренный - 29 - 32)
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"}; // 24 - 27,  сравн - 24,  хеш - 33 (ускоренный - 29 - 32)
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF"};
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/ListTestDuplicateFileFinder"};
 
