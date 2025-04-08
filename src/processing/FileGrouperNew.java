@@ -1,9 +1,7 @@
 package processing;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -17,19 +15,18 @@ import java.util.concurrent.*;
  */
 public class FileGrouperNew {
 
-    private static int i = 0;  // счетчик проходов
+    private final long BUFFER_SIZE = getOptimalBufferSize(); // порог для больших файлов
 
     //private final List<Set<File>> filesByContent;  // Карта для хранения сгруппированных файлов по их хешам
     //public List<Set<File>> getFilesByContent() {
     //    return filesByContent;
     //}
 
-    private static final long BUFFER_SIZE = 8192L; // Размер буфера 8 КБ
+    //private static final long BUFFER_SIZE = 8192L; // Размер буфера 8 КБ
 
     // Конструктор
     public FileGrouperNew() {
     }
-
 
     /* Основной рекурсивный метод
     * Принимает множество файлов ОДИНАКОВЫХ РАЗМЕРОВ и сравнивая постепенно куски хешей,
@@ -37,9 +34,13 @@ public class FileGrouperNew {
     */
     public List<Set<File>> groupByContent(Set<File> files) {
 
+        long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
+
         List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
-        long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
+        long bufferSize = getBufferSize(size); // Получаем размер буфера для чтения файла
+        //System.out.println("Размер буфера: " + bufferSize);
+
         //  создаем новую очередь для хранения групп файлов, помещаем в нее files
         Queue<Set<File>> fileGroupsQueue = new LinkedList<>();
         Queue<Set<File>> fileGroupsQueueCurrent = new LinkedList<>();
@@ -58,7 +59,7 @@ public class FileGrouperNew {
                 Set<File> currentGroup = fileGroupsQueue.poll();
                 // вычисляем их хеши и группируем по хешам типа FileKeyHashNew
                 // методом groupFiles в карту currentFilesByContent
-                Map<FileKeyHashNew, Set<File>> currentFilesByContent = groupFiles(currentGroup, offset);
+                Map<FileKeyHashNew, Set<File>> currentFilesByContent = groupFiles(currentGroup, offset, bufferSize);
                 // получившуюся карту currentFilesByContent добавляем в fileGroupsQueueCurrent
                 for (Set<File> fileSet : currentFilesByContent.values()) {
                     // если в Set<File> только 1 файл, то пропускаем его
@@ -68,7 +69,7 @@ public class FileGrouperNew {
                     }
                 }
             }
-            offset += BUFFER_SIZE; // увеличиваем смещение на размер буфера
+            offset += bufferSize; // увеличиваем смещение на размер буфера
         }
 
         // после завершения обработки всех файлов, добавляем оставшиеся группы в список filesByContent
@@ -85,13 +86,13 @@ public class FileGrouperNew {
      * начиная с указанного смещения offset, и группирует файлы по их хешам.
      * Возвращает карту, в которой ключ - хеш файла, значение - множество файлов с этим хешем.
      */
-    private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset) {
+    private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset, long bufferSize) {
         Map<FileKeyHashNew, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
         for (File file : files) {
             //System.out.println(file.getName());
             try {
                 // Вычисляем хеш для текущего файла, начиная с указанного смещения
-                FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, BUFFER_SIZE);
+                FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, bufferSize);
                 newFilesByContent.computeIfAbsent(fileHash, k -> ConcurrentHashMap.newKeySet()).add(file);
             } catch (Exception e) {
                 System.out.println("Ошибка при чтении файла " + file.getAbsolutePath() + ": " + e.getMessage());
@@ -100,6 +101,45 @@ public class FileGrouperNew {
         return newFilesByContent;
     }
 
+
+    /*  метод вычисления размера буфера по размеру файлов
+    */
+//    private long getBufferSize(long fileSize) {
+//        if (fileSize < BUFFER_SIZE) {
+//            return fileSize; // 512 байт
+//        } else {
+//            return BUFFER_SIZE;
+//        }
+//    }
+    private long getBufferSize(long fileSize) {
+        if (fileSize < 8192L) {
+            return 1024L; // 512 байт
+        } else if (fileSize >= 8192L && fileSize < BUFFER_SIZE) {
+            return 8192L; // 8 КБ
+        } else {  // если размер файла больше BUFFER_SIZE
+            return BUFFER_SIZE; // 1 МБ
+        }
+    }
+
+    /* Метод для получения порога для больших файлов
+     * @return порог для больших файлов
+     */
+    /* Метод для определения оптимального размера буфера на основе доступной памяти
+     * Метод для определения оптимального размера буфера на основе доступной памяти и количества процессоров
+     * Оптимальный размер буфера - это 1/8 от максимальной памяти, деленной на количество процессоров
+     */
+    private long getOptimalBufferSize() {
+        // Получаем максимальное количество доступной памяти
+        long maxMemory = Runtime.getRuntime().maxMemory();
+        // Получаем количество доступных процессоров
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+        long bsLong = maxMemory / (availableProcessors * 8192L);
+        int bs = (int)bsLong ;
+
+        int minBufferSize = 1024 * availableProcessors / 2 ;
+        return Math.max(bs, minBufferSize);
+    }
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
