@@ -14,15 +14,10 @@ import java.util.concurrent.*;
  * до тех пор пока не будут прочитаны все файлы до конца.
  */
 public class FileGrouperNew {
-
-    private final long BUFFER_SIZE = getOptimalBufferSize(); // порог для больших файлов
-
-    //private final List<Set<File>> filesByContent;  // Карта для хранения сгруппированных файлов по их хешам
-    //public List<Set<File>> getFilesByContent() {
-    //    return filesByContent;
-    //}
-
-    //private static final long BUFFER_SIZE = 8192L; // Размер буфера 8 КБ
+    private final long MIN_BUFFER_SIZE = 1024L; // 1 КБ
+    private final long MEDIUM_BUFFER_SIZE = 8192L; // 8 КБ
+    private final long MAX_BUFFER_SIZE = 65536L; // 64 КБ
+    private final long LARGE_FILE_THRESHOLD = 1048576L; // 1 МБ
 
     // Конструктор
     public FileGrouperNew() {
@@ -36,10 +31,12 @@ public class FileGrouperNew {
 
         long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
 
+        long bufferSizeCurr = getBufferSize(size); // Получаем размер буфера для чтения файла
+        //System.out.println(" размер файла: " + size + "   Размер буфера: " + bufferSizeCurr);
+
         List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
-        long bufferSize = getBufferSize(size); // Получаем размер буфера для чтения файла
-        //System.out.println("Размер буфера: " + bufferSize);
+        long bufferSize = MIN_BUFFER_SIZE; // Получаем размер первого буфера для чтения файла
 
         //  создаем новую очередь для хранения групп файлов, помещаем в нее files
         Queue<Set<File>> fileGroupsQueue = new LinkedList<>();
@@ -48,7 +45,7 @@ public class FileGrouperNew {
 
         long offset = 0L; // Начальное смещение для чтения файла
 
-        while(offset < size) {
+        while(offset < size && !fileGroupsQueueCurrent.isEmpty()) {
 
             fileGroupsQueue.addAll(fileGroupsQueueCurrent); // добавляем в очередь fileGroupsQueueCurrent
             fileGroupsQueueCurrent.clear(); // очищаем fileGroupsQueueCurrent
@@ -69,7 +66,9 @@ public class FileGrouperNew {
                     }
                 }
             }
+
             offset += bufferSize; // увеличиваем смещение на размер буфера
+            bufferSize = bufferSizeCurr; // Получаем размер буфера для чтения файла
         }
 
         // после завершения обработки всех файлов, добавляем оставшиеся группы в список filesByContent
@@ -81,6 +80,42 @@ public class FileGrouperNew {
         return filesByContent;
     }
 
+    // другой вариант метода groupByContent
+//    public List<Set<File>> groupByContent(Set<File> files) {
+//        // Получаем размер первого файла, значит и остальных
+//        long size = files.iterator().next().length();
+//        long bufferSize = getBufferSize(size); // Получаем размер буфера для чтения файла
+//        List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
+//        Queue<Set<File>> fileGroupsQueueCurrent = new LinkedList<>();
+//        Queue<Set<File>> fileGroupsQueueNext = new LinkedList<>();
+//        fileGroupsQueueCurrent.add(files);
+//        long offset = 0L; // Начальное смещение для чтения файла
+//        while (offset < size && !fileGroupsQueueCurrent.isEmpty()) {
+//            // Извлекаем группу файлов из текущей очереди
+//            Set<File> currentGroup = fileGroupsQueueCurrent.poll();
+//            // Вычисляем их хеши и группируем по хешам типа FileKeyHashNew
+//            Map<FileKeyHashNew, Set<File>> currentFilesByContent = groupFiles(currentGroup, offset, bufferSize);
+//            // Обрабатываем получившуюся карту currentFilesByContent
+//            for (Set<File> fileSet : currentFilesByContent.values()) {
+//                if (fileSet.size() > 1) { // Если в Set<File> только 1 файл, то пропускаем его
+//                    fileGroupsQueueNext.add(fileSet); // Добавляем в следующую очередь
+//                }
+//            }
+//            // Если текущая очередь пуста и есть группы в следующей очереди, переключаем их
+//            if (fileGroupsQueueCurrent.isEmpty() && !fileGroupsQueueNext.isEmpty()) {
+//                fileGroupsQueueCurrent.addAll(fileGroupsQueueNext); // Переключаем группы для обработки
+//                fileGroupsQueueNext.clear(); // Очищаем следующую очередь
+//                offset += bufferSize; // Увеличиваем смещение на размер буфера
+//            }
+//        }
+//        // После завершения обработки всех файлов, добавляем оставшиеся группы в список filesByContent
+//        while (!fileGroupsQueueCurrent.isEmpty()) {
+//            filesByContent.add(fileGroupsQueueCurrent.poll()); // Извлекаем и добавляем в список
+//        }
+//        return filesByContent;
+//    }
+
+
 
     /* Метод вычисляет хеш для каждого файла в переданном множестве файлов,
      * начиная с указанного смещения offset, и группирует файлы по их хешам.
@@ -89,7 +124,6 @@ public class FileGrouperNew {
     private Map<FileKeyHashNew, Set<File>> groupFiles(Set<File> files, long offset, long bufferSize) {
         Map<FileKeyHashNew, Set<File>> newFilesByContent = new ConcurrentHashMap<>();
         for (File file : files) {
-            //System.out.println(file.getName());
             try {
                 // Вычисляем хеш для текущего файла, начиная с указанного смещения
                 FileKeyHashNew fileHash = new FileKeyHashNew(file, offset, bufferSize);
@@ -105,19 +139,26 @@ public class FileGrouperNew {
     /*  метод вычисления размера буфера по размеру файлов
     */
 //    private long getBufferSize(long fileSize) {
-//        if (fileSize < BUFFER_SIZE) {
-//            return fileSize; // 512 байт
-//        } else {
-//            return BUFFER_SIZE;
+//        long BUFFER_SIZE = getOptimalBufferSize(); // порог для больших файлов
+//        if (fileSize < 8192L) {
+//            return 1024L; // 512 байт
+//        } else if (fileSize >= 8192L && fileSize < BUFFER_SIZE) {
+//            return 8192L; // 8 КБ
+//        } else {  // если размер файла больше BUFFER_SIZE
+//            return BUFFER_SIZE; // 1 МБ
 //        }
 //    }
+
     private long getBufferSize(long fileSize) {
-        if (fileSize < 8192L) {
-            return 1024L; // 512 байт
-        } else if (fileSize >= 8192L && fileSize < BUFFER_SIZE) {
-            return 8192L; // 8 КБ
-        } else {  // если размер файла больше BUFFER_SIZE
-            return BUFFER_SIZE; // 1 МБ
+
+        if (fileSize < MEDIUM_BUFFER_SIZE*2) {
+            return MIN_BUFFER_SIZE; // Для очень маленьких файлов
+        } else if (fileSize < MAX_BUFFER_SIZE*2) {
+            return MEDIUM_BUFFER_SIZE; // Для файлов от 1 КБ до 8 КБ
+        } else if (fileSize < LARGE_FILE_THRESHOLD) {
+            return MAX_BUFFER_SIZE; // Для файлов от 8 КБ до 1 МБ
+        } else {
+            return Math.min(fileSize / 10, MAX_BUFFER_SIZE); // Для больших файлов, не превышая 256 КБ
         }
     }
 

@@ -138,15 +138,6 @@ public class FileDuplicateFinder {
     }
 
 
-    /* Метод для получения порога для больших файлов
-        * @return порог для больших файлов
-     */
-    private static long getLargeFileThreshold() {
-        long maxMemory = Runtime.getRuntime().maxMemory(); // Доступная память
-        int availableProcessors = Runtime.getRuntime().availableProcessors(); // Количество доступных процессоров
-        return maxMemory / (availableProcessors * 4L); // Возвращаем порог
-    }
-
     // Возвращает карту файлов, сгруппированных по размеру - гетер
     Map<Long, Set<File>> getFilesBySize() {return filesBySize;}
 
