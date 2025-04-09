@@ -2,7 +2,7 @@ package hashNew;
 
 import org.junit.Before;
 import org.junit.Test;
-import processing.FileGrouper;
+import processing.FileGrouperNew;
 
 import java.io.File;
 import java.io.IOException;
@@ -294,7 +294,6 @@ public class TesterUnit {
 		finder.walkFileTree("/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder");
 		finder.processGroupFiles();
 
-
 		// переведем List<File> в List<Path>
 		List<Set<File>> sf = finder.getDuplicates();
 		List<List<Path>> actual = new ArrayList<>();
@@ -335,12 +334,12 @@ public class TesterUnit {
 		}
 	}
 
-	//* Тестирование метода groupByContentParallel класса FileGrouper -
+	//* Тестирование метода groupByContent класса FileGrouperNew -
 	// из списка файлов одинакового размера находит дубликаты.
-	// Это вспомогательный метод, который используется в методе processGroupFiles класса compare1.FileDuplicateFinder.
+	// Это вспомогательный метод, который используется в методе processGroupFiles
 	@Test
-	public void testGroupByContentParallel() throws IOException {
-		FileGrouper grouper = new FileGrouper();
+	public void testGroupByContent() throws IOException {
+		FileGrouperNew grouper = new FileGrouperNew();
 
 		// Создаем список файлов одинакового размера
 		Set<File> files = new HashSet<>();
@@ -389,9 +388,9 @@ public class TesterUnit {
 		));
 
 		// Результат работы метода
-		grouper.groupByContentParallel(files);
+		Queue<Set<File>> qf = grouper.groupByContent(files);
 
-		List<Set<File>> lf = grouper.getFilesByContent();
+		List<Set<File>> lf = new ArrayList<>(qf);
 		List<List<Path>> actual = new ArrayList<>();
 		for (Set<File> group : lf) {
 			List<Path> pathGroup = new ArrayList<>();

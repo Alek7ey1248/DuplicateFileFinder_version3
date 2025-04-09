@@ -23,18 +23,18 @@ public class FileGrouperNew {
     public FileGrouperNew() {
     }
 
-    /* Основной рекурсивный метод
+    /* Основной метод
     * Принимает множество файлов ОДИНАКОВЫХ РАЗМЕРОВ и сравнивая постепенно куски хешей,
     * группирует их по хешам в карту filesByContent.
     */
-    public List<Set<File>> groupByContent(Set<File> files) {
+    public Queue<Set<File>> groupByContent(Set<File> files) {
 
         long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
 
         long bufferSizeCurr = getBufferSize(size); // Получаем размер буфера для чтения файла
         //System.out.println(" размер файла: " + size + "   Размер буфера: " + bufferSizeCurr);
 
-        List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
+        //List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
         long bufferSize = MIN_BUFFER_SIZE; // Получаем размер первого буфера для чтения файла
 
@@ -71,13 +71,7 @@ public class FileGrouperNew {
             bufferSize = bufferSizeCurr; // Получаем размер буфера для чтения файла
         }
 
-        // после завершения обработки всех файлов, добавляем оставшиеся группы в список filesByContent
-        while (!fileGroupsQueueCurrent.isEmpty()) {
-            // извлекаем и удаляем группу файлов из очереди
-            Set<File> group = fileGroupsQueueCurrent.poll();
-            filesByContent.add(group); // добавляем в список filesByContent
-        }
-        return filesByContent;
+        return fileGroupsQueueCurrent;
     }
 
     // другой вариант метода groupByContent

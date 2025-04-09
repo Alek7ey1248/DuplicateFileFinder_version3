@@ -88,27 +88,22 @@ public class Printer {
     }
 
 
-    // Вывод групп дубликатов файлов в консоль (hashNew) - НЕ АКТУАЛЕН И НЕ НУЖЕН
+    // Вывод групп дубликатов файлов в консоль (hashNew) - НЕ АКТУАЛЕН
     // выводит группы дубликатов файлов
-//    public static void duplicatesByHashNew(Map<FileKeyHashNew, Set<File>> filesByContent) {
-//        // Проходим по всем записям в TreeMap fileByHash
-//        for (Map.Entry<FileKeyHashNew, Set<File>> entry : filesByContent.entrySet()) {
-//            // Получаем ключ (FileKey) и значение (Set<File>) для текущей записи
-//            FileKeyHashNew key = entry.getKey();
-//            Set<File> files = entry.getValue();
-//            // Проверяем, что в группе есть файлы
-//            if (files.size() > 1) {
-//                // Выводим информацию о группе дубликатов
-//                System.out.println("-------------------------------------------------------------------");
-//                System.out.println("Группа дубликатов файла типа - " + files.iterator().next().getName());
-//                System.out.println(" размера - " + entry.getValue().iterator().next().length() );
-//                System.out.println("----------------------------");
-//                // Проходим по всем файлам в группе и выводим их пути
-//                for (File file : files) {
-//                    System.out.println(file.getAbsolutePath());
-//                }
-//                System.out.println();
+//    public static void duplicatesByHashNew(PriorityQueue<Set<File>> qDuplicates) {
+//        // Проходим по всем записям
+//        for (Set<File> set : qDuplicates) {
+//            Set<File> files = set;
+//            // Выводим информацию о группе дубликатов
+//            System.out.println("-------------------------------------------------------------------");
+//            System.out.println("Группа дубликатов файла типа - " + files.iterator().next().getName());
+//            System.out.println(" размера - " + files.iterator().next().length() );
+//            System.out.println("----------------------------");
+//            // Проходим по всем файлам в группе и выводим их пути
+//            for (File file : files) {
+//                System.out.println(file.getAbsolutePath());
 //            }
+//            System.out.println();
 //        }
 //    }
 

@@ -17,6 +17,7 @@ public class FileDuplicateFinder {
 
     private final Map<Long, Set<File>> filesBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
 
+    private final PriorityQueue<Set<File>> qDuplicates; // Очередь для хранения групп дубликатов файлов
     private final List<Set<File>> duplicates; // Список групп дубликатов файлов - результат работы программы
 
     /* Конструктор */
@@ -25,6 +26,20 @@ public class FileDuplicateFinder {
         this.verifiedDirectories = new ArrayList<>();
         this.filesBySize = new ConcurrentHashMap<>();
         this.fileGrouperNew = new FileGrouperNew();
+
+        // Создаем PriorityQueue с компаратором для сортировки групп файлов по размеру
+        this.qDuplicates = new PriorityQueue<>(new Comparator<Set<File>>() {
+            @Override
+            public int compare(Set<File> set1, Set<File> set2) {
+                if (set1.isEmpty() || set2.isEmpty()) {
+                    return Integer.compare(set1.size(), set2.size());
+                }
+                long size1 = set1.iterator().next().length();
+                long size2 = set2.iterator().next().length();
+                return Long.compare(size1, size2); // Сравниваем по размеру
+            }
+        });
+
         this.duplicates = new ArrayList<>();
     }
 
@@ -40,7 +55,6 @@ public class FileDuplicateFinder {
 
         processGroupFiles();  // Добавляем файлы в карту fileByKey из HashMap fileBySize
 
-        // Получаем список групп дубликатов файлов, сортируем и выводим результат
         Printer.duplicatesByContent1(duplicates);
     }
 
@@ -91,26 +105,9 @@ public class FileDuplicateFinder {
 
     /* Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
     */
-//    public void processGroupFiles() {
-//        for (Map.Entry<Long, Set<File>> entry : filesBySize.entrySet()) {
-//            Set<File> files = entry.getValue(); // Получаем набор файлов с данным размером
-//            if (files.size() < 2) { // Если в наборе файлов меньше 2-х, пропускаем его
-//                continue;
-//            }
-//
-//            System.out.println("Обработка группы файлов типа " + files.iterator().next().getAbsolutePath() + " размером: " + entry.getKey() + " байт");
-//
-//            // Группируем файлы по контенту в fileGroups
-//            List<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
-//            if (fileGroups.isEmpty()) { // Если не удалось сгруппировать файлы, пропускаем
-//                continue;
-//            }
-//            // доюавляем список групп в список дубликатов duplicates
-//            duplicates.addAll(fileGroups);
-//        }
-//    }
-
     public void processGroupFiles() {
+
+        ConcurrentLinkedQueue<Set<File>> concurrentQueue = new ConcurrentLinkedQueue<>(); // Создаем потокобезопасную очередь
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
         List<Future<?>> futures = new ArrayList<>();
         for (Map.Entry<Long, Set<File>> entry : filesBySize.entrySet()) {
@@ -120,9 +117,9 @@ public class FileDuplicateFinder {
             }
             futures.add(executor.submit(() -> {
                 System.out.println("Обработка группы файлов типа " + files.iterator().next().getAbsolutePath() + " размером: " + entry.getKey() + " байт");
-                List<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
+                Queue<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
                 if (!fileGroups.isEmpty()) {
-                    duplicates.addAll(fileGroups);
+                    concurrentQueue.addAll(fileGroups);
                 }
             }));
         }
@@ -131,10 +128,12 @@ public class FileDuplicateFinder {
             try {
                 future.get(); // Можно обработать исключения, если необходимо
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                System.out.println("Ошибка при обработке группы файлов в processGroupFiles: " + e.getMessage());
             }
         }
         executor.shutdown(); // Завершаем работу пула потоков
+
+        duplicates.addAll(concurrentQueue); // Добавляем все группы файлов в очередь qDuplicates
     }
 
 
@@ -142,6 +141,8 @@ public class FileDuplicateFinder {
     Map<Long, Set<File>> getFilesBySize() {return filesBySize;}
 
     // Возвращает список файлов, сгруппированных по одинаковому содержимому - гетер
-    List<Set<File>> getDuplicates() {return duplicates;}
+    List<Set<File>> getDuplicates() {
+        return duplicates;
+    }
 
 }
