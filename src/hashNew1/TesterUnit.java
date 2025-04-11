@@ -1,4 +1,4 @@
-package hashNew;
+package hashNew1;
 
 import org.junit.Before;
 import org.junit.Test;

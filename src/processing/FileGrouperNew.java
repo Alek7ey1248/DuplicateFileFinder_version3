@@ -23,7 +23,7 @@ public class FileGrouperNew {
     public FileGrouperNew() {
     }
 
-    /* Основной метод
+    /* Основной метод (для hashNew1)
     * Принимает множество файлов ОДИНАКОВЫХ РАЗМЕРОВ и сравнивая постепенно куски хешей,
     * группирует их по хешам в карту filesByContent.
     */
@@ -32,9 +32,6 @@ public class FileGrouperNew {
         long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
 
         long bufferSizeCurr = getBufferSize(size); // Получаем размер буфера для чтения файла
-        //System.out.println(" размер файла: " + size + "   Размер буфера: " + bufferSizeCurr);
-
-        //List<Set<File>> filesByContent = new ArrayList<>(); // Инициализация списка для хранения групп файлов
 
         long bufferSize = MIN_BUFFER_SIZE; // Получаем размер первого буфера для чтения файла
 

@@ -1,4 +1,4 @@
-package hashNew;
+package hashNew1;
 
 import processing.*;
 
@@ -17,7 +17,6 @@ public class FileDuplicateFinder {
 
     private final Map<Long, Set<File>> filesBySize;   // HashMap fileBySize - для хранения файлов, сгруппированных по размеру
 
-    private final PriorityQueue<Set<File>> qDuplicates; // Очередь для хранения групп дубликатов файлов
     private final List<Set<File>> duplicates; // Список групп дубликатов файлов - результат работы программы
 
     /* Конструктор */
@@ -26,20 +25,6 @@ public class FileDuplicateFinder {
         this.verifiedDirectories = new ArrayList<>();
         this.filesBySize = new ConcurrentHashMap<>();
         this.fileGrouperNew = new FileGrouperNew();
-
-        // Создаем PriorityQueue с компаратором для сортировки групп файлов по размеру
-        this.qDuplicates = new PriorityQueue<>(new Comparator<Set<File>>() {
-            @Override
-            public int compare(Set<File> set1, Set<File> set2) {
-                if (set1.isEmpty() || set2.isEmpty()) {
-                    return Integer.compare(set1.size(), set2.size());
-                }
-                long size1 = set1.iterator().next().length();
-                long size2 = set2.iterator().next().length();
-                return Long.compare(size1, size2); // Сравниваем по размеру
-            }
-        });
-
         this.duplicates = new ArrayList<>();
     }
 
@@ -109,7 +94,7 @@ public class FileDuplicateFinder {
 
         ConcurrentLinkedQueue<Set<File>> concurrentQueue = new ConcurrentLinkedQueue<>(); // Создаем потокобезопасную очередь
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        List<Future<?>> futures = new ArrayList<>();
+        List<Future<Queue<Set<File>>>> futures = new ArrayList<>();
         for (Map.Entry<Long, Set<File>> entry : filesBySize.entrySet()) {
             Set<File> files = entry.getValue();
             if (files.size() < 2) {
@@ -117,16 +102,20 @@ public class FileDuplicateFinder {
             }
             futures.add(executor.submit(() -> {
                 System.out.println("Обработка группы файлов типа " + files.iterator().next().getAbsolutePath() + " размером: " + entry.getKey() + " байт");
-                Queue<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
-                if (!fileGroups.isEmpty()) {
-                    concurrentQueue.addAll(fileGroups);
-                }
+                //Queue<Set<File>> fileGroups = fileGrouperNew.groupByContent(files);
+//                if (!fileGroups.isEmpty()) {
+//                    concurrentQueue.addAll(fileGroups);
+//                }
+                return fileGrouperNew.groupByContent(files);//fileGroups; // Возвращаем результат выполнения задачи
             }));
         }
         // Ждем завершения всех задач
-        for (Future<?> future : futures) {
+        for (Future<Queue<Set<File>>> future : futures) {
             try {
-                future.get(); // Можно обработать исключения, если необходимо
+                //if (!future.get().isEmpty()) {
+                    concurrentQueue.addAll(future.get());
+                //}
+                //future.get(); // Можно обработать исключения, если необходимо
             } catch (InterruptedException | ExecutionException e) {
                 System.out.println("Ошибка при обработке группы файлов в processGroupFiles: " + e.getMessage());
             }
