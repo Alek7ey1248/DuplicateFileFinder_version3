@@ -114,7 +114,7 @@ public class FileDuplicateFinder {
             try {
                 //if (!future.get().isEmpty()) {
                     concurrentQueue.addAll(future.get());
-                //}
+                ///}
                 //future.get(); // Можно обработать исключения, если необходимо
             } catch (InterruptedException | ExecutionException e) {
                 System.out.println("Ошибка при обработке группы файлов в processGroupFiles: " + e.getMessage());
