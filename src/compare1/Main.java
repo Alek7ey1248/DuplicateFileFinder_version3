@@ -3,17 +3,19 @@ package compare1;
 import java.io.IOException;
 import java.util.Arrays;
 
-// Получить список начальных путей из аргументов командной строки.
-//Создать экземпляр FileDuplicateFinder и передать ему список путей.
-//Запустить метод поиска дубликатов и вывести результаты.
+/*
+   - Получить список начальных путей из аргументов командной строки.
+   - Создать экземпляр FileDuplicateFinder и передать ему список путей.
+   - Запустить метод поиска дубликатов и вывести результаты.
+ */
 public class Main {
     public static void main(String[] args) throws IOException {
 
         // Пример использования
         //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/TestsDuplicateFileFinder"};
         //String[] paths = {"/home/alek7ey"};
-        String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
-        //String[] paths = {"/home/alek7ey/.cache"};
+        //String[] paths = {"/home/alek7ey/Рабочий стол/TestsDFF/Большие файлы"};
+        String[] paths = {"/home/alek7ey/.cache"};
         //String[] paths = {"/home/alek7ey/snap"};
         //String[] paths = {"/home/alek7ey"};
         //String[] paths = {"/home/alek7ey/Android"};

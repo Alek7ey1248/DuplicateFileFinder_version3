@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+/* Класс проверки валидности файлов и директорий */
 public class CheckValid {
 
+    /* метод проверки валидности массива директориев */
     public boolean getValidDirectoryPaths(String[] paths) {
         if (paths.length == 0) {
             System.err.println("Укажите пути для поиска дубликатов.");
@@ -19,7 +21,7 @@ public class CheckValid {
         return true;
     }
 
-
+    /* проверка валидности директории */
     public boolean isValidDirectoryPath(String path) {
 
         if (path == null || path.isEmpty()) {
@@ -43,7 +45,7 @@ public class CheckValid {
     }
 
 
-    // проверка файла
+    /* проверка валидности файла */
     public boolean isValidFile(File file) {
 
         if (!file.exists()) {

@@ -31,7 +31,7 @@ public class FileDuplicateFinder {
         * @throws IOException - исключение ввода-вывода
     */
     public void findDuplicates(String[] paths) throws IOException {
-        for(String path : paths) {  // Рекурсивный обход директорий для группировки файлов по их размеру в карту filesBySize
+        for(String path : paths) {  // обход директорий для группировки файлов по их размеру в карту filesBySize
             walkFileTree(path);
         }
         processGroupFiles();  // Группировка файлов по содержимому
@@ -59,7 +59,7 @@ public class FileDuplicateFinder {
             return;
         }
             ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
-            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();   // список задач
 
             for (File file : files) {  // Перебираем каждый файл и директорию в текущей директории
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -83,37 +83,9 @@ public class FileDuplicateFinder {
     }
 
 
-    // Добавление файлов в карту fileByKey или filesByContent в зависимости от логики метода processGroupFiles
-    // Перед этим смотрим если файлов меньше 2, то пропускаем
-//    public void processGroupFiles() {
-//
-//        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
-//        List<CompletableFuture<Void>> futures = new ArrayList<>();
-//
-//        // Список файлов одинакового размера
-//        filesBySize.forEach((key, files) -> {
-//            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-//
-//                if (files.size() < 2) {  // Пропускаем списки файлов, которых меньше 2
-//                    return;
-//                }
-//                // Группировка файлов по содержимому
-//                int numFiles = files.size();
-//                if (numFiles == 2 || numFiles <= NUM_PROCESSORS / 3) {
-//                    fileGrouper.groupByContent(files);
-//                } else {
-//                    fileGrouper.groupByContentParallel(files);
-//                }
-//            }, executor);
-//            futures.add(future);
-//        });
-//        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-//        allOf.join(); // Блокируем текущий поток до завершения всех задач
-//
-//        executor.shutdown();
-//        awaitTermination(executor);
-//    }
-
+    /* Метод группировки файлов из карты файлов по размерам - filesBySize
+    *  в карту по одинаковому содержимому - fileGrouper.getFilesByContent()
+    */
     public void processGroupFiles() {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
         List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -143,7 +115,6 @@ public class FileDuplicateFinder {
         }
     }
 
-
     // Ожидание завершения работы пула потоков
     private void awaitTermination(ExecutorService executor) {
         try {
@@ -156,13 +127,14 @@ public class FileDuplicateFinder {
         }
     }
 
-    // геттеры
+
+    /* геттеры */
+
     Map<Long, Set<File>> getFilesBySize() {return filesBySize;}
 
-    // Список групп дубликатов файлов для тестов TesterUnit
+    /* Список групп дубликатов файлов для тестов TesterUnit */
     List<Set<File>> getDuplicates() {
         return fileGrouper.getFilesByContent();
     }
-
 
 }
