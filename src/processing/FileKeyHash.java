@@ -11,8 +11,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
+/* Класс предоставляет методы для вычисления хеша файла */
 public class FileKeyHash implements Comparable<FileKeyHash> {
     private final long size;
     public long getSize() {
@@ -26,13 +26,13 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     private static final int BUFFER_SIZE = getOptimalBufferSize();  // 8192 - оптимальный размер буфера на основе доступной памяти используемый в java; // Оптимальный размер буфера на основе доступной памяти
     private static final int NUM_BLOCKS = (int) (Runtime.getRuntime().availableProcessors() * 1.25); // Получаем количество блоков одновременно работающих = кол-во доступных процессоров
 
-    // конструктор по умолчанию
+    /* конструктор по умолчанию */
     public FileKeyHash() {
         this.size = 0;
         this.fullContentHash = new byte[0];
     }
 
-    // Конструктор для создания ключа файла на основе размера и части содержимого
+    /* Конструктор для создания ключа файла на основе размера и части содержимого */
     public FileKeyHash(File file) throws IOException, NoSuchAlgorithmException {
         this.size = file.length();
         this.fullContentHash = calculateHash(file);
@@ -57,7 +57,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
 
 
-    // метод для вычисления хеша файла
+    /* метод для вычисления хеша файла */
     static byte[] calculateHashSmallFile(File file) {
         //System.out.println("вычисление хеша  - " + file.getAbsolutePath());
 
@@ -84,11 +84,10 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
 
 
-    // Метод для вычисления хеша болшьшого файла
+
     /* Метод для расчета хеша большого файла
      * @param file - файл, для которого нужно рассчитать хеш
      */
-    // Метод для вычисления хеша большого файла
     static byte[] calculateHashLargeFile(File file) {
         //System.out.println("вычисление хеша LargeFile - " + file);
         try {
@@ -157,7 +156,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
 
 
-    // Вспомогательный метод для создания объекта MessageDigest
+    /* Вспомогательный метод для создания объекта MessageDigest */
     private static MessageDigest createMessageDigest() {
         try {
             //return MessageDigest.getInstance("SHA-256"); // Создаем объект MessageDigest для SHA-256
@@ -169,7 +168,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
 
 
-    // Переопределение методов equals и hashCode для корректного сравнения объектов FileKey
+    /* Переопределение методов equals и hashCode для корректного сравнения объектов FileKey */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -178,13 +177,13 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
         return size == fileKeyHash.size && Arrays.equals(fullContentHash, fileKeyHash.fullContentHash);
     }
 
-    // Переопределение метода hashCode для корректного сравнения объектов FileKey
+    /* Переопределение метода hashCode для корректного сравнения объектов FileKey */
     @Override
     public int hashCode() {
         return Objects.hash(size) ^ Arrays.hashCode(fullContentHash); // Вычисляем хеш объекта FileKey на основе размера и хеша содержимого
     }
     
-    // Переопределение метода compareTo для корректного сравнения объектов FileKey
+    /* Переопределение метода compareTo для корректного сравнения объектов FileKey */
     @Override
     public int compareTo(FileKeyHash other) {
         int sizeComparison = Long.compare(this.size, other.size);
@@ -209,9 +208,7 @@ public class FileKeyHash implements Comparable<FileKeyHash> {
     }
 
 
-
-    /* Метод для определения оптимального размера буфера на основе доступной памяти
-     * Метод для определения оптимального размера буфера на основе доступной памяти и количества процессоров
+     /* Метод для определения оптимального размера буфера на основе доступной памяти и количества процессоров
      * Оптимальный размер буфера - это 1/8 от максимальной памяти, деленной на количество процессоров
      */
     private static int getOptimalBufferSize() {

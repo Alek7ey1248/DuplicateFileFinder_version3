@@ -7,13 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// Класс для проверки схожести имен файлов
+/* Класс для проверки схожести имен файлов */
 public class FileNameSimilarityChecker {
 
     // Порог схожести
     private static final double SIMILARITY_THRESHOLD = 0.5; // 50%
 
-    // Метод для проверки схожести имен файлов - больше 50% пар имеют схожесть 60% или более
+    /* Метод для проверки схожести имен файлов - больше 50% пар имеют схожесть 60% или более */
     public boolean areFileNamesSimilar(Set<File> files) {
         List<String> fileNames = files.stream()
                 .map(File::getName)
@@ -39,7 +39,7 @@ public class FileNameSimilarityChecker {
     }
 
 
-    // Метод для вычисления процента схожести между двумя строками (от 0 до 1)
+    /* Метод для вычисления процента схожести между двумя строками (от 0 до 1) */
     private double getSimilarityPercentage(String str1, String str2) {
         LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
         int distance = levenshteinDistance.apply(str1, str2);

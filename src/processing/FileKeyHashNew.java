@@ -5,19 +5,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-
+/* Класс предоставляет методы для вычисления хеша файла с использованием различных алгоритмов */
 public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
 
     private final byte[] contentHash;      // Хеш всего файла
 
-    // конструктор с параметрами
+    /* конструктор с параметрами */
     public FileKeyHashNew(File file, long offset, long bufferSize) {
         this.contentHash = calculateHash(file, offset, bufferSize);  // вычисляем хеш файла
     }
 
 
-    // метод для вычисления хеша куска файла
-    // Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
+    /* метод для вычисления хеша куска файла
+    * Вычисление хеша файла с указанного смещения offset на длинну буфера BUFFER_SIZE
+     */
     private static byte[] calculateHash(File file, long offset, long bufferSize) {
 
         if ((offset + bufferSize) > file.length()) {
@@ -74,7 +75,8 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
     }
 
 
-    // Создание объекта MessageDigest для вычисления хеша
+    /* Создание объекта MessageDigest для вычисления хеша
+     */
     private static MessageDigest createMessageDigest() {
         try {
             return MessageDigest.getInstance("MD5");
@@ -87,7 +89,7 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
     }
 
 
-    // Переопределение методов equals и hashCode для корректного сравнения объектов FileKey
+    /* Переопределение методов equals и hashCode для корректного сравнения объектов FileKey */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,13 +98,13 @@ public class FileKeyHashNew implements Comparable<FileKeyHashNew> {
         return Arrays.equals(contentHash, fileKeyHash.contentHash);
     }
 
-    // Переопределение метода hashCode для корректного сравнения объектов FileKey
+    /* Переопределение метода hashCode для корректного сравнения объектов FileKey */
     @Override
     public int hashCode() {
         return Arrays.hashCode(contentHash); // Вычисляем хеш объекта FileKey на основе размера и хеша содержимого
     }
     
-    // Переопределение метода compareTo для корректного сравнения объектов FileKey
+    /* Переопределение метода compareTo для корректного сравнения объектов FileKey */
     @Override
     public int compareTo(FileKeyHashNew other) {
         return Arrays.compare(this.contentHash, other.contentHash);

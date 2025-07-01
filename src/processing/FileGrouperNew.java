@@ -19,7 +19,7 @@ public class FileGrouperNew {
     private final long MAX_BUFFER_SIZE = 65536L; // 64 КБ
     private final long LARGE_FILE_THRESHOLD = 1048576L; // 1 МБ
 
-    // Конструктор
+    /* Конструктор */
     public FileGrouperNew() {
     }
 
@@ -29,7 +29,7 @@ public class FileGrouperNew {
     */
     public Queue<Set<File>> groupByContent(Set<File> files) {
 
-        long size = files.iterator().next().length(); // Получаем размер первого файла, азначит и остальных
+        long size = files.iterator().next().length(); // Получаем размер первого файла, а значит и остальных
 
         long bufferSizeCurr = getBufferSize(size); // Получаем размер буфера для чтения файла
 
@@ -152,9 +152,7 @@ public class FileGrouperNew {
         }
     }
 
-    /* Метод для получения порога для больших файлов
-     * @return порог для больших файлов
-     */
+
     /* Метод для определения оптимального размера буфера на основе доступной памяти
      * Метод для определения оптимального размера буфера на основе доступной памяти и количества процессоров
      * Оптимальный размер буфера - это 1/8 от максимальной памяти, деленной на количество процессоров

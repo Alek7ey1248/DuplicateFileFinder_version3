@@ -3,9 +3,10 @@ package processing;
 import java.io.File;
 import java.util.*;
 
+/* методы вывода результатов */
 public class Printer {
 
-    // Вывод групп дубликатов файлов в консоль (compare1) и (hashNew)
+    /* Вывод групп дубликатов файлов в консоль (compare1) и (hashNew) */
     public static void duplicatesByContent1(List<Set<File>> filesByContent) {
         // Сортировка по размеру первого файла в каждом сетe
         Collections.sort(filesByContent, new Comparator<Set<File>>() {
@@ -38,7 +39,7 @@ public class Printer {
     }
 
 
-    // Вывод групп дубликатов файлов в консоль (compare2)
+    /* Вывод групп дубликатов файлов в консоль (compare2) */
     public static void duplicatesByContent2(Map<Long, List<List<File>>> fileByContent) {
 
         // Выводим отсортированные группы в консоль
@@ -63,8 +64,7 @@ public class Printer {
     }
 
 
-    // Вывод групп дубликатов файлов в консоль (hash1)
-    // выводит группы дубликатов файлов
+    /* Вывод групп дубликатов файлов в консоль (hash1) */
     public static void duplicatesByHash(Map<FileKeyHash, Set<File>> filesByKeyHash) {
         // Проходим по всем записям в TreeMap fileByHash
         for (Map.Entry<FileKeyHash, Set<File>> entry : filesByKeyHash.entrySet()) {
@@ -88,8 +88,9 @@ public class Printer {
     }
 
 
-    // Вывод групп дубликатов файлов в консоль (hashNew) - НЕ АКТУАЛЕН
-    // выводит группы дубликатов файлов
+    /* Вывод групп дубликатов файлов в консоль (hashNew) - НЕ АКТУАЛЕН
+    *выводит группы дубликатов файлов
+     */
 //    public static void duplicatesByHashNew(PriorityQueue<Set<File>> qDuplicates) {
 //        // Проходим по всем записям
 //        for (Set<File> set : qDuplicates) {
@@ -109,7 +110,7 @@ public class Printer {
 
 
 
-    // Формирует duplicates из getFilesByKey и getFilesByContent, сортирует и выводит в консоль (compareAndHash2)
+    /* Формирует duplicates из getFilesByKey и getFilesByContent, сортирует и выводит в консоль (compareAndHash2) */
     public static List<Set<File>> duplicatesByHashAndContent(Map<FileKeyHash, Set<File>> filesByKey, List<Set<File>> filesByContent) {
 
         List<Set<File>> duplicates = new ArrayList<>();

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+/* класс для побайтного сравнения файлов */
 public class FileComparator {
     // (Мой ноут)При тестировании на скорость - До размера 512000L(500Кб) - 1048576L(10МБ) - compareFiles быстрее или равно compareLargeFiles,
     //значит В классе FileComparator - LARGE_FILE_THRESHOLD надо делить на 120 - 60. - НО ЭТО ДЛЯ 2 файлов
@@ -21,14 +22,14 @@ public class FileComparator {
     private static final long LARGE_FILE_THRESHOLD = getLargeFileThreshold()/428L; // Порог для больших файлов
     private static final int BLOCK_SIZE = getBlockSize(); // Размер блока для поблочного чтения больших файлов
 
-    // Метод для получения порога для больших файлов
+    /* Метод для получения порога для больших файлов */
     private static long getLargeFileThreshold() {
         long maxMemory = Runtime.getRuntime().maxMemory(); // Доступная память
         int availableProcessors = Runtime.getRuntime().availableProcessors(); // Количество доступных процессоров
         return maxMemory / (availableProcessors * 4L); // Возвращаем порог
     }
 
-    // Метод для получения размера блока для поблочного чтения
+    /* Метод для получения размера блока для поблочного чтения */
     private static int getBlockSize() {
         long maxMemory = Runtime.getRuntime().maxMemory(); // Получаем доступную память
         int availableProcessors = Runtime.getRuntime().availableProcessors(); // Получаем количество доступных процессоров
@@ -37,7 +38,7 @@ public class FileComparator {
         return Math.max(bufferSize, minBufferSize); // Возвращаем максимальное значение
     }
 
-    // Основной метод для сравнения файлов
+    /* Основной метод для сравнения файлов */
     public static boolean areFilesEqual(File file1, File file2) throws IOException {
         long size = file1.length(); // Получаем размеры файлов
         if (size == 0) return true; // Если размер файлов равен нулю, файлы равны
@@ -58,7 +59,7 @@ public class FileComparator {
         }
     }
 
-    // Метод для побайтного сравнения содержимого двух файлов
+    /* Метод для побайтного сравнения содержимого двух файлов */
     static boolean compareFiles(File file1, File file2, long fileSize) throws IOException {
         try (FileChannel channel1 = FileChannel.open(file1.toPath(), StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2.toPath(), StandardOpenOption.READ)) {
@@ -66,7 +67,7 @@ public class FileComparator {
         }
     }
 
-    // Метод для побайтного сравнения больших файлов
+    /* Метод для побайтного сравнения больших файлов */
     static boolean compareLargeFiles(File file1, File file2, long fileSize) throws IOException, InterruptedException {
         try (FileChannel channel1 = FileChannel.open(file1.toPath(), StandardOpenOption.READ);
              FileChannel channel2 = FileChannel.open(file2.toPath(), StandardOpenOption.READ)) {
@@ -74,7 +75,7 @@ public class FileComparator {
         }
     }
 
-    // Вспомогательный метод для сравнения содержимого каналов двух файлов
+    /* Вспомогательный метод для сравнения содержимого каналов двух файлов */
     private static boolean compareFileContents(FileChannel channel1, FileChannel channel2, long size) throws IOException {
         long position = 0;
         while (position < size) { // Пока не достигнем конца файла
@@ -91,7 +92,7 @@ public class FileComparator {
         return true; // Файлы идентичны
     }
 
-    // Вспомогательный метод для сравнения содержимого двух больших файлов
+    /* Вспомогательный метод для сравнения содержимого двух больших файлов */
     private static boolean compareLargeFileContents(FileChannel channel1, FileChannel channel2, long size) throws InterruptedException {
         //ExecutorService executor = Executors.newFixedThreadPool((int) (Runtime.getRuntime().availableProcessors() * 1.25));  // Создаем ExecutorService с фиксированным пулом потоков
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -121,7 +122,7 @@ public class FileComparator {
         return true; // Возвращаем true, если все блоки совпадают
     }
 
-    // Вспомогательный метод для чтения блока данных из канала
+    /* Вспомогательный метод для чтения блока данных из канала */
     static ByteBuffer readFileBlock(FileChannel channel, long position, long bytesToRead) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate((int) bytesToRead); // Создаем буфер
         channel.read(buffer, position); // Читаем данные из канала
@@ -129,7 +130,7 @@ public class FileComparator {
         return buffer;
     }
 
-    // Вспомогательный метод для сравнения содержимого двух буферов
+    /* Вспомогательный метод для сравнения содержимого двух буферов */
     static boolean compareBuffers(ByteBuffer buffer1, ByteBuffer buffer2, long bytesToRead) {
 //        for (int i = 0; i < bytesToRead; i++) {
 //            if (buffer1.get() != buffer2.get()) {
@@ -153,7 +154,7 @@ public class FileComparator {
 
     //---------------------------------------------------
 
-    // Предварительное быстрое сравнение файлов по первым  байтам
+    /* Предварительное быстрое сравнение файлов по первым  байтам */
     public static boolean quickCompareFiles(File file1, File file2) throws IOException {
         // Если оба файла имеют нулевой размер, они одинаковые
         if (file1.length() == 0) {
@@ -201,7 +202,7 @@ public class FileComparator {
     }
 }
 
-// Задача потокам для сравнения содержимого каждого блока
+/* класс - задача потокам для сравнения содержимого каждого блока */
 class TaskCompareFileContents implements Callable {
     private final FileChannel channel1;
     private final FileChannel channel2;

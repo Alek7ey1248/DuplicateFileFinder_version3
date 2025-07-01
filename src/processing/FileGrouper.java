@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
 
+/* Класс для методов группировки одинаковых файлов по хешу и по содержимому */
 public class FileGrouper {
     // Хранит группы файлов по хешу
     private final Map<FileKeyHash, Set<File>> filesByKey;
@@ -23,14 +24,14 @@ public class FileGrouper {
         return filesByContent;
     }
 
-    // Конструктор
+    /* Конструктор */
     public FileGrouper() {
         this.filesByKey = new ConcurrentHashMap<>();
         this.filesByContent = new CopyOnWriteArrayList<>();
     }
 
 
-    // Групировка файлов по хешу и добавление в filesByKey - группы дубликатов
+    /* Групировка файлов по хешу и добавление в filesByKey - группы дубликатов */
     public void groupByHesh(Set<File> files) {
         System.out.println(" вычислениеа хеша списка файдов - " + Arrays.toString(files.toArray()));
 
@@ -47,8 +48,9 @@ public class FileGrouper {
     }
 
 
-    // Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
-    // (Ускоренный потоками)
+    /* Групировка файлов по хешу и добавление в filesByKey- группы дубликатов
+    *  (Ускоренный потоками)
+    */
     public void groupByHeshParallel(Set<File> files) {
         System.out.println(" вычислениеа хеша списка файлов - " + Arrays.toString(files.toArray()));
 
@@ -83,8 +85,9 @@ public class FileGrouper {
     }
 
 
-    // Групировка файлов по содержимому методом сравнения файлов
-    // и добавление в filesByContent - группы дубликатов
+    /* Групировка файлов по содержимому методом сравнения файлов
+    * и добавление в filesByContent - группы дубликатов
+    */
     public void groupByContent(Set<File> files) {
         while (files.size() > 1) {  // Пока в списке файлов одинакового размера есть хотя бы два файла
             Iterator<File> iterator = files.iterator();  // Извлекаем первый файл из списка
@@ -123,9 +126,10 @@ public class FileGrouper {
     }
 
 
-    // Групировка файлов по содержимому методом сравнения файлов
-    // и добавление в filesByContent - группы дубликатов
-    // (Ускоренный потоками)
+    /* Групировка файлов по содержимому методом сравнения файлов
+    * и добавление в filesByContent - группы дубликатов
+    * (Ускоренный потоками)
+     */
     public void groupByContentParallel(Set<File> files) {
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Виртуальные потоки
 
